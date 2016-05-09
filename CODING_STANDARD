@@ -1,0 +1,53 @@
+Here a few minimalistic coding rules for llvm2goto source tree:
+
+
+0) Use C++11 compliant code
+
+a) 2 spaces indent, no tabs
+b) no "using namespace std;" or "using namespace llvm;"
+b1) Use "using" to create shorter type alias instead. e.g.
+"using instructionst = std::list<instructiont>;"
+c) Avoid new/delete, use containers instead.
+c1) Avoid pointers as much as possible. Use references.
+d) Avoid unnecessary #includes, especially in header files
+e) No lines wider than 80 chars
+f) Put matching { } into the same column
+g) If a method is bigger than a page, break it into parts
+h) Avoid destructive updates if possible. The irept has
+   constant time copy.
+i) Every method/function should have a comment block
+describing name, input, output, purpose and if possible,
+precondition and postcondition
+j) Write self documenting code (doxygen style)
+k) Annotate the code with TODO - things to do, and ASSUME -
+any assumption made
+
+ 
+Naming convention
+-----------------
+
+-- Always end a type, type variable, or type alias with 't'.
+e.g. class instructiont
+-- DO NOT use mixed case variable names. e.g. doNotUseThis
+-- DO use small case variable names with underscore e.g. int
+use_this
+
+
+Git usage
+---------
+
+-- DO NOT commit unrelated changes together
+-- NEVER push to master branch. Let someone else do the code
+review and merge.
+-- ENSURE that your computer time is correct or it will mess
+up the git history.
+-- Open an issue for every TODO, assign it to yourself if
+you are supposed to do the task
+-- NEVER add or commit binary files or files that belong to
+dependencies (e.g. CBMC codebase or LLVM codebase)
+
+Architecture-specific code:
+
+a) Avoid if possible.
+b) Use __LINUX__, __MACH__, and _WIN32 to distinguish the architectures.
+c) Don't include architecture-specific header files without #ifdef ...
