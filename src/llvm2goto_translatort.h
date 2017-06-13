@@ -9,7 +9,6 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/DebugInfoMetadata.h"
-// #include "llvm/IR/Type.h"
 #include "goto-programs/goto_functions.h"
 #include "goto-programs/goto_functions_template.h"
 #include "util/arith_tools.h"
@@ -86,15 +85,10 @@ class llvm2goto_translatort {
     virtual goto_programt trans_InsertValue(const Instruction *I) = 0;
     virtual goto_programt trans_LandingPad(const Instruction *I) = 0;
     virtual goto_programt trans_CleanupPad(const Instruction *I) = 0;
-
     virtual namespacet trans_Globals(const Module *Mod) = 0;
-
     virtual goto_programt trans_instruction(const Instruction &I) = 0;
-
     virtual goto_programt trans_Block(const BasicBlock &b) = 0;
-
     virtual goto_programt trans_Function(const Function &F) = 0;
-
     virtual goto_functionst trans_Program(Module *Mod) = 0;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATORT_H_"

@@ -2,9 +2,14 @@
 
 
 */
+
 #include "llvm2goto_translator.h"
+#include <llvm/IR/Type.h>
+#include <utility>
+#include "symbol_creator.h"
 
 using namespace llvm;
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Ret
@@ -17,17 +22,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Ret to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
-    goto_programt gp;
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Ret is yet to be mapped \n";
+  return gp;
+}
 
-    // goto_programt::targett t = gp.add_instruction();
-    // t->make_assignment();
-    // gp.output(std::cout);
-    
-    std::cout << "Ret is yet to be mapped \n";
-    return gp;
-  }
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Br
@@ -40,12 +41,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Br to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Br(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Br is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Br(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Br is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Switch
@@ -58,12 +60,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Switch to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Switch(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Switch is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Switch(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Switch is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_IndirectBr
@@ -76,12 +79,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::IndirectBr to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "IndirectBr is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I) {
+  goto_programt gp;
+  errs() << "IndirectBr is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Invoke
@@ -94,12 +98,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Invoke to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Invoke is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Invoke is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Resume
@@ -112,12 +117,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Resume to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Resume(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Resume is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Resume(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Resume is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Unreachable
@@ -130,12 +136,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Unreachable to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Unreachable is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Unreachable is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_CleanupRet
@@ -148,12 +155,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::CleanupRet to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "CleanupRet is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I) {
+  goto_programt gp;
+  errs() << "CleanupRet is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_CatchRet
@@ -166,12 +174,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::CatchRet to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "CatchRet is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I) {
+  goto_programt gp;
+  errs() << "CatchRet is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_CatchPad
@@ -184,12 +193,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::CatchPad to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "CatchPad is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I) {
+  goto_programt gp;
+  errs() << "CatchPad is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_CatchSwitch
@@ -202,12 +212,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::CatchSwitch to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "CatchSwitch is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I) {
+  goto_programt gp;
+  errs() << "CatchSwitch is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Add
@@ -220,12 +231,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Add to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Add(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Add is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Add(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Add is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FAdd
@@ -238,12 +250,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FAdd to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FAdd is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FAdd is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Sub
@@ -256,12 +269,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Sub to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Sub(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Sub is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Sub(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Sub is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FSub
@@ -274,12 +288,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FSub to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FSub(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FSub is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FSub(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FSub is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Mul
@@ -292,12 +307,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Mul to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Mul(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Mul is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Mul(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Mul is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FMul
@@ -310,12 +326,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FMul to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FMul(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FMul is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FMul(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FMul is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_UDiv
@@ -328,12 +345,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::UDiv to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "UDiv is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I) {
+  goto_programt gp;
+  errs() << "UDiv is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_SDiv
@@ -346,12 +364,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::SDiv to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "SDiv is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I) {
+  goto_programt gp;
+  errs() << "SDiv is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FDiv
@@ -364,12 +383,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FDiv to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FDiv is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FDiv is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_URem
@@ -382,12 +402,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::URem to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_URem(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "URem is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_URem(const Instruction *I) {
+  goto_programt gp;
+  errs() << "URem is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_SRem
@@ -400,12 +421,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::SRem to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_SRem(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "SRem is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_SRem(const Instruction *I) {
+  goto_programt gp;
+  errs() << "SRem is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FRem
@@ -418,12 +440,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FRem to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FRem(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FRem is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FRem(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FRem is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_And
@@ -436,12 +459,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::And to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_And(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "And is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_And(const Instruction *I) {
+  goto_programt gp;
+  errs() << "And is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Or
@@ -454,12 +478,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Or to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Or(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Or is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Or(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Or is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Xor
@@ -472,12 +497,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Xor to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Xor(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Xor is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Xor(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Xor is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Alloca
@@ -490,12 +516,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Alloca to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Alloca is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Alloca is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Load
@@ -508,12 +535,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Load to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Load is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Load is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Store
@@ -526,12 +554,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Store to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Store(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Store is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Store(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Store is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_AtomicCmpXchg
@@ -544,13 +573,14 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::AtomicCmpXchg to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_AtomicCmpXchg(
-    const Instruction *I) {
-    goto_programt gp;
-    std::cout << "AtomicCmpXchg is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_AtomicCmpXchg(
+  const Instruction *I) {
+  goto_programt gp;
+  errs() << "AtomicCmpXchg is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_AtomicRMW
@@ -563,12 +593,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::AtomicRMW to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "AtomicRMW is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I) {
+  goto_programt gp;
+  errs() << "AtomicRMW is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Fence
@@ -581,12 +612,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Fence to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Fence is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Fence is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_GetElementPtr
@@ -599,13 +631,14 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::GetElementPtr to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_GetElementPtr(
-    const Instruction *I) {
-    goto_programt gp;
-    std::cout << "GetElementPtr is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_GetElementPtr(
+  const Instruction *I) {
+  goto_programt gp;
+  errs() << "GetElementPtr is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Trunc
@@ -618,12 +651,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Trunc to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Trunc is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Trunc is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_ZExt
@@ -636,12 +670,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::ZExt to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "ZExt is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
+  goto_programt gp;
+  errs() << "ZExt is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_SExt
@@ -654,12 +689,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::SExt to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_SExt(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "SExt is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_SExt(const Instruction *I) {
+  goto_programt gp;
+  errs() << "SExt is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FPTrunc
@@ -672,12 +708,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FPTrunc to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FPTrunc is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FPTrunc is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FPExt
@@ -690,12 +727,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FPExt to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FPExt is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FPExt is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FPToUI
@@ -708,12 +746,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FPToUI to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FPToUI is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FPToUI is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FPToSI
@@ -726,12 +765,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FPToSI to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FPToSI is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FPToSI is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_UIToFP
@@ -744,12 +784,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::UIToFP to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "UIToFP is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I) {
+  goto_programt gp;
+  errs() << "UIToFP is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_SIToFP
@@ -762,12 +803,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::SIToFP to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "SIToFP is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I) {
+  goto_programt gp;
+  errs() << "SIToFP is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_IntToPtr
@@ -780,12 +822,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::IntToPtr to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "IntToPtr is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
+  goto_programt gp;
+  errs() << "IntToPtr is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_PtrToInt
@@ -798,12 +841,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::PtrToInt to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "PtrToInt is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
+  goto_programt gp;
+  errs() << "PtrToInt is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_BitCast
@@ -816,12 +860,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::BitCast to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "BitCast is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I) {
+  goto_programt gp;
+  errs() << "BitCast is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_AddrSpaceCast
@@ -834,13 +879,14 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::AddrSpaceCast to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_AddrSpaceCast(
-    const Instruction *I) {
-    goto_programt gp;
-    std::cout << "AddrSpaceCast is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_AddrSpaceCast(
+  const Instruction *I) {
+  goto_programt gp;
+  errs() << "AddrSpaceCast is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_ICmp
@@ -853,12 +899,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::ICmp to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "ICmp is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I) {
+  goto_programt gp;
+  errs() << "ICmp is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_FCmp
@@ -871,12 +918,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::FCmp to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "FCmp is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I) {
+  goto_programt gp;
+  errs() << "FCmp is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_PHI
@@ -889,12 +937,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::PHI to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_PHI(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "PHI is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_PHI(const Instruction *I) {
+  goto_programt gp;
+  errs() << "PHI is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Select
@@ -907,12 +956,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Select to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Select(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Select is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Select(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Select is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Call
@@ -925,12 +975,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Call to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Call(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Call is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Call(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Call is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Shl
@@ -943,12 +994,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::Shl to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Shl(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "Shl is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Shl(const Instruction *I) {
+  goto_programt gp;
+  errs() << "Shl is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_LShr
@@ -961,12 +1013,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::LShr to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_LShr(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "LShr is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_LShr(const Instruction *I) {
+  goto_programt gp;
+  errs() << "LShr is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_AShr
@@ -979,12 +1032,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::AShr to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_AShr(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "AShr is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_AShr(const Instruction *I) {
+  goto_programt gp;
+  errs() << "AShr is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_VAArg
@@ -997,12 +1051,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::VAArg to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "VAArg is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I) {
+  goto_programt gp;
+  errs() << "VAArg is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_ExtractElement
@@ -1015,13 +1070,14 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::ExtractElement to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_ExtractElement(
-    const Instruction *I) {
-    goto_programt gp;
-    std::cout << "ExtractElement is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_ExtractElement(
+  const Instruction *I) {
+  goto_programt gp;
+  errs() << "ExtractElement is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_InsertElement
@@ -1034,13 +1090,14 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::InsertElement to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_InsertElement(
-    const Instruction *I) {
-    goto_programt gp;
-    std::cout << "InsertElement is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_InsertElement(
+  const Instruction *I) {
+  goto_programt gp;
+  errs() << "InsertElement is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_ShuffleVector
@@ -1053,13 +1110,14 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::ShuffleVector to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_ShuffleVector(
-    const Instruction *I) {
-    goto_programt gp;
-    std::cout << "ShuffleVector is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_ShuffleVector(
+  const Instruction *I) {
+  goto_programt gp;
+  errs() << "ShuffleVector is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_ExtractValue
@@ -1072,12 +1130,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::ExtractValue to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "ExtractValue is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I) {
+  goto_programt gp;
+  errs() << "ExtractValue is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_InsertValue
@@ -1090,12 +1149,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::InsertValue to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "InsertValue is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I) {
+  goto_programt gp;
+  errs() << "InsertValue is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_LandingPad
@@ -1108,12 +1168,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::LandingPad to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "LandingPad is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I) {
+  goto_programt gp;
+  errs() << "LandingPad is yet to be mapped \n";
+  return gp;
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_CleanupPad
@@ -1126,12 +1187,13 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction::CleanupPad to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
-    goto_programt gp;
-    std::cout << "CleanupPad is yet to be mapped \n";
-    return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
+  goto_programt gp;
+  errs() << "CleanupPad is yet to be mapped \n";
+  return gp;
+}
+
 /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Globals
@@ -1144,244 +1206,136 @@ using namespace llvm;
     Purpose: Create apropriate goto symbol in symbol table corresponding to
              llvm global variable.
 
-   \*******************************************************************/
-  namespacet llvm2goto_translator::trans_Globals(const Module *Mod) {
-    // Module &M = *Mod;
-    std::cout << "in trans_Globals\n";
-    symbol_tablet symbol_table;
-#if 0
-    for (auto &GV : Mod->globals()) {
-      SmallVector<MDNode *, 1> MDs;
-      if(!GV.isDeclaration()){        
-        GV.getMetadata(LLVMContext::MD_dbg, MDs);
-        if (!MDs.empty()) {
-          for(auto md = MDs.begin(), mde = MDs.end(); md != mde; md++){
-            symbolt global_variable;
-            global_variable.clear();
-            global_variable.is_static_lifetime=true;
-            int i = 0;
-            i = i + 1;
-            // (*md)->dump();
-            // errs() << "\n name of " << i << "th global variable :" ;
-            // errs() << dyn_cast<DIGlobalVariable>(*md)->getName();
-            // std::cout << "\n\t type :" << GV.getValueType()->getTypeID();
-            for (auto mmd = (*md)->op_begin(); mmd != (*md)->op_end(); ++mmd){
-              if(mmd->get()){
-                // std::cout << s"\n Global mmd :";
-                // prog.display(mmd->get());
-                // mmd->get()->dump();
-                //mmd->get()->dump();
-                if(GV.getValueType()->isFunctionTy() || !PointerType::isValidElementType(GV.getValueType())){
-                  errs() << "invalid type for global variable";
+\*******************************************************************/
+namespacet llvm2goto_translator::trans_Globals(const Module *Mod) {
+  // TODO(Rasika): signed type.
+  // TODO(Rasika): various name fields(cbmc).
+  // TODO(Rasika): struct, vector, array,...
+  errs() << "in trans_Globals\n";
+  symbol_tablet symbol_table;
+  for (auto &GV : Mod->globals()) {
+    SmallVector<MDNode *, 1> MDs;
+    if (!GV.isDeclaration()) {
+      GV.getMetadata(LLVMContext::MD_dbg, MDs);
+      if (!MDs.empty()) {
+        for (auto md = MDs.begin(), mde = MDs.end(); md != mde; md++) {
+          symbolt global_variable;
+          global_variable.clear();
+          global_variable.is_static_lifetime = true;
+          for (auto mmd = (*md)->op_begin(); mmd != (*md)->op_end(); ++mmd) {
+            if (mmd->get()) {
+              switch (GV.getValueType()->getTypeID()) {
+                // 16-bit floating point type
+                case llvm::Type::TypeID::HalfTyID : {
+                  errs() << "\nHalf type";
+                  symbol_table.add(symbol_creator::create_HalfTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
                 }
-                else{
-                  switch(GV.getValueType()->getTypeID()){
-                    case llvm::Type::TypeID::VoidTyID : {
-                      errs() << "\nVoid type";
-                        // errs() << "name :" << dyn_cast<DIGlobalVariable>(*md);
-                        /// Type of symbol
-                        // typet type;
-                      global_variable.type = void_typet();
-                        /// Initial value of symbol
-                        // exprt value;
-                        // global_variable.value = from_float(0);
-                        /// Source code location of definition of symbol
-                        // source_locationt location;
-                        /// The unique identifier
-                        // irep_idt name;
-                      const irep_idt tmp_name = 
-                        dyn_cast<DIGlobalVariable>(*mmd)->getName().str();
-                      global_variable.name = tmp_name;
-                        /// Name of module the symbol belongs to
-                        // irep_idt module;
-                        /// Base (non-scoped) name
-                        // irep_idt base_name;
-                      const irep_idt tmp_bname = "tid";
-                      global_variable.base_name = tmp_bname;
-                        /// Language mode
-                        // irep_idt mode;
-                      global_variable.mode = ID_C;
-                        /// Language-specific display name
-                        // irep_idt pretty_name;
-                                        
-                      symbol_table.add(global_variable);
-                      break;
-                    }
-                      //16-bit floating point type
-                    case llvm::Type::TypeID::HalfTyID : {
-                      errs() << "\nHalf type";
-                      break;
-                    }
-                      //32-bit floating point type
-                    case llvm::Type::TypeID::FloatTyID :{
-                      errs() << "\nFloat type";
-                                            // errs() << "name :" << dyn_cast<DIGlobalVariable>(*md);
-                    
-                                            /// Type of symbol
-                                            // typet type;
-                      global_variable.type = floatbv_typet();
-                                            /// Initial value of symbol
-                                            // exprt value;
-                      // global_variable.value = from_float(0);
-                                            /// Source code location of definition of symbol
-                                            // source_locationt location;
-                                            /// The unique identifier
-                                            // irep_idt name;
-                      const irep_idt tmp_name = 
-                        dyn_cast<DIGlobalVariable>(*mmd)->getName().str();
-                      global_variable.name = tmp_name;
-                                            /// Name of module the symbol belongs to
-                                            // irep_idt module;
-                                            /// Base (non-scoped) name
-                                            // irep_idt base_name;
-                      const irep_idt tmp_bname = "tid";
-                      global_variable.base_name = tmp_bname;
-                                            /// Language mode
-                                            // irep_idt mode;
-                      global_variable.mode = ID_C;
-                                            /// Language-specific display name
-                                            // irep_idt pretty_name;
-                                      
-                      symbol_table.add(global_variable);
-                      break;
-                    }
-                    //64-bit floating point type
-                    case llvm::Type::TypeID::DoubleTyID : {
-                      errs() << "\nDouble type";
-                      break;
-                    }
-                    //80-bit floating point type (X87)
-                    case llvm::Type::TypeID::X86_FP80TyID : {
-                      errs() << "\nX86_FP80 type";
-                      break;
-                    }
-                    //128-bit floating point type (112-bit mantissa)
-                    case llvm::Type::TypeID::FP128TyID : {
-                      errs() << "\nFP128 type";
-                      break;
-                    }
-                    //128-bit floating point type (two 64-bits, PowerPC)
-                    case llvm::Type::TypeID::PPC_FP128TyID : {
-                      errs() << "\nPPC_FP128 type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::LabelTyID : {
-                      errs() << "\nLabel type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::MetadataTyID : {
-                      errs() << "\nMetadata type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::X86_MMXTyID : {
-                      errs() << "\nX86_MMX type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::TokenTyID : {
-                      errs() << "\nToken type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::IntegerTyID : {
-                      errs() << "\nInteger type";
-                                            // errs() << "name :" << dyn_cast<DIGlobalVariable>(*md);
-                    
-                                            /// Type of symbol
-                                            // typet type;
-                      if(GV.getValueType()->getIntegerBitWidth() == 1){
-                        global_variable.type = bool_typet();
-                            /// Initial value of symbol
-                            // exprt value;
-                        // global_variable.value = ;
-                            /// Source code location of definition of symbol
-                            // source_locationt location;
-                            /// The unique identifier
-                            // irep_idt name;
-                        const irep_idt tmp_name = 
-                          dyn_cast<DIGlobalVariable>(*mmd)->getName().str();
-                        global_variable.name = tmp_name;
-                            /// Name of module the symbol belongs to
-                            // irep_idt module;
-                            /// Base (non-scoped) name
-                            // irep_idt base_name;
-                        // const irep_idt tmp_bname = "tid";
-                        // global_variable.base_name = tmp_bname;
-                            /// Language mode
-                            // irep_idt mode;
-                        global_variable.mode = ID_C;
-                            /// Language-specific display name
-                            // irep_idt pretty_name;                          
-                      }
-                      else{
-                        global_variable.type = unsignedbv_typet(
-                          GV.getValueType()->getIntegerBitWidth());
-                            /// Initial value of symbol
-                            // exprt value;
-                        global_variable.value = from_integer(0,
-                          global_variable.type);
-                            /// Source code location of definition of symbol
-                            // source_locationt location;
-                            /// The unique identifier
-                            // irep_idt name;
-                        const irep_idt tmp_name = 
-                          dyn_cast<DIGlobalVariable>(*mmd)->getName().str();
-                        global_variable.name = tmp_name;
-                            /// Name of module the symbol belongs to
-                            // irep_idt module;
-                            /// Base (non-scoped) name
-                            // irep_idt base_name;
-                        // const irep_idt tmp_bname = "tid";
-                        // global_variable.base_name = tmp_bname;
-                            /// Language mode
-                            // irep_idt mode;
-                        global_variable.mode = ID_C;
-                            /// Language-specific display name
-                            // irep_idt pretty_name;
-                      }
-                                      
-                      symbol_table.add(global_variable);
-                      break;
-                    }
-                    case llvm::Type::TypeID::FunctionTyID : {
-                      errs() << "\nFunction type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::StructTyID : {
-                      errs() << "\nStruct type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::ArrayTyID : {
-                      errs() << "\nArray type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::PointerTyID : {
-                      errs() << "\nPointer type";
-                      break;
-                    }
-                    case llvm::Type::TypeID::VectorTyID : {
-                      errs() << "\nVector type";
-                      break;
-                    }
-                  }
+                // 32-bit floating point type
+                case llvm::Type::TypeID::FloatTyID : {
+                  errs() << "\nFloat type";
+                  symbol_table.add(symbol_creator::create_FloatTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  break;
                 }
+                // 64-bit floating point type
+                case llvm::Type::TypeID::DoubleTyID : {
+                  symbol_table.add(symbol_creator::create_DoubleTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nDouble type";
+                  break;
+                }
+                // 80-bit floating point type (X87)
+                case llvm::Type::TypeID::X86_FP80TyID : {
+                  symbol_table.add(symbol_creator::create_X86_FP80Ty(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nX86_FP80 type";
+                  break;
+                }
+                // 128-bit floating point type (112-bit mantissa)
+                case llvm::Type::TypeID::FP128TyID : {
+                  symbol_table.add(symbol_creator::create_FP128Ty(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nFP128 type";
+                  break;
+                }
+                // 128-bit floating point type (two 64-bits, PowerPC)
+                case llvm::Type::TypeID::PPC_FP128TyID : {
+                  symbol_table.add(symbol_creator::create_PPC_FP128Ty(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nPPC_FP128 type";
+                  break;
+                }
+                case llvm::Type::TypeID::IntegerTyID : {
+                  symbol_table.add(symbol_creator::create_IntegerTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nInteger type";
+                  break;
+                }
+                case llvm::Type::TypeID::StructTyID : {
+                  const MDNode *dit = dyn_cast<MDNode>(*mmd);
+                  symbol_table.add(symbol_creator::create_StructTy(
+                    GV.getValueType(),
+                    dit));
+                  errs() << "\nStruct type";
+                  break;
+                }
+                case llvm::Type::TypeID::ArrayTyID : {
+                  symbol_table.add(symbol_creator::create_ArrayTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nArray type";
+                  break;
+                }
+                case llvm::Type::TypeID::PointerTyID : {
+                  symbol_table.add(symbol_creator::create_PointerTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nPointer type";
+                  break;
+                }
+                case llvm::Type::TypeID::VectorTyID : {
+                  symbol_table.add(symbol_creator::create_VectorTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  errs() << "\nVector type";
+                  break;
+                }
+                case llvm::Type::TypeID::X86_MMXTyID : {
+                  symbol_table.add(symbol_creator::create_X86_MMXTy(
+                    GV.getValueType(),
+                    dyn_cast<MDNode>(*mmd)));
+                  break;
+                }
+                case llvm::Type::TypeID::VoidTyID :
+                case llvm::Type::TypeID::FunctionTyID :
+                case llvm::Type::TypeID::TokenTyID :
+                case llvm::Type::TypeID::LabelTyID :
+                case llvm::Type::TypeID::MetadataTyID :
+                  errs() << "\ninvalid type for global variable";;
               }
             }
-            // if(GV.getValueType()->isIntegerTy()){
-            //   errs() << "\n\t bit-width :" << GV.getValueType()->getIntegerBitWidth();                
-            // }
-              // GV.getType()->dump();
           }
         }
       }
     }
-    std::cout << "\nhello";
-    // global_variable.is_thread_local=false;
-    // goto_functionst goto_functions;
-    symbol_table.show(std::cout);
-#endif
-    namespacet ns(symbol_table);
-    // std::cout << "\nbye";
-    return ns;
   }
+  errs() << "\nhello";
+  // global_variable.is_thread_local=false;
+  goto_functionst goto_functions;
+  symbol_table.show(std::cout);
+  namespacet ns(symbol_table);
+  errs() << "\nbye";
+  return ns;
+}
+
 /*******************************************************************\
 
    Function: llvm2goto_translator::trans_instruction
@@ -1394,277 +1348,278 @@ using namespace llvm;
 
     Purpose: Map llvm::Instruction to corresponding goto instruction.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_instruction(const Instruction &I) {
-    std::cout << "\t\t\tin trans_instruction";
-    const Instruction *Inst = &I;
-    goto_programt gp;
-    switch (I.getOpcode()) {
-      // Terminators
-      case Instruction::Ret : {
-          gp = trans_Ret(Inst);
-          break;
-        }
-      case Instruction::Br : {
-          gp = trans_Br(Inst);
-          break;
-        }
-      case Instruction::Switch : {
-          gp = trans_Switch(Inst);
-          break;
-        }
-      case Instruction::IndirectBr : {
-          gp = trans_IndirectBr(Inst);
-          break;
-        }
-      case Instruction::Invoke : {
-          gp = trans_Invoke(Inst);
-          break;
-        }
-      case Instruction::Resume : {
-          gp = trans_Resume(Inst);
-          break;
-        }
-      case Instruction::Unreachable : {
-          gp = trans_Unreachable(Inst);
-          break;
-        }
-      case Instruction::CleanupRet : {
-          gp = trans_CleanupRet(Inst);
-          break;
-        }
-      case Instruction::CatchRet : {
-          gp = trans_CatchRet(Inst);
-          break;
-        }
-      case Instruction::CatchPad : {
-          gp = trans_CatchPad(Inst);
-          break;
-        }
-      case Instruction::CatchSwitch : {
-          gp = trans_CatchSwitch(Inst);
-          break;
-        }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_instruction(const Instruction &I) {
+  errs() << "\t\t\tin trans_instruction";
+  const Instruction *Inst = &I;
+  goto_programt gp;
+  switch (I.getOpcode()) {
+    // Terminators
+    case Instruction::Ret : {
+        gp = trans_Ret(Inst);
+        break;
+      }
+    case Instruction::Br : {
+        gp = trans_Br(Inst);
+        break;
+      }
+    case Instruction::Switch : {
+        gp = trans_Switch(Inst);
+        break;
+      }
+    case Instruction::IndirectBr : {
+        gp = trans_IndirectBr(Inst);
+        break;
+      }
+    case Instruction::Invoke : {
+        gp = trans_Invoke(Inst);
+        break;
+      }
+    case Instruction::Resume : {
+        gp = trans_Resume(Inst);
+        break;
+      }
+    case Instruction::Unreachable : {
+        gp = trans_Unreachable(Inst);
+        break;
+      }
+    case Instruction::CleanupRet : {
+        gp = trans_CleanupRet(Inst);
+        break;
+      }
+    case Instruction::CatchRet : {
+        gp = trans_CatchRet(Inst);
+        break;
+      }
+    case Instruction::CatchPad : {
+        gp = trans_CatchPad(Inst);
+        break;
+      }
+    case Instruction::CatchSwitch : {
+        gp = trans_CatchSwitch(Inst);
+        break;
+      }
 
-      // Standard binary operators...
-      case Instruction::Add : {
-          gp = trans_Add(Inst);
-          break;
-        }
-      case Instruction::FAdd : {
-          gp = trans_FAdd(Inst);
-          break;
-        }
-      case Instruction::Sub : {
-          gp = trans_Sub(Inst);
-          break;
-        }
-      case Instruction::FSub : {
-          gp = trans_FSub(Inst);
-          break;
-        }
-      case Instruction::Mul : {
-          gp = trans_Mul(Inst);
-          break;
-        }
-      case Instruction::FMul : {
-          gp = trans_FMul(Inst);
-          break;
-        }
-      case Instruction::UDiv : {
-          gp = trans_UDiv(Inst);
-          break;
-        }
-      case Instruction::SDiv : {
-          gp = trans_SDiv(Inst);
-          break;
-        }
-      case Instruction::FDiv : {
-          gp = trans_FDiv(Inst);
-          break;
-        }
-      case Instruction::URem : {
-          gp = trans_URem(Inst);
-          break;
-        }
-      case Instruction::SRem : {
-          gp = trans_SRem(Inst);
-          break;
-        }
-      case Instruction::FRem : {
-          gp = trans_FRem(Inst);
-          break;
-        }
+    // Standard binary operators...
+    case Instruction::Add : {
+        gp = trans_Add(Inst);
+        break;
+      }
+    case Instruction::FAdd : {
+        gp = trans_FAdd(Inst);
+        break;
+      }
+    case Instruction::Sub : {
+        gp = trans_Sub(Inst);
+        break;
+      }
+    case Instruction::FSub : {
+        gp = trans_FSub(Inst);
+        break;
+      }
+    case Instruction::Mul : {
+        gp = trans_Mul(Inst);
+        break;
+      }
+    case Instruction::FMul : {
+        gp = trans_FMul(Inst);
+        break;
+      }
+    case Instruction::UDiv : {
+        gp = trans_UDiv(Inst);
+        break;
+      }
+    case Instruction::SDiv : {
+        gp = trans_SDiv(Inst);
+        break;
+      }
+    case Instruction::FDiv : {
+        gp = trans_FDiv(Inst);
+        break;
+      }
+    case Instruction::URem : {
+        gp = trans_URem(Inst);
+        break;
+      }
+    case Instruction::SRem : {
+        gp = trans_SRem(Inst);
+        break;
+      }
+    case Instruction::FRem : {
+        gp = trans_FRem(Inst);
+        break;
+      }
 
-      // Logical operators...
-      case Instruction::And : {
-          gp = trans_And(Inst);
-          break;
-        }
-      case Instruction::Or : {
-          gp = trans_Or(Inst);
-          break;
-        }
-      case Instruction::Xor : {
-          gp = trans_Xor(Inst);
-          break;
-        }
+    // Logical operators...
+    case Instruction::And : {
+        gp = trans_And(Inst);
+        break;
+      }
+    case Instruction::Or : {
+        gp = trans_Or(Inst);
+        break;
+      }
+    case Instruction::Xor : {
+        gp = trans_Xor(Inst);
+        break;
+      }
 
-      // Memory instructions...
-      case Instruction::Alloca : {
-          gp = trans_Alloca(Inst);
-          break;
-        }
-      case Instruction::Load : {
-          gp = trans_Load(Inst);
-          break;
-        }
-      case Instruction::Store : {
-          gp = trans_Store(Inst);
-          break;
-        }
-      case Instruction::AtomicCmpXchg : {
-          gp = trans_AtomicCmpXchg(Inst);
-          break;
-        }
-      case Instruction::AtomicRMW : {
-          gp = trans_AtomicRMW(Inst);
-          break;
-        }
-      case Instruction::Fence : {
-          gp = trans_Fence(Inst);
-          break;
-        }
-      case Instruction::GetElementPtr : {
-          gp = trans_GetElementPtr(Inst);
-          break;
-        }
+    // Memory instructions...
+    case Instruction::Alloca : {
+        gp = trans_Alloca(Inst);
+        break;
+      }
+    case Instruction::Load : {
+        gp = trans_Load(Inst);
+        break;
+      }
+    case Instruction::Store : {
+        gp = trans_Store(Inst);
+        break;
+      }
+    case Instruction::AtomicCmpXchg : {
+        gp = trans_AtomicCmpXchg(Inst);
+        break;
+      }
+    case Instruction::AtomicRMW : {
+        gp = trans_AtomicRMW(Inst);
+        break;
+      }
+    case Instruction::Fence : {
+        gp = trans_Fence(Inst);
+        break;
+      }
+    case Instruction::GetElementPtr : {
+        gp = trans_GetElementPtr(Inst);
+        break;
+      }
 
-      // Convert instructions...
-      case Instruction::Trunc : {
-          gp = trans_Trunc(Inst);
-          break;
-        }
-      case Instruction::ZExt : {
-          gp = trans_ZExt(Inst);
-          break;
-        }
-      case Instruction::SExt : {
-          gp = trans_SExt(Inst);
-          break;
-        }
-      case Instruction::FPTrunc : {
-          gp = trans_FPTrunc(Inst);
-          break;
-        }
-      case Instruction::FPExt : {
-          gp = trans_FPExt(Inst);
-          break;
-        }
-      case Instruction::FPToUI : {
-          gp = trans_FPToUI(Inst);
-          break;
-        }
-      case Instruction::FPToSI : {
-          gp = trans_FPToSI(Inst);
-          break;
-        }
-      case Instruction::UIToFP : {
-          gp = trans_UIToFP(Inst);
-          break;
-        }
-      case Instruction::SIToFP : {
-          gp = trans_SIToFP(Inst);
-          break;
-        }
-      case Instruction::IntToPtr : {
-          gp = trans_IntToPtr(Inst);
-          break;
-        }
-      case Instruction::PtrToInt : {
-          gp = trans_PtrToInt(Inst);
-          break;
-        }
-      case Instruction::BitCast : {
-          gp = trans_BitCast(Inst);
-          break;
-        }
-      case Instruction::AddrSpaceCast : {
-          gp = trans_AddrSpaceCast(Inst);
-          break;
-        }
+    // Convert instructions...
+    case Instruction::Trunc : {
+        gp = trans_Trunc(Inst);
+        break;
+      }
+    case Instruction::ZExt : {
+        gp = trans_ZExt(Inst);
+        break;
+      }
+    case Instruction::SExt : {
+        gp = trans_SExt(Inst);
+        break;
+      }
+    case Instruction::FPTrunc : {
+        gp = trans_FPTrunc(Inst);
+        break;
+      }
+    case Instruction::FPExt : {
+        gp = trans_FPExt(Inst);
+        break;
+      }
+    case Instruction::FPToUI : {
+        gp = trans_FPToUI(Inst);
+        break;
+      }
+    case Instruction::FPToSI : {
+        gp = trans_FPToSI(Inst);
+        break;
+      }
+    case Instruction::UIToFP : {
+        gp = trans_UIToFP(Inst);
+        break;
+      }
+    case Instruction::SIToFP : {
+        gp = trans_SIToFP(Inst);
+        break;
+      }
+    case Instruction::IntToPtr : {
+        gp = trans_IntToPtr(Inst);
+        break;
+      }
+    case Instruction::PtrToInt : {
+        gp = trans_PtrToInt(Inst);
+        break;
+      }
+    case Instruction::BitCast : {
+        gp = trans_BitCast(Inst);
+        break;
+      }
+    case Instruction::AddrSpaceCast : {
+        gp = trans_AddrSpaceCast(Inst);
+        break;
+      }
 
-      // Other instructions...
-      case Instruction::ICmp : {
-          gp = trans_ICmp(Inst);
-          break;
-        }
-      case Instruction::FCmp : {
-          gp = trans_FCmp(Inst);
-          break;
-        }
-      case Instruction::PHI : {
-          gp = trans_PHI(Inst);
-          break;
-        }
-      case Instruction::Select : {
-          gp = trans_Select(Inst);
-          break;
-        }
-      case Instruction::Call : {
-          gp = trans_Call(Inst);
-          break;
-        }
-      case Instruction::Shl : {
-          gp = trans_Shl(Inst);
-          break;
-        }
-      case Instruction::LShr : {
-          gp = trans_LShr(Inst);
-          break;
-        }
-      case Instruction::AShr : {
-          gp = trans_AShr(Inst);
-          break;
-        }
-      case Instruction::VAArg : {
-          gp = trans_VAArg(Inst);
-          break;
-        }
-      case Instruction::ExtractElement : {
-          gp = trans_ExtractElement(Inst);
-          break;
-        }
-      case Instruction::InsertElement : {
-          gp = trans_InsertElement(Inst);
-          break;
-        }
-      case Instruction::ShuffleVector : {
-          gp = trans_ShuffleVector(Inst);
-          break;
-        }
-      case Instruction::ExtractValue : {
-          gp = trans_ExtractValue(Inst);
-          break;
-        }
-      case Instruction::InsertValue : {
-          gp = trans_InsertValue(Inst);
-          break;
-        }
-      case Instruction::LandingPad : {
-          gp = trans_LandingPad(Inst);
-          break;
-        }
-      case Instruction::CleanupPad : {
-          gp = trans_CleanupPad(Inst);
-          break;
-        }
+    // Other instructions...
+    case Instruction::ICmp : {
+        gp = trans_ICmp(Inst);
+        break;
+      }
+    case Instruction::FCmp : {
+        gp = trans_FCmp(Inst);
+        break;
+      }
+    case Instruction::PHI : {
+        gp = trans_PHI(Inst);
+        break;
+      }
+    case Instruction::Select : {
+        gp = trans_Select(Inst);
+        break;
+      }
+    case Instruction::Call : {
+        gp = trans_Call(Inst);
+        break;
+      }
+    case Instruction::Shl : {
+        gp = trans_Shl(Inst);
+        break;
+      }
+    case Instruction::LShr : {
+        gp = trans_LShr(Inst);
+        break;
+      }
+    case Instruction::AShr : {
+        gp = trans_AShr(Inst);
+        break;
+      }
+    case Instruction::VAArg : {
+        gp = trans_VAArg(Inst);
+        break;
+      }
+    case Instruction::ExtractElement : {
+        gp = trans_ExtractElement(Inst);
+        break;
+      }
+    case Instruction::InsertElement : {
+        gp = trans_InsertElement(Inst);
+        break;
+      }
+    case Instruction::ShuffleVector : {
+        gp = trans_ShuffleVector(Inst);
+        break;
+      }
+    case Instruction::ExtractValue : {
+        gp = trans_ExtractValue(Inst);
+        break;
+      }
+    case Instruction::InsertValue : {
+        gp = trans_InsertValue(Inst);
+        break;
+      }
+    case Instruction::LandingPad : {
+        gp = trans_LandingPad(Inst);
+        break;
+      }
+    case Instruction::CleanupPad : {
+        gp = trans_CleanupPad(Inst);
+        break;
+      }
 
-      default:
-          std::cout << "Invalid instruction type...\n ";
-    }
-    return gp;
+    default:
+        errs() << "Invalid instruction type...\n ";
   }
+  return gp;
+}
+
 /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Block
@@ -1678,20 +1633,22 @@ using namespace llvm;
     Purpose: Map llvm::Instruction to corresponding goto instruction in given
              llvm basic block.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b) {
-    // TODO: use code_blockt
-    std::cout << "\t\tin trans_Block\n";
-    goto_programt gp;
-    for (BasicBlock::const_iterator i = b.begin(),
-      ie = b.end(); i != ie; ++i) {
-        // const Instruction &inst = *i;
-        goto_programt goto_instr = trans_instruction(*i);
-        gp.destructive_append(goto_instr);
-        std::cout << "";
-      }
-      return gp;
-  }
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b) {
+  // TODO(Rasika): use code_blockt
+  errs() << "\t\tin trans_Block\n";
+  goto_programt gp;
+  for (BasicBlock::const_iterator i = b.begin(),
+    ie = b.end(); i != ie; ++i) {
+      // const Instruction &inst = *i;
+      // i -> dump();
+      goto_programt goto_instr = trans_instruction(*i);
+      gp.destructive_append(goto_instr);
+      errs() << "";
+    }
+    return gp;
+}
+
 /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Function
@@ -1705,19 +1662,20 @@ using namespace llvm;
     Purpose: Map llvm::Instruction to corresponding goto instruction in given
              llvm function.
 
-   \*******************************************************************/
-  goto_programt llvm2goto_translator::trans_Function(const Function &F) {
-    // TODO(Rasika): check if definition
-    //  is available or not, in built functions...
-    goto_programt gp;
-    std::cout << "\tin trans_Function\n";
-    for (Function::const_iterator b = F.begin(), be = F.end(); b != be; ++b) {
-      const BasicBlock &B = *b;
-      goto_programt goto_block = trans_Block(B);
-      gp.destructive_append(goto_block);
-    }
-    return gp;
+\*******************************************************************/
+goto_programt llvm2goto_translator::trans_Function(const Function &F) {
+  // TODO(Rasika): check if definition
+  //  is available or not, in built functions...
+  goto_programt gp;
+  errs() << "\tin trans_Function\n";
+  for (Function::const_iterator b = F.begin(), be = F.end(); b != be; ++b) {
+    const BasicBlock &B = *b;
+    goto_programt goto_block = trans_Block(B);
+    gp.destructive_append(goto_block);
   }
+  return gp;
+}
+
 /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Program
@@ -1731,35 +1689,32 @@ using namespace llvm;
     Purpose: Translate llvm module into goto functions. Call required functions
              e.g. trans_Gloabals, trans_Block, etc.
 
-   \*******************************************************************/
-  goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
-    // TODO(Rasika): set the language
-    // TODO(Rasika): return type
-    Module &M = *Mod;
-    std::cout << "in trans_Program\n";
-    goto_functionst goto_functions;
-    goto_functionst::goto_functiont goto_function;
-    trans_Globals(Mod);
-    symbol_tablet symbol_table;
-    namespacet ns(symbol_table);
-    for (Function &F : M) {
-      goto_functions.function_map.insert(
-        std::pair<const dstringt, goto_functionst::goto_functiont >(
-          dstringt(F.getName()),
+\*******************************************************************/
+goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
+  // TODO(Rasika): set the language
+  // TODO(Rasika): check for presence of function body
+  Module &M = *Mod;
+  errs() << "in trans_Program\n";
+  goto_functionst goto_functions;
+  goto_functionst::goto_functiont goto_function;
+  namespacet ns = trans_Globals(Mod);
+  goto_programt gp;
+  for (Function &F : M) {
+    goto_functions.function_map.insert(
+      std::pair<const dstringt, goto_functionst::goto_functiont >(
+        dstringt(F.getName()),
         goto_functionst::goto_functiont()));
-      goto_programt gp = trans_Function(F);
-      (*goto_functions.function_map.end()).second.body.swap(gp);
-
-      // std::cout << "\ncalling goto_function.output\n";
-      // goto_function.output(ns, std::cout);
-    }
-    std::cout << "\nsize :" << (goto_functions).function_map.size() << "\n";
-    std::cout << "\ncalling goto_functions.output\n";
-    goto_functions.output(ns, std::cout);
-    /*for(goto_functionst::function_mapt::const_iterator \
-      it=(goto_functions).function_map.begin(); \
-      it!=(goto_functions).function_map.end(); it++) {
-        std::cout << "hi \n";
-    }*/
-    return goto_functions;
+    gp = trans_Function(F);
+    (*goto_functions.function_map.find(dstringt(F.getName()))).
+    second.body.swap(gp);
   }
+  errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
+  errs() << "\ncalling goto_functions.output\n";
+  goto_functions.output(ns, std::cout);
+  for (goto_functionst::function_mapt::const_iterator \
+    it = (goto_functions).function_map.begin(); \
+    it != (goto_functions).function_map.end(); it++) {
+      errs() << (*it).first.c_str() << "\n";
+  }
+  return goto_functions;
+}
