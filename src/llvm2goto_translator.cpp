@@ -4,9 +4,13 @@
 */
 
 #include "llvm2goto_translator.h"
+
 #include <llvm/IR/Type.h>
+
 #include <utility>
+
 #include "symbol_creator.h"
+
 
 using namespace llvm;
 
@@ -1213,6 +1217,8 @@ namespacet llvm2goto_translator::trans_Globals(const Module *Mod) {
   // TODO(Rasika): struct, vector, array,...
   errs() << "in trans_Globals\n";
   symbol_tablet symbol_table;
+
+
   for (auto &GV : Mod->globals()) {
     SmallVector<MDNode *, 1> MDs;
     if (!GV.isDeclaration()) {
