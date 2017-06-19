@@ -9,6 +9,7 @@ using namespace llvm;
 #define SRC_LLVM2GOTO_TRANSLATOR_H_
 class llvm2goto_translator :public llvm2goto_translatort{
  public:
+  symbol_tablet symbol_table;
   goto_programt trans_Ret(const Instruction *I);
   goto_programt trans_Br(const Instruction *I);
   goto_programt trans_Switch(const Instruction *I);
@@ -59,7 +60,7 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_FCmp(const Instruction *I);
   goto_programt trans_PHI(const Instruction *I);
   goto_programt trans_Select(const Instruction *I);
-  goto_programt trans_Call(const Instruction *I);
+  goto_programt trans_Call(const Instruction *I, symbol_tablet *symbol_table);
   goto_programt trans_Shl(const Instruction *I);
   goto_programt trans_LShr(const Instruction *I);
   goto_programt trans_AShr(const Instruction *I);
@@ -72,13 +73,14 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_LandingPad(const Instruction *I);
   goto_programt trans_CleanupPad(const Instruction *I);
 
-  namespacet trans_Globals(const Module *Mod);
+  symbol_tablet trans_Globals(const Module *Mod);
 
-  goto_programt trans_instruction(const Instruction &I);
+  goto_programt trans_instruction(const Instruction &I,
+    symbol_tablet *symbol_table);
 
-  goto_programt trans_Block(const BasicBlock &b);
+  goto_programt trans_Block(const BasicBlock &b, symbol_tablet *symbol_table);
 
-  goto_programt trans_Function(const Function &F);
+  goto_programt trans_Function(const Function &F, symbol_tablet *symbol_table);
 
   goto_functionst trans_Program(Module *Mod);
 };

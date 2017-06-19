@@ -36,15 +36,14 @@
 symbolt symbol_creator::create_HalfTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   bitvector_typet bvt(ID_floatbv, 16);
   global_variable.type = bvt;
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  global_variable.location = locationt::get_location_global_variable(mdn);
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  const irep_idt tmp_bname = "tid";
-  global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -65,15 +64,14 @@ symbolt symbol_creator::create_HalfTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_FloatTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   bitvector_typet bvt(ID_floatbv, 32);
   global_variable.type = bvt;
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  global_variable.location = locationt::get_location_global_variable(mdn);
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  const irep_idt tmp_bname = "tid";
-  global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -94,15 +92,14 @@ symbolt symbol_creator::create_FloatTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_DoubleTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   bitvector_typet bvt(ID_floatbv, 64);
   global_variable.type = bvt;
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  global_variable.location = locationt::get_location_global_variable(mdn);
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  const irep_idt tmp_bname = "tid";
-  global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -123,15 +120,14 @@ symbolt symbol_creator::create_DoubleTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_X86_FP80Ty(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   bitvector_typet bvt(ID_floatbv, 80);
   global_variable.type = bvt;
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  global_variable.location = locationt::get_location_global_variable(mdn);
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  const irep_idt tmp_bname = "tid";
-  global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -152,15 +148,14 @@ symbolt symbol_creator::create_X86_FP80Ty(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_FP128Ty(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   bitvector_typet bvt(ID_floatbv, 128);
   global_variable.type = bvt;
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  global_variable.location = locationt::get_location_global_variable(mdn);
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  const irep_idt tmp_bname = "tid";
-  global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -181,15 +176,14 @@ symbolt symbol_creator::create_FP128Ty(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_PPC_FP128Ty(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   bitvector_typet bvt(ID_floatbv, 128);
   global_variable.type = bvt;
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  global_variable.location = locationt::get_location_global_variable(mdn);
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  const irep_idt tmp_bname = "tid";
-  global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -211,10 +205,12 @@ symbolt symbol_creator::create_X86_MMXTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   return global_variable;
 }
 
@@ -234,19 +230,30 @@ symbolt symbol_creator::create_X86_MMXTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
+  // type->dump();
+  // errs() << "\nhi1";
   if (type->getIntegerBitWidth() == 1) {
   global_variable.type = bool_typet();
   } else {
+    // errs() << "\n hi2 \n";
   global_variable.type = unsignedbv_typet(
     type->getIntegerBitWidth());
   global_variable.value = from_integer(0,
     global_variable.type);
   }
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  // mdn->dump();
+  if (dyn_cast<DIGlobalVariable>(mdn) != NULL) {
+    global_variable.location = locationt::get_location_global_variable(mdn);
+    const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+    global_variable.name = tmp_name;
+  } else if (dyn_cast<DILocalVariable>(mdn) != NULL) {
+    global_variable.location = locationt::get_location_global_variable(mdn);
+    const irep_idt tmp_name = dyn_cast<DILocalVariable>(mdn)->getName().str();
+    global_variable.name = tmp_name;
+  }
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -265,14 +272,16 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
        llvm global variable.
 
 \*******************************************************************/
-symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *digv) {
+symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   struct_union_typet sut(ID_struct);
   struct_union_typet::componentst &components = sut.components();
   DICompositeType *md = dyn_cast<DICompositeType>(
-  dyn_cast<DIGlobalVariable>(digv)->getType());
+  dyn_cast<DIVariable>(mdn)->getType());
   DINodeArray Fields = md->getElements();
   int i = 0;
   for (StructType::element_iterator e =
@@ -415,8 +424,8 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *digv) {
 
   global_variable.type = sut;
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(digv));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(digv)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
@@ -595,17 +604,19 @@ struct_union_typet symbol_creator::create_struct_union_type(Type *type,
 symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   exprt size = from_integer(
     dyn_cast<ArrayType>(type)->getNumElements(),
     signedbv_typet(19));
   DICompositeType *md = dyn_cast<DICompositeType>(
-  dyn_cast<DIGlobalVariable>(mdn)->getType());
+  dyn_cast<DIVariable>(mdn)->getType());
   array_typet arrt(create_array_type(type, md), size);
   global_variable.type = arrt;
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
@@ -728,15 +739,17 @@ typet symbol_creator::create_array_type(Type *type,
 symbolt symbol_creator::create_PointerTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   typet ele_type = create_pointer_type(
     type,
-    dyn_cast<DIDerivedType>(dyn_cast<DIGlobalVariable>(mdn)->getType()));
+    dyn_cast<DIDerivedType>(dyn_cast<DIVariable>(mdn)->getType()));
   pointer_typet pt(ele_type, 25);   /// TODO(Rasika) : set proper value.
   global_variable.type = pt;
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   return global_variable;
 }
@@ -806,6 +819,7 @@ typet symbol_creator::create_pointer_type(Type *type,
     break;
   }
   case llvm::Type::TypeID::ArrayTyID : {
+    errs() << "array in pointer";
     exprt size = from_integer(
       dyn_cast<ArrayType>(
         dyn_cast<PointerType>(type)->getPointerElementType())
@@ -860,10 +874,12 @@ typet symbol_creator::create_pointer_type(Type *type,
 symbolt symbol_creator::create_VectorTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   return global_variable;
 }
@@ -885,11 +901,13 @@ symbolt symbol_creator::create_VectorTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   global_variable.type = void_typet();
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   const irep_idt tmp_bname = "tid";
   global_variable.base_name = tmp_bname;
@@ -914,10 +932,12 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_FunctionTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   return global_variable;
 }
@@ -939,10 +959,12 @@ symbolt symbol_creator::create_FunctionTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_TokenTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   return global_variable;
 }
@@ -964,10 +986,12 @@ symbolt symbol_creator::create_TokenTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_LabelTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   return global_variable;
 }
@@ -989,10 +1013,12 @@ symbolt symbol_creator::create_LabelTy(Type *type, MDNode *mdn) {
 symbolt symbol_creator::create_MetadataTy(Type *type, MDNode *mdn) {
   symbolt global_variable;
   global_variable.clear();
-  global_variable.is_static_lifetime = true;
+  if (dyn_cast<DIGlobalVariable>(mdn)) {
+    global_variable.is_static_lifetime = true;
+  }
   global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIGlobalVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
+  dyn_cast<DIVariable>(mdn));
+  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.name = tmp_name;
   return global_variable;
 }

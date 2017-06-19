@@ -11,6 +11,8 @@
 
 #include "symbol_creator.h"
 
+#include "llvm/IR/IntrinsicInst.h"
+
 
 using namespace llvm;
 
@@ -980,9 +982,91 @@ goto_programt llvm2goto_translator::trans_Select(const Instruction *I) {
     Purpose: Map llvm::Instruction::Call to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Call(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
+  symbol_tablet *symbol_table) {
   goto_programt gp;
   errs() << "Call is yet to be mapped \n";
+  if (const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I)) {
+    Type *type = &(*dyn_cast<Type>(dyn_cast<PointerType>(dyn_cast<Type>(
+      dbgDeclareInst->getAddress()->getType()))->getPointerElementType()));
+    MDNode *mdn = dyn_cast<MDNode>(dbgDeclareInst->getVariable());
+    // errs() << "\033[31;1m" << "DbgDeclareInst information :\n" << "\033[0m";
+    switch (dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
+      ->getType()))->getPointerElementType()->getTypeID()) {
+      // 16-bit floating point type
+      case llvm::Type::TypeID::HalfTyID : {
+        errs() << "\nHalf type";
+        symbol_table->add(symbol_creator::create_HalfTy(type, mdn));
+      }
+      // 32-bit floating point type
+      case llvm::Type::TypeID::FloatTyID : {
+        errs() << "\nFloat type";
+        symbol_table->add(symbol_creator::create_FloatTy(type, mdn));
+        break;
+      }
+      // 64-bit floating point type
+      case llvm::Type::TypeID::DoubleTyID : {
+        symbol_table->add(symbol_creator::create_DoubleTy(type, mdn));
+        errs() << "\nDouble type";
+        break;
+      }
+      // 80-bit floating point type (X87)
+      case llvm::Type::TypeID::X86_FP80TyID : {
+        symbol_table->add(symbol_creator::create_X86_FP80Ty(type, mdn));
+        errs() << "\nX86_FP80 type";
+        break;
+      }
+      // 128-bit floating point type (112-bit mantissa)
+      case llvm::Type::TypeID::FP128TyID : {
+        symbol_table->add(symbol_creator::create_FP128Ty(type, mdn));
+        errs() << "\nFP128 type";
+        break;
+      }
+      // 128-bit floating point type (two 64-bits, PowerPC)
+      case llvm::Type::TypeID::PPC_FP128TyID : {
+        symbol_table->add(symbol_creator::create_PPC_FP128Ty(type, mdn));
+        errs() << "\nPPC_FP128 type";
+        break;
+      }
+      case llvm::Type::TypeID::IntegerTyID : {
+        symbol_table->add(symbol_creator::create_IntegerTy(type, mdn));
+        errs() << "\nInteger type";
+        break;
+      }
+      case llvm::Type::TypeID::StructTyID : {
+        // const MDNode *dit = dyn_cast<MDNode>(*mmd);
+        symbol_table->add(symbol_creator::create_StructTy(type, mdn));
+        errs() << "\nStruct type";
+        break;
+      }
+      case llvm::Type::TypeID::ArrayTyID : {
+        symbol_table->add(symbol_creator::create_ArrayTy(type, mdn));
+        errs() << "\nArray type";
+        break;
+      }
+      case llvm::Type::TypeID::PointerTyID : {
+        symbol_table->add(symbol_creator::create_PointerTy(type, mdn));
+        errs() << "\nPointer type";
+        break;
+      }
+      case llvm::Type::TypeID::VectorTyID : {
+        symbol_table->add(symbol_creator::create_VectorTy(type, mdn));
+        errs() << "\nVector type";
+        break;
+      }
+      case llvm::Type::TypeID::X86_MMXTyID : {
+        symbol_table->add(symbol_creator::create_X86_MMXTy(type, mdn));
+        break;
+      }
+      case llvm::Type::TypeID::VoidTyID :
+      case llvm::Type::TypeID::FunctionTyID :
+      case llvm::Type::TypeID::TokenTyID :
+      case llvm::Type::TypeID::LabelTyID :
+      case llvm::Type::TypeID::MetadataTyID :
+        default:
+        errs() << "\ninvalid type for global variable";
+    }
+  }
   return gp;
 }
 
@@ -1211,7 +1295,7 @@ goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
              llvm global variable.
 
 \*******************************************************************/
-namespacet llvm2goto_translator::trans_Globals(const Module *Mod) {
+symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
   // TODO(Rasika): signed type.
   // TODO(Rasika): various name fields(cbmc).
   // TODO(Rasika): struct, vector, array,...
@@ -1333,13 +1417,14 @@ namespacet llvm2goto_translator::trans_Globals(const Module *Mod) {
       }
     }
   }
-  errs() << "\nhello";
+  // errs() << "\nhello";
   // global_variable.is_thread_local=false;
-  goto_functionst goto_functions;
-  symbol_table.show(std::cout);
-  namespacet ns(symbol_table);
-  errs() << "\nbye";
-  return ns;
+  // goto_functionst goto_functions;
+  // symbol_table.show(std::cout);
+  // namespacet ns(symbol_table);
+  // ns.get_symbol_table().show(std::cout);
+  // errs() << "\nbye";
+  return symbol_table;
 }
 
 /*******************************************************************\
@@ -1355,7 +1440,8 @@ namespacet llvm2goto_translator::trans_Globals(const Module *Mod) {
     Purpose: Map llvm::Instruction to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_instruction(const Instruction &I) {
+goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
+  symbol_tablet *symbol_table) {
   errs() << "\t\t\tin trans_instruction";
   const Instruction *Inst = &I;
   goto_programt gp;
@@ -1572,7 +1658,7 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I) {
         break;
       }
     case Instruction::Call : {
-        gp = trans_Call(Inst);
+        gp = trans_Call(Inst, symbol_table);
         break;
       }
     case Instruction::Shl : {
@@ -1640,7 +1726,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I) {
              llvm basic block.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b) {
+goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
+  symbol_tablet *symbol_table) {
   // TODO(Rasika): use code_blockt
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
@@ -1648,7 +1735,7 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b) {
     ie = b.end(); i != ie; ++i) {
       // const Instruction &inst = *i;
       // i -> dump();
-      goto_programt goto_instr = trans_instruction(*i);
+      goto_programt goto_instr = trans_instruction(*i, symbol_table);
       gp.destructive_append(goto_instr);
       errs() << "";
     }
@@ -1669,14 +1756,15 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b) {
              llvm function.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Function(const Function &F) {
+goto_programt llvm2goto_translator::trans_Function(const Function &F,
+  symbol_tablet *symbol_table) {
   // TODO(Rasika): check if definition
   //  is available or not, in built functions...
   goto_programt gp;
   errs() << "\tin trans_Function\n";
   for (Function::const_iterator b = F.begin(), be = F.end(); b != be; ++b) {
     const BasicBlock &B = *b;
-    goto_programt goto_block = trans_Block(B);
+    goto_programt goto_block = trans_Block(B, symbol_table);
     gp.destructive_append(goto_block);
   }
   return gp;
@@ -1703,17 +1791,29 @@ goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
   errs() << "in trans_Program\n";
   goto_functionst goto_functions;
   goto_functionst::goto_functiont goto_function;
-  namespacet ns = trans_Globals(Mod);
+  symbol_tablet symbol_table = trans_Globals(Mod);
+  // symbol_table.show(std::cout);
   goto_programt gp;
   for (Function &F : M) {
     goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >(
         dstringt(F.getName()),
         goto_functionst::goto_functiont()));
-    gp = trans_Function(F);
+    gp = trans_Function(F, &symbol_table);
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.body.swap(gp);
   }
+  namespacet ns(symbol_table);
+  errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
+
+  // forall_symbols(ns.get_symbol_table().it, ns.get_symbol_table().symbols)
+    // errs() << it->second;
+
+  // if(&ns.get_symbol_table() != NULL) {
+  //   errs() << "\n" << "Symbols:" <<  "\n";
+  // }
+  ns.get_symbol_table().show(std::cout);
+  errs() << "\nbye";
   errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
   errs() << "\ncalling goto_functions.output\n";
   goto_functions.output(ns, std::cout);

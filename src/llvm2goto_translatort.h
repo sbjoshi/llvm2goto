@@ -23,6 +23,7 @@ using namespace llvm;
 #define SRC_LLVM2GOTO_TRANSLATORT_H_
 class llvm2goto_translatort {
  public:
+    // symbol_tablet symbol_table;
     virtual goto_programt trans_Ret(const Instruction *I) = 0;
     virtual goto_programt trans_Br(const Instruction *I) = 0;
     virtual goto_programt trans_Switch(const Instruction *I) = 0;
@@ -73,7 +74,8 @@ class llvm2goto_translatort {
     virtual goto_programt trans_FCmp(const Instruction *I) = 0;
     virtual goto_programt trans_PHI(const Instruction *I) = 0;
     virtual goto_programt trans_Select(const Instruction *I) = 0;
-    virtual goto_programt trans_Call(const Instruction *I) = 0;
+    virtual goto_programt trans_Call(const Instruction *I,
+        symbol_tablet *symbol_table) = 0;
     virtual goto_programt trans_Shl(const Instruction *I) = 0;
     virtual goto_programt trans_LShr(const Instruction *I) = 0;
     virtual goto_programt trans_AShr(const Instruction *I) = 0;
@@ -85,10 +87,13 @@ class llvm2goto_translatort {
     virtual goto_programt trans_InsertValue(const Instruction *I) = 0;
     virtual goto_programt trans_LandingPad(const Instruction *I) = 0;
     virtual goto_programt trans_CleanupPad(const Instruction *I) = 0;
-    virtual namespacet trans_Globals(const Module *Mod) = 0;
-    virtual goto_programt trans_instruction(const Instruction &I) = 0;
-    virtual goto_programt trans_Block(const BasicBlock &b) = 0;
-    virtual goto_programt trans_Function(const Function &F) = 0;
+    virtual symbol_tablet trans_Globals(const Module *Mod) = 0;
+    virtual goto_programt trans_instruction(const Instruction &I,
+        symbol_tablet *symbol_table) = 0;
+    virtual goto_programt trans_Block(const BasicBlock &b,
+        symbol_tablet *symbol_table) = 0;
+    virtual goto_programt trans_Function(const Function &F,
+        symbol_tablet *symbol_table) = 0;
     virtual goto_functionst trans_Program(Module *Mod) = 0;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATORT_H_"
