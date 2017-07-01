@@ -241,8 +241,8 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
     // errs() << "\n hi2 \n";
   global_variable.type = unsignedbv_typet(
     type->getIntegerBitWidth());
-  global_variable.value = from_integer(0,
-    global_variable.type);
+  // global_variable.value = from_integer(0,
+  //   global_variable.type);
   }
   // mdn->dump();
   if (dyn_cast<DIGlobalVariable>(mdn) != NULL) {
@@ -643,6 +643,7 @@ typet symbol_creator::create_array_type(Type *type,
   // 16-bit floating point type
   case llvm::Type::TypeID::HalfTyID : {
     ele_type = bitvector_typet(ID_floatbv, 16);
+    break;
   }
   // 32-bit floating point type
   case llvm::Type::TypeID::FloatTyID : {
@@ -775,6 +776,7 @@ typet symbol_creator::create_pointer_type(Type *type,
   // 16-bit floating point type
   case llvm::Type::TypeID::HalfTyID : {
     ele_type = bitvector_typet(ID_floatbv, 16);
+    break;
   }
   // 32-bit floating point type
   case llvm::Type::TypeID::FloatTyID : {
@@ -917,6 +919,111 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
 
 /*******************************************************************\
 
+  Function: symbol_creator::create_type
+
+  Inputs:
+   bj - .
+
+  Outputs: .
+
+  Purpose: .
+
+\*******************************************************************/
+typet symbol_creator::create_type(Type *type) {
+  typet ele_type;
+  switch (type->getTypeID()) {
+  // 16-bit floating point type
+  case llvm::Type::TypeID::HalfTyID : {
+    ele_type = bitvector_typet(ID_floatbv, 16);
+    break;
+  }
+  // 32-bit floating point type
+  case llvm::Type::TypeID::FloatTyID : {
+    ele_type = bitvector_typet(ID_floatbv, 32);
+    break;
+  }
+  // 64-bit floating point type
+  case llvm::Type::TypeID::DoubleTyID : {
+    ele_type = bitvector_typet(ID_floatbv, 64);
+    break;
+  }
+  // 80-bit floating point type (X87)
+  case llvm::Type::TypeID::X86_FP80TyID : {
+    ele_type = bitvector_typet(ID_floatbv, 80);
+    break;
+  }
+  // 128-bit floating point type (112-bit mantissa)
+  case llvm::Type::TypeID::FP128TyID : {
+    ele_type = bitvector_typet(ID_floatbv, 128);
+    break;
+  }
+  // 128-bit floating point type (two 64-bits, PowerPC)
+  case llvm::Type::TypeID::PPC_FP128TyID : {
+    ele_type = bitvector_typet(ID_floatbv, 128);
+    break;
+  }
+  case llvm::Type::TypeID::IntegerTyID : {
+    if (type->getIntegerBitWidth() == 1) {
+    ele_type = bool_typet();
+    } else {
+    ele_type = unsignedbv_typet(type->getIntegerBitWidth());
+    }
+    break;
+  }
+  case llvm::Type::TypeID::StructTyID : {
+    errs() << "\n struct no action.................";
+    // ele_type = create_struct_union_type(
+    //   (dyn_cast<PointerType>(type)->getPointerElementType()),
+    //   dyn_cast<DICompositeType>(dyn_cast<DIDerivedType>(md)->getBaseType()));
+    break;
+  }
+  case llvm::Type::TypeID::ArrayTyID : {
+    errs() << "\n array no action.................";
+    // exprt size = from_integer(
+    //   dyn_cast<ArrayType>(
+    //     dyn_cast<PointerType>(type)->getPointerElementType())
+    //   ->getNumElements(),
+    //   signedbv_typet(32));
+    // ele_type = array_typet(
+    //   create_array_type(
+    //     dyn_cast<PointerType>(type)->getPointerElementType(),
+    //     dyn_cast<DICompositeType>(
+    //       dyn_cast<DICompositeType>(md)->getBaseType())),
+    //   size);
+    break;
+  }
+  case llvm::Type::TypeID::PointerTyID : {
+    errs() << "\n pointer no action.................";
+    // typet ptr_type = create_pointer_type(
+    //   dyn_cast<PointerType>(type)->getPointerElementType(),
+    //   dyn_cast<DIDerivedType>((md)->getBaseType()));
+    // ele_type = pointer_typet(ptr_type, 15);
+    break;
+  }
+  case llvm::Type::TypeID::VectorTyID : {
+    errs() << "\nVector type NO ACTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    break;
+  }
+  case llvm::Type::TypeID::X86_MMXTyID : {
+    break;
+  }
+  case llvm::Type::TypeID::VoidTyID : {
+    // typet void_type = create_void_typet();
+    ele_type = void_typet();
+    errs() << "void_typet";
+    break;
+  }
+  case llvm::Type::TypeID::FunctionTyID :
+  case llvm::Type::TypeID::TokenTyID :
+  case llvm::Type::TypeID::LabelTyID :
+  case llvm::Type::TypeID::MetadataTyID :
+    errs() << "\ninvalid type for global variable";
+  }
+  return ele_type;
+}
+
+/*******************************************************************\
+
   Function: symbol_creator::create_FunctionTy
 
   Inputs:
@@ -929,17 +1036,41 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
        llvm global variable.
 
 \*******************************************************************/
-symbolt symbol_creator::create_FunctionTy(Type *type, MDNode *mdn) {
-  symbolt global_variable;
-  global_variable.clear();
-  if (dyn_cast<DIGlobalVariable>(mdn)) {
-    global_variable.is_static_lifetime = true;
+symbolt symbol_creator::create_FunctionTy(Type *type) {
+  // errs() << "\n FunctionType :";
+  FunctionType *ft = dyn_cast<FunctionType>(type);
+  // errs() << "isVarArg :" << ft->isVarArg() << "\n return type :";
+  // ft->getReturnType()->dump();
+
+  // errs() << " parameter types :";
+
+  symbolt funct;
+  funct.clear();
+  funct.is_static_lifetime = true;
+  funct.is_thread_local = false;
+  // const irep_idt funct_bname = "funct";
+  // const irep_idt funct_name = "funct";
+  funct.mode = ID_C;
+  // funct.name = funct_name;
+  // funct.base_name = funct_bname;
+  code_typet ct = code_typet();
+  code_typet::parameterst para;
+  // code_typet::parametert p1(unsignedbv_typet(32));
+  // para.push_back(p1);
+  for(auto it = ft->params().begin(); it < ft->params().end(); it++) {
+    para.push_back(code_typet::parametert(create_type(*it)));
+    // ft->getParamType(0)->dump();
+    // ft->getParamType(i)->getMetadata()->dump();
   }
-  global_variable.location = locationt::get_location_global_variable(
-  dyn_cast<DIVariable>(mdn));
-  const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
-  return global_variable;
+  ct.parameters() = para;
+  ft->getReturnType();
+  ct.return_type() = create_type(ft->getReturnType());
+  // static_cast<unsignedbv_typet &>(rt);
+  funct.type = ct;
+
+  // funct.location = locationt::get_location_funct(
+  // dyn_cast<DIVariable>(mdn));
+  return funct;
 }
 
 /*******************************************************************\

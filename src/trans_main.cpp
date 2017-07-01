@@ -2,6 +2,8 @@
 
 
 */
+
+#if 1
 #include <iostream>
 #include <memory>
 
@@ -39,3 +41,4 @@ int main(int argc, char **argv) {
   llvm2goto.trans_Program(M);
   return 0;
 }
+#endif

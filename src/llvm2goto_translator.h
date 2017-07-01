@@ -21,24 +21,33 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_CatchRet(const Instruction *I);
   goto_programt trans_CatchPad(const Instruction *I);
   goto_programt trans_CatchSwitch(const Instruction *I);
-  goto_programt trans_Add(const Instruction *I);
+  goto_programt trans_Add(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_FAdd(const Instruction *I);
-  goto_programt trans_Sub(const Instruction *I);
+  goto_programt trans_Sub(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_FSub(const Instruction *I);
-  goto_programt trans_Mul(const Instruction *I);
+  goto_programt trans_Mul(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_FMul(const Instruction *I);
-  goto_programt trans_UDiv(const Instruction *I);
-  goto_programt trans_SDiv(const Instruction *I);
+  goto_programt trans_UDiv(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_SDiv(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_FDiv(const Instruction *I);
-  goto_programt trans_URem(const Instruction *I);
-  goto_programt trans_SRem(const Instruction *I);
+  goto_programt trans_URem(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_SRem(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_FRem(const Instruction *I);
   goto_programt trans_And(const Instruction *I);
   goto_programt trans_Or(const Instruction *I);
   goto_programt trans_Xor(const Instruction *I);
-  goto_programt trans_Alloca(const Instruction *I);
+  goto_programt trans_Alloca(const Instruction *I,
+        symbol_tablet &symbol_table);
   goto_programt trans_Load(const Instruction *I);
-  goto_programt trans_Store(const Instruction *I);
+  goto_programt trans_Store(const Instruction *I,
+    const symbol_tablet &symbol_table);
   goto_programt trans_AtomicCmpXchg(const Instruction *I);
   goto_programt trans_AtomicRMW(const Instruction *I);
   goto_programt trans_Fence(const Instruction *I);

@@ -8,15 +8,21 @@
 #include <llvm/IR/Type.h>
 
 #include <utility>
+#include <memory>
+#include <string>
 
 #include "symbol_creator.h"
 
 #include "llvm/IR/IntrinsicInst.h"
+#include "langapi/mode.h"
 
+#include "ansi-c/ansi_c_language.h"
 
 using namespace llvm;
 
- /*******************************************************************\
+// TODO(Rasika): Take care of srem and sdiv.
+
+/*******************************************************************\
 
    Function: llvm2goto_translator::trans_Ret
 
@@ -30,7 +36,14 @@ using namespace llvm;
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
+//     // goto_programt::targett store_inst = gp.add_instruction();
+//     store_inst->make_assignment();
+//     store_inst->code = code_assignt(symbol.symbol_expr()
+  // , from_integer(val, symbol.type));
+
   goto_programt gp;
+  // goto_programt::targett ret_inst = gp.add_instruction();
+  // ret_inst->make_return();
   errs() << "Ret is yet to be mapped \n";
   return gp;
 }
@@ -238,9 +251,62 @@ goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I) {
     Purpose: Map llvm::Instruction::Add to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Add(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "Add is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    plus_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -276,9 +342,62 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I) {
     Purpose: Map llvm::Instruction::Sub to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Sub(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "Sub is yet to be mapped \n";
+  // errs() << "Sub is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    minus_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -314,9 +433,62 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I) {
     Purpose: Map llvm::Instruction::Mul to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Mul(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "Mul is yet to be mapped \n";
+  // errs() << "Mul is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    mult_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -352,9 +524,62 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I) {
     Purpose: Map llvm::Instruction::UDiv to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "UDiv is yet to be mapped \n";
+  // errs() << "UDiv is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    div_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -371,9 +596,62 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I) {
     Purpose: Map llvm::Instruction::SDiv to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "SDiv is yet to be mapped \n";
+  // errs() << "SDiv is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    div_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -409,9 +687,62 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I) {
     Purpose: Map llvm::Instruction::URem to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_URem(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "URem is yet to be mapped \n";
+  // errs() << "URem is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    mod_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)->getScope())
+        ->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -428,9 +759,62 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I) {
     Purpose: Map llvm::Instruction::SRem to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_SRem(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "SRem is yet to be mapped \n";
+  // errs() << "SRem is yet to be mapped \n";
+  I->dump();
+  errs() << I->getName();
+  try {
+    symbol_table.lookup(I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.name = I->getName().str();
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table.add(symbol);
+  }
+  symbolt result = symbol_table.lookup(I->getName().str());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  }
+
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    mod_exprt(op1.symbol_expr(), op2.symbol_expr()));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)->getScope())
+        ->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -523,9 +907,15 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I) {
     Purpose: Map llvm::Instruction::Alloca to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  errs() << "Alloca is yet to be mapped \n";
+  // errs() << "Alloca is yet to be mapped \n";
+  symbolt symbol;
+  symbol.type = symbol_creator::create_type(
+    dyn_cast<AllocaInst>(I)->getAllocatedType());
+  symbol.name = I->getName().str();
+  symbol_table.add(symbol);
   return gp;
 }
 
@@ -545,6 +935,13 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
   goto_programt gp;
   errs() << "Load is yet to be mapped \n";
+  /*errs() << " getIterator :";
+  (*dyn_cast<LoadInst>(I)->getIterator()).dump();
+  errs() << " getNumOperands :" << dyn_cast<LoadInst>(I)->getNumOperands();
+  errs() << " getOperand :";
+  dyn_cast<LoadInst>(I)->getOperand(0)->dump();
+  errs() << " getType :";
+  dyn_cast<LoadInst>(I)->getType()->dump();*/
   return gp;
 }
 
@@ -561,9 +958,61 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
     Purpose: Map llvm::Instruction::Store to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Store(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
+  const symbol_tablet &symbol_table) {
+  // errs() << "Store is yet to be mapped \n";
   goto_programt gp;
-  errs() << "Store is yet to be mapped \n";
+  // errs() << " getOperand0 :";
+  // dyn_cast<StoreInst>(I)->getOperand(0)->dump();
+  // errs() << "\n value stored in of 1st operand"
+  // << *dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))
+  // ->getValue().getRawData();
+  uint64_t val;
+  if (dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+    val = dyn_cast<ConstantInt>(
+      dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
+  } else {
+    val = 0;
+  }
+  // errs() << "\n signed value stored in of 1st operand" <<
+  // dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))
+  // ->getSExtValue();
+  // errs() << " getOperand1 :";
+  // dyn_cast<StoreInst>(I)->getOperand(1)->dump();
+  // errs() << " name getOperand1 :" << dyn_cast<StoreInst>(I)
+  // ->getOperand(1)->getName();
+  symbolt symbol = symbol_table.lookup(
+    dyn_cast<StoreInst>(I)->getOperand(1)->getName().str());
+  goto_programt::targett store_inst = gp.add_instruction();
+  store_inst->make_assignment();
+  store_inst->code = code_assignt(symbol.symbol_expr(),
+    from_integer(val, symbol.type));
+  store_inst->function = irep_idt(I->getFunction()->getName().str());
+  // errs() << "\n      Instruction metadata is :";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
+  source_locationt location;
+  // errs() << md;
+  // md->second->dump();
+  if (dyn_cast<DILocation>(md->second)) {
+    location.set_file(dyn_cast<DIFile>(
+      dyn_cast<DISubprogram>(
+        dyn_cast<DILocation>(md->second)->getScope())
+      ->getFile())->getFilename().str());
+    location.set_working_directory(
+      dyn_cast<DIFile>(
+        dyn_cast<DISubprogram>(
+          dyn_cast<DILocation>(md->second)
+          ->getScope())->getFile())->getDirectory().str());
+    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  }
+  store_inst->source_location = location;
+  store_inst->type = goto_program_instruction_typet::ASSIGN;
+  namespacet ns(symbol_table);
+  // std::cout << "\n new function \n";
+  // gp.output(std::cout);
+  // std::cout << "\n";
   return gp;
 }
 
@@ -990,6 +1439,9 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     Type *type = &(*dyn_cast<Type>(dyn_cast<PointerType>(dyn_cast<Type>(
       dbgDeclareInst->getAddress()->getType()))->getPointerElementType()));
     MDNode *mdn = dyn_cast<MDNode>(dbgDeclareInst->getVariable());
+    // symbolt &lookup(const irep_idt &identifier);
+    symbol_table->remove(dyn_cast<DIVariable>(mdn)->getName().str());
+
     // errs() << "\033[31;1m" << "DbgDeclareInst information :\n" << "\033[0m";
     switch (dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
       ->getType()))->getPointerElementType()->getTypeID()) {
@@ -1442,13 +1894,14 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
   symbol_tablet *symbol_table) {
-  errs() << "\t\t\tin trans_instruction";
+  errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
   const Instruction *Inst = &I;
   goto_programt gp;
   switch (I.getOpcode()) {
     // Terminators
     case Instruction::Ret : {
-        gp = trans_Ret(Inst);
+      goto_programt ret_gp = trans_Ret(Inst);
+        gp.destructive_append(ret_gp);
         break;
       }
     case Instruction::Br : {
@@ -1494,7 +1947,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 
     // Standard binary operators...
     case Instruction::Add : {
-        gp = trans_Add(Inst);
+        goto_programt add_ins = trans_Add(Inst, *symbol_table);
+        gp.destructive_append(add_ins);
         break;
       }
     case Instruction::FAdd : {
@@ -1502,7 +1956,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::Sub : {
-        gp = trans_Sub(Inst);
+        goto_programt sub_ins = trans_Sub(Inst, *symbol_table);
+        gp.destructive_append(sub_ins);
         break;
       }
     case Instruction::FSub : {
@@ -1510,7 +1965,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::Mul : {
-        gp = trans_Mul(Inst);
+        goto_programt mul_ins = trans_Mul(Inst, *symbol_table);
+        gp.destructive_append(mul_ins);
         break;
       }
     case Instruction::FMul : {
@@ -1518,11 +1974,13 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::UDiv : {
-        gp = trans_UDiv(Inst);
+        goto_programt udiv_ins = trans_UDiv(Inst, *symbol_table);
+        gp.destructive_append(udiv_ins);
         break;
       }
     case Instruction::SDiv : {
-        gp = trans_SDiv(Inst);
+        goto_programt sdiv_ins = trans_SDiv(Inst, *symbol_table);
+        gp.destructive_append(sdiv_ins);
         break;
       }
     case Instruction::FDiv : {
@@ -1530,11 +1988,13 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::URem : {
-        gp = trans_URem(Inst);
+        goto_programt urem_ins = trans_URem(Inst, *symbol_table);
+        gp.destructive_append(urem_ins);
         break;
       }
     case Instruction::SRem : {
-        gp = trans_SRem(Inst);
+        goto_programt srem_ins = trans_URem(Inst, *symbol_table);
+        gp.destructive_append(srem_ins);
         break;
       }
     case Instruction::FRem : {
@@ -1558,7 +2018,7 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 
     // Memory instructions...
     case Instruction::Alloca : {
-        gp = trans_Alloca(Inst);
+        trans_Alloca(Inst, *symbol_table);
         break;
       }
     case Instruction::Load : {
@@ -1566,7 +2026,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::Store : {
-        gp = trans_Store(Inst);
+        goto_programt load_gp = trans_Store(Inst, *symbol_table);
+        gp.destructive_append(load_gp);
         break;
       }
     case Instruction::AtomicCmpXchg : {
@@ -1709,6 +2170,12 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
     default:
         errs() << "Invalid instruction type...\n ";
   }
+  // errs() << "\t\t\tin trans_instruction";
+  gp.update();
+  // namespacet ns(*symbol_table);
+
+  // register_language(new_ansi_c_language);
+  // gp.output(std::cout);
   return gp;
 }
 
@@ -1731,14 +2198,20 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
   // TODO(Rasika): use code_blockt
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
+  // register_language(new_ansi_c_language);
   for (BasicBlock::const_iterator i = b.begin(),
     ie = b.end(); i != ie; ++i) {
       // const Instruction &inst = *i;
       // i -> dump();
       goto_programt goto_instr = trans_instruction(*i, symbol_table);
       gp.destructive_append(goto_instr);
+      gp.update();
       errs() << "";
+      // namespacet ns(*symbol_table);
     }
+
+    // gp.output(std::cout);
+    // errs() << "\t\tin trans_Block\n";
     return gp;
 }
 
@@ -1766,7 +2239,16 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
     const BasicBlock &B = *b;
     goto_programt goto_block = trans_Block(B, symbol_table);
     gp.destructive_append(goto_block);
+    gp.update();
   }
+  gp.add_instruction(END_FUNCTION);
+  gp.update();
+  // namespacet ns(*symbol_table);
+
+  // register_language(new_ansi_c_language);
+  // gp.output(std::cout);
+  // std::cout << "\n...............................................\n";
+  // errs() << "\tin trans_Function\n";
   return gp;
 }
 
@@ -1785,25 +2267,41 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
 
 \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
-  // TODO(Rasika): set the language
   // TODO(Rasika): check for presence of function body
   Module &M = *Mod;
-  errs() << "in trans_Program\n";
+  // errs() << "in trans_Program\n";
   goto_functionst goto_functions;
-  goto_functionst::goto_functiont goto_function;
+  // goto_functionst::goto_functiont goto_function;
   symbol_tablet symbol_table = trans_Globals(Mod);
   // symbol_table.show(std::cout);
   goto_programt gp;
   for (Function &F : M) {
+    // SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+    // F.getAllMetadata(MDs);
+    // if(F.hasMetadata()) {
+    //   MDs[0].second->dump();
+    //   (*dyn_cast<DISubprogram>(MDs[0].second)).getType()->dump();
+    //   dyn_cast<DISubroutineType>((*dyn_cast<DISubprogram>(MDs[0].second)).getType())->getTypeArray()->dump();
+    // }
+    Type *functt = (dyn_cast<Type>(F.getFunctionType()));
+    symbolt fn = symbol_creator::create_FunctionTy(functt);
+    fn.name = dstringt(F.getName().str());
+    symbol_table.add(fn);
     goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >(
         dstringt(F.getName()),
         goto_functionst::goto_functiont()));
-    gp = trans_Function(F, &symbol_table);
+    goto_programt func_gp = trans_Function(F, &symbol_table);
+    // func_gp.ns = namespacet(symbol_table);
+    gp.destructive_append(func_gp);
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.body.swap(gp);
   }
+
   namespacet ns(symbol_table);
+
+  register_language(new_ansi_c_language);
+  // goto_functions.ns = ns;
   errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
 
   // forall_symbols(ns.get_symbol_table().it, ns.get_symbol_table().symbols)
@@ -1813,14 +2311,16 @@ goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
   //   errs() << "\n" << "Symbols:" <<  "\n";
   // }
   ns.get_symbol_table().show(std::cout);
-  errs() << "\nbye";
+  // errs() << "\nbye";
   errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
   errs() << "\ncalling goto_functions.output\n";
   goto_functions.output(ns, std::cout);
-  for (goto_functionst::function_mapt::const_iterator \
+  /*for (goto_functionst::function_mapt::const_iterator \
     it = (goto_functions).function_map.begin(); \
     it != (goto_functions).function_map.end(); it++) {
       errs() << (*it).first.c_str() << "\n";
-  }
+      it->second.body.output(std::cout);
+  }*/
+  errs() << "in trans_Program\n";
   return goto_functions;
 }
