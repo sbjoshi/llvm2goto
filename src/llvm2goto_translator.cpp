@@ -274,10 +274,14 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
@@ -365,10 +369,14 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
@@ -456,10 +464,14 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
@@ -547,10 +559,14 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
@@ -619,10 +635,14 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
@@ -710,10 +730,14 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
@@ -782,10 +806,14 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op1 = symbol_table.lookup(ub->getName().str());
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub+1))) {
+  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  } else {
+    op2 = symbol_table.lookup((ub + 1)->getName().str());
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
