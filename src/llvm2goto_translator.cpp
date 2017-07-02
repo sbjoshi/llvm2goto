@@ -304,25 +304,15 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -414,25 +404,15 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     minus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -524,25 +504,15 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     mult_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -634,25 +604,15 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     div_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -725,25 +685,15 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     div_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -835,25 +785,15 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     mod_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)->getScope())
-        ->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -926,25 +866,15 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   add_inst->code = code_assignt(result.symbol_expr(),
     mod_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
-  // errs() << "\n      Instruction metadata is :";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  // errs() << md;
-  // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
-    location.set_file(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)->getScope())
-        ->getFile())->getFilename().str());
-    location.set_working_directory(
-      dyn_cast<DIFile>(
-        dyn_cast<DISubprogram>(
-          dyn_cast<DILocation>(md->second)
-          ->getScope())->getFile())->getDirectory().str());
-    location.set_line(dyn_cast<DILocation>(md->second)->getLine());
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    // location.set_column(loc->getCol());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
