@@ -271,23 +271,38 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    plus_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -366,23 +381,38 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    minus_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    minus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -461,23 +491,38 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    mult_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    mult_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -556,23 +601,38 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    div_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    div_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -632,23 +692,38 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    div_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    div_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -727,23 +802,38 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    mod_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    mod_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -803,23 +893,38 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
-  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, result.type);
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
-  } else {
-    op1 = symbol_table.lookup(ub->getName().str());
+    } else {
+      op1 = symbol_table.lookup(ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
   }
-  if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-    li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, result.type);
   } else {
-    op2 = symbol_table.lookup((ub + 1)->getName().str());
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup((ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
   }
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   add_inst->code = code_assignt(result.symbol_expr(),
-    mod_exprt(op1.symbol_expr(), op2.symbol_expr()));
+    mod_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
