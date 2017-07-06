@@ -64,6 +64,22 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_Br(const Instruction *I) {
   goto_programt gp;
   errs() << "Br is yet to be mapped \n";
+  I->dump();
+
+  errs() << "\nisUnconditional :" << dyn_cast<BranchInst>(I)->isUnconditional();
+  errs() << "\nisConditional :" << dyn_cast<BranchInst>(I)->isConditional();
+  if(dyn_cast<BranchInst>(I)->isConditional()) {
+    dyn_cast<BranchInst>(I)->getCondition()->dump();
+  }
+  errs() << "\ngetNumSuccessors :" << dyn_cast<BranchInst>(I)->getNumSuccessors();
+  int i = 0;
+  if(dyn_cast<BranchInst>(I)->getNumSuccessors() != 0)
+    while(i < dyn_cast<BranchInst>(I)->getNumSuccessors()){
+      errs() << "\n " << i << "th getSuccessor: ";
+      dyn_cast<BranchInst>(I)->getSuccessor(i)->dump();
+      i++;  
+    }
+
   return gp;
 }
 
@@ -1030,12 +1046,19 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   // errs() << "\n value stored in of 1st operand"
   // << *dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))
   // ->getValue().getRawData();
-  uint64_t val;
+  symbolt symbol = symbol_table.lookup(
+    dyn_cast<StoreInst>(I)->getOperand(1)->getName().str());
+  exprt value_to_store;
   if (dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+    uint64_t val;
     val = dyn_cast<ConstantInt>(
       dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
+    value_to_store = from_integer(val, symbol.type);
   } else {
-    val = 0;
+    errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
+    value_to_store = symbol_table.lookup(
+    dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()).symbol_expr();
+    // val = 0;
   }
   // errs() << "\n signed value stored in of 1st operand" <<
   // dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))
@@ -1044,12 +1067,9 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   // dyn_cast<StoreInst>(I)->getOperand(1)->dump();
   // errs() << " name getOperand1 :" << dyn_cast<StoreInst>(I)
   // ->getOperand(1)->getName();
-  symbolt symbol = symbol_table.lookup(
-    dyn_cast<StoreInst>(I)->getOperand(1)->getName().str());
   goto_programt::targett store_inst = gp.add_instruction();
   store_inst->make_assignment();
-  store_inst->code = code_assignt(symbol.symbol_expr(),
-    from_integer(val, symbol.type));
+  store_inst->code = code_assignt(symbol.symbol_expr(), value_to_store);
   store_inst->function = irep_idt(I->getFunction()->getName().str());
   // errs() << "\n      Instruction metadata is :";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
@@ -1420,6 +1440,82 @@ goto_programt llvm2goto_translator::trans_AddrSpaceCast(
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I) {
   goto_programt gp;
+// DECLARE_TRANSPARENT_OPERAND_ACCESSORS (Value)
+  dyn_cast<ICmpInst>(I)->dump();
+
+  errs() << "\nsigned pred :" << dyn_cast<ICmpInst>(I)->getSignedPredicate();
+  errs() << "\nunsigned pred :" <<  dyn_cast<ICmpInst>(I)->getUnsignedPredicate();
+  errs() << "\nisEquality :" << dyn_cast<ICmpInst>(I)->isEquality();
+  errs() << "\nisCommutative :" << dyn_cast<ICmpInst>(I)->isCommutative();
+  errs() << "\nisRelational :" << dyn_cast<ICmpInst>(I)->isRelational();
+  // errs() << "\nswapOperands :" << dyn_cast<ICmpInst>(I)->swapOperands();
+
+  errs() << "getOpcode :" << dyn_cast<ICmpInst>(I)->getOpcode();
+  errs() << "getPredicate :" << dyn_cast<ICmpInst>(I)->getPredicate();
+  errs() << "getInversePredicate :" << dyn_cast<ICmpInst>(I)->getInversePredicate();
+  errs() << "getSwappedPredicate :" << dyn_cast<ICmpInst>(I)->getSwappedPredicate();
+  errs() << "getSignedPredicate :" << dyn_cast<ICmpInst>(I)->getSignedPredicate();
+
+  errs() << "\nisSigned :" << dyn_cast<ICmpInst>(I)->isSigned();
+  errs() << "\nisUnsigned :" << dyn_cast<ICmpInst>(I)->isUnsigned();
+  errs() << "\nisTrueWhenEqual :" << dyn_cast<ICmpInst>(I)->isTrueWhenEqual();
+  errs() << "\nisFalseWhenEqual :" << dyn_cast<ICmpInst>(I)->isFalseWhenEqual();
+/*
+  goto_programt v;
+  goto_programt::targett v_ins = v.add_instruction();
+  v_ins->make_goto(xy_ins);
+  exprt guard = exprt(ID_lt);
+  guard.copy_to_operands(v1.symbol_expr(), v2.symbol_expr());
+  v_ins->guard = guard;
+*/
+  switch(dyn_cast<ICmpInst>(I)->getPredicate()) {
+    case CmpInst::Predicate::ICMP_EQ : {
+      errs() << "\n ICMP_EQ\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_NE : {
+      errs() << "\n ICMP_NE\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_UGT : {
+      errs() << "\n ICMP_UGT\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_UGE : {
+      errs() << "\n ICMP_UGE\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_ULT : {
+      errs() << "\n ICMP_ULT\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_ULE : {
+      errs() << "\n ICMP_ULE\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_SGT : {
+      errs() << "\n ICMP_SGT\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_SGE : {
+      errs() << "\n ICMP_SGE\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_SLT : {
+      errs() << "\n ICMP_SLT\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_SLE : {
+      errs() << "\n ICMP_SLE\n";
+      break;
+    }
+    case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
+      errs() << "\n BAD_ICMP_PREDICATE\n";
+      break;
+    }
+    default : errs() << "\nNON ICMP\n";
+  };
+
   errs() << "ICmp is yet to be mapped \n";
   return gp;
 }
