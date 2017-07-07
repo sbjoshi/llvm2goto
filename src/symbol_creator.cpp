@@ -19,7 +19,6 @@
 // TODO(Rasika) : Language-specifname.
 // TODO(Rasika) : 128-bit floating point type (112-bit mantissa) FP128Ty
 // TODO(Rasika) : 128-bit floating point type (two 64-bits, PowerPC) PPC_FP128Ty
-
 /*******************************************************************\
 
   Function: symbol_creator::create_HalfTy

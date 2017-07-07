@@ -10,6 +10,7 @@
 #include <utility>
 #include <memory>
 #include <string>
+#include <map>
 
 #include "symbol_creator.h"
 
@@ -21,6 +22,8 @@
 using namespace llvm;
 
 // TODO(Rasika): Take care of srem and sdiv.
+// TODO(Rasika): implement and, or, xor...
+// TODO(Rasika): handle signed comparison.
 
 /*******************************************************************\
 
@@ -36,14 +39,9 @@ using namespace llvm;
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
-//     // goto_programt::targett store_inst = gp.add_instruction();
-//     store_inst->make_assignment();
-//     store_inst->code = code_assignt(symbol.symbol_expr()
-  // , from_integer(val, symbol.type));
-
   goto_programt gp;
-  // goto_programt::targett ret_inst = gp.add_instruction();
-  // ret_inst->make_return();
+  goto_programt::targett ret_inst = gp.add_instruction();
+  ret_inst->make_skip();
   errs() << "Ret is yet to be mapped \n";
   return gp;
 }
@@ -61,25 +59,25 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
     Purpose: Map llvm::Instruction::Br to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Br(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Br(const Instruction *I,
+  symbol_tablet *symbol_table,
+  std::map <const Instruction*, goto_programt::targett>
+  &instruction_target_map) {
   goto_programt gp;
-  errs() << "Br is yet to be mapped \n";
+  // errs() << "Br is yet to be mapped \n";
   I->dump();
-
-  errs() << "\nisUnconditional :" << dyn_cast<BranchInst>(I)->isUnconditional();
-  errs() << "\nisConditional :" << dyn_cast<BranchInst>(I)->isConditional();
-  if(dyn_cast<BranchInst>(I)->isConditional()) {
-    dyn_cast<BranchInst>(I)->getCondition()->dump();
+  if (dyn_cast<BranchInst>(I)->getNumSuccessors() == 2) {
+    goto_programt::targett br_ins = gp.add_instruction();
+    instruction_target_map.insert(std::pair<const Instruction*,
+      goto_programt::targett>(I, br_ins));
+    gp.update();
+  } else {
+    goto_programt::targett br_ins = gp.add_instruction();
+    instruction_target_map.insert(std::pair<const Instruction*,
+      goto_programt::targett>(I, br_ins));
+    gp.update();
   }
-  errs() << "\ngetNumSuccessors :" << dyn_cast<BranchInst>(I)->getNumSuccessors();
-  int i = 0;
-  if(dyn_cast<BranchInst>(I)->getNumSuccessors() != 0)
-    while(i < dyn_cast<BranchInst>(I)->getNumSuccessors()){
-      errs() << "\n " << i << "th getSuccessor: ";
-      dyn_cast<BranchInst>(I)->getSuccessor(i)->dump();
-      i++;  
-    }
-
+  gp.update();
   return gp;
 }
 
@@ -98,7 +96,7 @@ goto_programt llvm2goto_translator::trans_Br(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Switch(const Instruction *I) {
   goto_programt gp;
-  errs() << "Switch is yet to be mapped \n";
+  assert(false && "Switch is yet to be mapped \n");
   return gp;
 }
 
@@ -117,7 +115,7 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I) {
   goto_programt gp;
-  errs() << "IndirectBr is yet to be mapped \n";
+  assert(false && "IndirectBr is yet to be mapped \n");
   return gp;
 }
 
@@ -136,7 +134,7 @@ goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I) {
   goto_programt gp;
-  errs() << "Invoke is yet to be mapped \n";
+  assert(false && "Invoke is yet to be mapped \n");
   return gp;
 }
 
@@ -155,7 +153,7 @@ goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Resume(const Instruction *I) {
   goto_programt gp;
-  errs() << "Resume is yet to be mapped \n";
+  assert(false && "Resume is yet to be mapped \n");
   return gp;
 }
 
@@ -174,7 +172,7 @@ goto_programt llvm2goto_translator::trans_Resume(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I) {
   goto_programt gp;
-  errs() << "Unreachable is yet to be mapped \n";
+  assert(false && "Unreachable is yet to be mapped \n");
   return gp;
 }
 
@@ -193,7 +191,7 @@ goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I) {
   goto_programt gp;
-  errs() << "CleanupRet is yet to be mapped \n";
+  assert(false && "CleanupRet is yet to be mapped \n");
   return gp;
 }
 
@@ -212,7 +210,7 @@ goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I) {
   goto_programt gp;
-  errs() << "CatchRet is yet to be mapped \n";
+  assert(false && "CatchRet is yet to be mapped \n");
   return gp;
 }
 
@@ -231,7 +229,7 @@ goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I) {
   goto_programt gp;
-  errs() << "CatchPad is yet to be mapped \n";
+  assert(false && "CatchPad is yet to be mapped \n");
   return gp;
 }
 
@@ -250,7 +248,7 @@ goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I) {
   goto_programt gp;
-  errs() << "CatchSwitch is yet to be mapped \n";
+  assert(false && "CatchSwitch is yet to be mapped \n");
   return gp;
 }
 
@@ -350,7 +348,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I) {
   goto_programt gp;
-  errs() << "FAdd is yet to be mapped \n";
+  assert(false && "FAdd is yet to be mapped \n");
   return gp;
 }
 
@@ -450,7 +448,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FSub(const Instruction *I) {
   goto_programt gp;
-  errs() << "FSub is yet to be mapped \n";
+  assert(false && "FSub is yet to be mapped \n");
   return gp;
 }
 
@@ -550,7 +548,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FMul(const Instruction *I) {
   goto_programt gp;
-  errs() << "FMul is yet to be mapped \n";
+  assert(false && "FMul is yet to be mapped \n");
   return gp;
 }
 
@@ -731,7 +729,7 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I) {
   goto_programt gp;
-  errs() << "FDiv is yet to be mapped \n";
+  assert(false && "FDiv is yet to be mapped \n");
   return gp;
 }
 
@@ -912,7 +910,7 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FRem(const Instruction *I) {
   goto_programt gp;
-  errs() << "FRem is yet to be mapped \n";
+  assert(false && "FRem is yet to be mapped \n");
   return gp;
 }
 
@@ -931,7 +929,7 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_And(const Instruction *I) {
   goto_programt gp;
-  errs() << "And is yet to be mapped \n";
+  assert(false && "And is yet to be mapped \n");
   return gp;
 }
 
@@ -950,7 +948,7 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Or(const Instruction *I) {
   goto_programt gp;
-  errs() << "Or is yet to be mapped \n";
+  assert(false && "Or is yet to be mapped \n");
   return gp;
 }
 
@@ -969,7 +967,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Xor(const Instruction *I) {
   goto_programt gp;
-  errs() << "Xor is yet to be mapped \n";
+  assert(false && "Xor is yet to be mapped \n");
   return gp;
 }
 
@@ -1039,34 +1037,31 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbol_tablet &symbol_table) {
-  // errs() << "Store is yet to be mapped \n";
+  // errs() << "few things need to be handled in Store Instruction \n";
   goto_programt gp;
-  // errs() << " getOperand0 :";
-  // dyn_cast<StoreInst>(I)->getOperand(0)->dump();
-  // errs() << "\n value stored in of 1st operand"
-  // << *dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))
-  // ->getValue().getRawData();
   symbolt symbol = symbol_table.lookup(
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str());
   exprt value_to_store;
-  if (dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))) {
-    uint64_t val;
-    val = dyn_cast<ConstantInt>(
+  if (dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+    if (dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+      uint64_t val = dyn_cast<ConstantInt>(
       dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
-    value_to_store = from_integer(val, symbol.type);
+      value_to_store = from_integer(val, symbol.type);
+    } else {
+      assert(false && "This constant type is not handled");
+    }
   } else {
-    errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
-    value_to_store = symbol_table.lookup(
-    dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()).symbol_expr();
-    // val = 0;
+    if (dyn_cast<StoreInst>(I)->getOperand(0)->hasName()) {
+      errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
+      // assert(false && "stop here\n");
+      value_to_store = symbol_table.lookup(
+      dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()).symbol_expr();
+    } else if (dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+      std::string name = dyn_cast<LoadInst>(
+        dyn_cast<StoreInst>(I)->getOperand(0))->getOperand(0)->getName().str();
+      value_to_store = symbol_table.lookup(name).symbol_expr();
+    }
   }
-  // errs() << "\n signed value stored in of 1st operand" <<
-  // dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))
-  // ->getSExtValue();
-  // errs() << " getOperand1 :";
-  // dyn_cast<StoreInst>(I)->getOperand(1)->dump();
-  // errs() << " name getOperand1 :" << dyn_cast<StoreInst>(I)
-  // ->getOperand(1)->getName();
   goto_programt::targett store_inst = gp.add_instruction();
   store_inst->make_assignment();
   store_inst->code = code_assignt(symbol.symbol_expr(), value_to_store);
@@ -1078,7 +1073,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   source_locationt location;
   // errs() << md;
   // md->second->dump();
-  if (dyn_cast<DILocation>(md->second)) {
+  // TODO(Rasika) : use getDILoc()
+  /*if (dyn_cast<DILocation>(md->second)) {
     location.set_file(dyn_cast<DIFile>(
       dyn_cast<DISubprogram>(
         dyn_cast<DILocation>(md->second)->getScope())
@@ -1089,13 +1085,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
           dyn_cast<DILocation>(md->second)
           ->getScope())->getFile())->getDirectory().str());
     location.set_line(dyn_cast<DILocation>(md->second)->getLine());
-  }
+  }*/
   store_inst->source_location = location;
   store_inst->type = goto_program_instruction_typet::ASSIGN;
   namespacet ns(symbol_table);
-  // std::cout << "\n new function \n";
-  // gp.output(std::cout);
-  // std::cout << "\n";
   return gp;
 }
 
@@ -1115,7 +1108,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
 goto_programt llvm2goto_translator::trans_AtomicCmpXchg(
   const Instruction *I) {
   goto_programt gp;
-  errs() << "AtomicCmpXchg is yet to be mapped \n";
+  assert(false && "AtomicCmpXchg is yet to be mapped \n");
   return gp;
 }
 
@@ -1134,7 +1127,7 @@ goto_programt llvm2goto_translator::trans_AtomicCmpXchg(
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I) {
   goto_programt gp;
-  errs() << "AtomicRMW is yet to be mapped \n";
+  assert(false && "AtomicRMW is yet to be mapped \n");
   return gp;
 }
 
@@ -1153,7 +1146,7 @@ goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
   goto_programt gp;
-  errs() << "Fence is yet to be mapped \n";
+  assert(false && "Fence is yet to be mapped \n");
   return gp;
 }
 
@@ -1173,7 +1166,7 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_GetElementPtr(
   const Instruction *I) {
   goto_programt gp;
-  errs() << "GetElementPtr is yet to be mapped \n";
+  assert(false && "GetElementPtr is yet to be mapped \n");
   return gp;
 }
 
@@ -1192,7 +1185,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I) {
   goto_programt gp;
-  errs() << "Trunc is yet to be mapped \n";
+  assert(false && "Trunc is yet to be mapped \n");
   return gp;
 }
 
@@ -1211,7 +1204,7 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
   goto_programt gp;
-  errs() << "ZExt is yet to be mapped \n";
+  assert(false && "ZExt is yet to be mapped \n");
   return gp;
 }
 
@@ -1230,7 +1223,7 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SExt(const Instruction *I) {
   goto_programt gp;
-  errs() << "SExt is yet to be mapped \n";
+  assert(false && "SExt is yet to be mapped \n");
   return gp;
 }
 
@@ -1249,7 +1242,7 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I) {
   goto_programt gp;
-  errs() << "FPTrunc is yet to be mapped \n";
+  assert(false && "FPTrunc is yet to be mapped \n");
   return gp;
 }
 
@@ -1268,7 +1261,7 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I) {
   goto_programt gp;
-  errs() << "FPExt is yet to be mapped \n";
+  assert(false && "FPExt is yet to be mapped \n");
   return gp;
 }
 
@@ -1287,7 +1280,7 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I) {
   goto_programt gp;
-  errs() << "FPToUI is yet to be mapped \n";
+  assert(false && "FPToUI is yet to be mapped \n");
   return gp;
 }
 
@@ -1306,7 +1299,7 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I) {
   goto_programt gp;
-  errs() << "FPToSI is yet to be mapped \n";
+  assert(false && "FPToSI is yet to be mapped \n");
   return gp;
 }
 
@@ -1325,7 +1318,7 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I) {
   goto_programt gp;
-  errs() << "UIToFP is yet to be mapped \n";
+  assert(false && "UIToFP is yet to be mapped \n");
   return gp;
 }
 
@@ -1344,7 +1337,7 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I) {
   goto_programt gp;
-  errs() << "SIToFP is yet to be mapped \n";
+  assert(false && "SIToFP is yet to be mapped \n");
   return gp;
 }
 
@@ -1363,7 +1356,7 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
   goto_programt gp;
-  errs() << "IntToPtr is yet to be mapped \n";
+  assert(false && "IntToPtr is yet to be mapped \n");
   return gp;
 }
 
@@ -1382,7 +1375,7 @@ goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
   goto_programt gp;
-  errs() << "PtrToInt is yet to be mapped \n";
+  assert(false && "PtrToInt is yet to be mapped \n");
   return gp;
 }
 
@@ -1401,7 +1394,7 @@ goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I) {
   goto_programt gp;
-  errs() << "BitCast is yet to be mapped \n";
+  assert(false && "BitCast is yet to be mapped \n");
   return gp;
 }
 
@@ -1421,8 +1414,201 @@ goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_AddrSpaceCast(
   const Instruction *I) {
   goto_programt gp;
-  errs() << "AddrSpaceCast is yet to be mapped \n";
+  assert(false && "AddrSpaceCast is yet to be mapped \n");
   return gp;
+}
+
+ /*******************************************************************\
+
+   Function: llvm2goto_translator::trans_Cmp
+
+    Inputs:
+     I - Pointer to the llvm instruction.
+
+    Outputs: Object of goto_programt containing goto instruction corresponding to
+             llvm::Instruction::ICmp.
+
+    Purpose: Map llvm::Instruction::ICmp to corresponding goto instruction.
+
+\*******************************************************************/
+exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
+  symbol_tablet *symbol_table) {
+  exprt condition;
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  exprt opnd1, opnd2;
+  if (dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
+    typet type = symbol_creator::create_type(
+      dyn_cast<ConstantInt>(*ub)->getType());
+    dyn_cast<ConstantInt>(*ub)->getType()->dump();
+    opnd1 = from_integer(val, type);
+  } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    opnd1 = symbol_table->lookup(
+      li->getOperand(0)->getName().str()).symbol_expr();
+  } else {
+    opnd1 = symbol_table->lookup(ub->getName().str()).symbol_expr();
+  }
+
+  if (dyn_cast<ConstantInt>(*(ub + 1))) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = symbol_creator::create_type(
+      dyn_cast<ConstantInt>(*(ub+1))->getType());
+    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
+    opnd2 = from_integer(val, type);
+  } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    li->getOperand(0)->dump();
+    opnd2 = symbol_table->lookup(
+      li->getOperand(0)->getName().str()).symbol_expr();
+  } else {
+    opnd2 = symbol_table->lookup((ub + 1)->getName().str()).symbol_expr();
+  }
+
+
+  switch (dyn_cast<ICmpInst>(I)->getPredicate()) {
+    case CmpInst::Predicate::ICMP_EQ : {
+      condition = equal_exprt(opnd1, opnd2);
+      errs() << "\n ICMP_EQ\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_NE : {
+      condition = notequal_exprt(opnd1, opnd2);
+      errs() << "\n ICMP_NE\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_UGT :
+    case CmpInst::Predicate::ICMP_SGT : {
+      errs() << "\n ICMP_GT\n";
+      condition = exprt(ID_gt);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::ICMP_UGE : {
+    case CmpInst::Predicate::ICMP_SGE :
+      errs() << "\n ICMP_GE\n";
+      condition = exprt(ID_ge);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::ICMP_ULT :
+    case CmpInst::Predicate::ICMP_SLT : {
+      errs() << "\n ICMP_LT\n";
+      condition = exprt(ID_lt);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::ICMP_ULE :
+    case CmpInst::Predicate::ICMP_SLE : {
+      errs() << "\n ICMP_LE\n";
+      condition = exprt(ID_le);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
+      errs() << "\n BAD_ICMP_PREDICATE\n";
+      break;
+    }
+    default : errs() << "\nNON ICMP\n";
+  }
+
+  // errs() << "ICmp is yet to be mapped \n";
+  return condition;
+}
+
+ /*******************************************************************\
+
+   Function: llvm2goto_translator::trans_Inverse_Cmp
+
+    Inputs:
+     I - Pointer to the llvm instruction.
+
+    Outputs: Object of goto_programt containing goto instruction corresponding to
+             llvm::Instruction::ICmp.
+
+    Purpose: Map llvm::Instruction::ICmp to corresponding goto instruction.
+
+\*******************************************************************/
+exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
+  symbol_tablet *symbol_table) {
+  exprt condition;
+  I->dump();
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  exprt opnd1, opnd2;
+  if (dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
+    typet type = symbol_creator::create_type(
+      dyn_cast<ConstantInt>(*ub)->getType());
+    dyn_cast<ConstantInt>(*ub)->getType()->dump();
+    opnd1 = from_integer(val, type);
+  } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    opnd1 = symbol_table->lookup(
+      li->getOperand(0)->getName().str()).symbol_expr();
+  } else {
+    opnd1 = symbol_table->lookup(ub->getName().str()).symbol_expr();
+  }
+
+  if (dyn_cast<ConstantInt>(*(ub + 1))) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = symbol_creator::create_type(
+      dyn_cast<ConstantInt>(*(ub+1))->getType());
+    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
+    opnd2 = from_integer(val, type);
+  } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    li->getOperand(0)->dump();
+    opnd2 = symbol_table->lookup(
+      li->getOperand(0)->getName().str()).symbol_expr();
+  } else {
+    opnd2 = symbol_table->lookup((ub + 1)->getName().str()).symbol_expr();
+  }
+  switch (dyn_cast<ICmpInst>(I)->getInversePredicate()) {
+    case CmpInst::Predicate::ICMP_EQ : {
+      condition = equal_exprt(opnd1, opnd2);
+      errs() << "\n ICMP_EQ\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_NE : {
+      condition = notequal_exprt(opnd1, opnd2);
+      errs() << "\n ICMP_NE\n";
+      break;
+    }
+    case CmpInst::Predicate::ICMP_UGT :
+    case CmpInst::Predicate::ICMP_SGT : {
+      errs() << "\n ICMP_GT\n";
+      condition = exprt(ID_gt);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::ICMP_UGE : {
+    case CmpInst::Predicate::ICMP_SGE :
+      errs() << "\n ICMP_GE\n";
+      condition = exprt(ID_ge);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::ICMP_ULT :
+    case CmpInst::Predicate::ICMP_SLT : {
+      errs() << "\n ICMP_LT\n";
+      condition = exprt(ID_lt);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::ICMP_ULE :
+    case CmpInst::Predicate::ICMP_SLE : {
+      errs() << "\n ICMP_LE\n";
+      condition = exprt(ID_le);
+      condition.copy_to_operands(opnd1, opnd2);
+      break;
+    }
+    case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
+      errs() << "\n BAD_ICMP_PREDICATE\n";
+      break;
+    }
+    default : errs() << "\nNON ICMP\n";
+  }
+
+  errs() << "ICmp is yet to be mapped \n";
+  return condition;
 }
 
  /*******************************************************************\
@@ -1440,83 +1626,9 @@ goto_programt llvm2goto_translator::trans_AddrSpaceCast(
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I) {
   goto_programt gp;
-// DECLARE_TRANSPARENT_OPERAND_ACCESSORS (Value)
-  dyn_cast<ICmpInst>(I)->dump();
-
-  errs() << "\nsigned pred :" << dyn_cast<ICmpInst>(I)->getSignedPredicate();
-  errs() << "\nunsigned pred :" <<  dyn_cast<ICmpInst>(I)->getUnsignedPredicate();
-  errs() << "\nisEquality :" << dyn_cast<ICmpInst>(I)->isEquality();
-  errs() << "\nisCommutative :" << dyn_cast<ICmpInst>(I)->isCommutative();
-  errs() << "\nisRelational :" << dyn_cast<ICmpInst>(I)->isRelational();
-  // errs() << "\nswapOperands :" << dyn_cast<ICmpInst>(I)->swapOperands();
-
-  errs() << "getOpcode :" << dyn_cast<ICmpInst>(I)->getOpcode();
-  errs() << "getPredicate :" << dyn_cast<ICmpInst>(I)->getPredicate();
-  errs() << "getInversePredicate :" << dyn_cast<ICmpInst>(I)->getInversePredicate();
-  errs() << "getSwappedPredicate :" << dyn_cast<ICmpInst>(I)->getSwappedPredicate();
-  errs() << "getSignedPredicate :" << dyn_cast<ICmpInst>(I)->getSignedPredicate();
-
-  errs() << "\nisSigned :" << dyn_cast<ICmpInst>(I)->isSigned();
-  errs() << "\nisUnsigned :" << dyn_cast<ICmpInst>(I)->isUnsigned();
-  errs() << "\nisTrueWhenEqual :" << dyn_cast<ICmpInst>(I)->isTrueWhenEqual();
-  errs() << "\nisFalseWhenEqual :" << dyn_cast<ICmpInst>(I)->isFalseWhenEqual();
-/*
-  goto_programt v;
-  goto_programt::targett v_ins = v.add_instruction();
-  v_ins->make_goto(xy_ins);
-  exprt guard = exprt(ID_lt);
-  guard.copy_to_operands(v1.symbol_expr(), v2.symbol_expr());
-  v_ins->guard = guard;
-*/
-  switch(dyn_cast<ICmpInst>(I)->getPredicate()) {
-    case CmpInst::Predicate::ICMP_EQ : {
-      errs() << "\n ICMP_EQ\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_NE : {
-      errs() << "\n ICMP_NE\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_UGT : {
-      errs() << "\n ICMP_UGT\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_UGE : {
-      errs() << "\n ICMP_UGE\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_ULT : {
-      errs() << "\n ICMP_ULT\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_ULE : {
-      errs() << "\n ICMP_ULE\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_SGT : {
-      errs() << "\n ICMP_SGT\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_SGE : {
-      errs() << "\n ICMP_SGE\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_SLT : {
-      errs() << "\n ICMP_SLT\n";
-      break;
-    }
-    case CmpInst::Predicate::ICMP_SLE : {
-      errs() << "\n ICMP_SLE\n";
-      break;
-    }
-    case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
-      errs() << "\n BAD_ICMP_PREDICATE\n";
-      break;
-    }
-    default : errs() << "\nNON ICMP\n";
-  };
-
-  errs() << "ICmp is yet to be mapped \n";
+  goto_programt::targett Icmp_inst = gp.add_instruction();
+  Icmp_inst->make_skip();
+  // errs() << "ICmp is yet to be mapped \n";
   return gp;
 }
 
@@ -1535,7 +1647,9 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I) {
   goto_programt gp;
-  errs() << "FCmp is yet to be mapped \n";
+  goto_programt::targett Icmp_inst = gp.add_instruction();
+  Icmp_inst->make_skip();
+  // errs() << "FCmp is yet to be mapped \n";
   return gp;
 }
 
@@ -1554,7 +1668,7 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_PHI(const Instruction *I) {
   goto_programt gp;
-  errs() << "PHI is yet to be mapped \n";
+  assert(false && "PHI is yet to be mapped \n");
   return gp;
 }
 
@@ -1573,7 +1687,7 @@ goto_programt llvm2goto_translator::trans_PHI(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Select(const Instruction *I) {
   goto_programt gp;
-  errs() << "Select is yet to be mapped \n";
+  assert(false && "Select is yet to be mapped \n");
   return gp;
 }
 
@@ -1696,7 +1810,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Shl(const Instruction *I) {
   goto_programt gp;
-  errs() << "Shl is yet to be mapped \n";
+  assert(false && "Shl is yet to be mapped \n");
   return gp;
 }
 
@@ -1715,7 +1829,7 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_LShr(const Instruction *I) {
   goto_programt gp;
-  errs() << "LShr is yet to be mapped \n";
+  assert(false && "LShr is yet to be mapped \n");
   return gp;
 }
 
@@ -1734,7 +1848,7 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_AShr(const Instruction *I) {
   goto_programt gp;
-  errs() << "AShr is yet to be mapped \n";
+  assert(false && "AShr is yet to be mapped \n");
   return gp;
 }
 
@@ -1753,7 +1867,7 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I) {
   goto_programt gp;
-  errs() << "VAArg is yet to be mapped \n";
+  assert(false && "VAArg is yet to be mapped \n");
   return gp;
 }
 
@@ -1773,7 +1887,7 @@ goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_ExtractElement(
   const Instruction *I) {
   goto_programt gp;
-  errs() << "ExtractElement is yet to be mapped \n";
+  assert(false && "ExtractElement is yet to be mapped \n");
   return gp;
 }
 
@@ -1793,7 +1907,7 @@ goto_programt llvm2goto_translator::trans_ExtractElement(
 goto_programt llvm2goto_translator::trans_InsertElement(
   const Instruction *I) {
   goto_programt gp;
-  errs() << "InsertElement is yet to be mapped \n";
+  assert(false && "InsertElement is yet to be mapped \n");
   return gp;
 }
 
@@ -1813,7 +1927,7 @@ goto_programt llvm2goto_translator::trans_InsertElement(
 goto_programt llvm2goto_translator::trans_ShuffleVector(
   const Instruction *I) {
   goto_programt gp;
-  errs() << "ShuffleVector is yet to be mapped \n";
+  assert(false && "ShuffleVector is yet to be mapped \n");
   return gp;
 }
 
@@ -1832,7 +1946,7 @@ goto_programt llvm2goto_translator::trans_ShuffleVector(
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I) {
   goto_programt gp;
-  errs() << "ExtractValue is yet to be mapped \n";
+  assert(false && "ExtractValue is yet to be mapped \n");
   return gp;
 }
 
@@ -1851,7 +1965,7 @@ goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I) {
   goto_programt gp;
-  errs() << "InsertValue is yet to be mapped \n";
+  assert(false && "InsertValue is yet to be mapped \n");
   return gp;
 }
 
@@ -1870,7 +1984,7 @@ goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I) {
   goto_programt gp;
-  errs() << "LandingPad is yet to be mapped \n";
+  assert(false && "LandingPad is yet to be mapped \n");
   return gp;
 }
 
@@ -1889,7 +2003,7 @@ goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
   goto_programt gp;
-  errs() << "CleanupPad is yet to be mapped \n";
+  assert(false && "CleanupPad is yet to be mapped \n");
   return gp;
 }
 
@@ -2052,7 +2166,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
-  symbol_tablet *symbol_table) {
+  symbol_tablet *symbol_table,
+  std::map <const Instruction*, goto_programt::targett>
+  &instruction_target_map) {
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
   const Instruction *Inst = &I;
   goto_programt gp;
@@ -2064,7 +2180,9 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::Br : {
-        gp = trans_Br(Inst);
+      goto_programt br_gp = trans_Br(Inst, symbol_table,
+        instruction_target_map);
+        gp.destructive_append(br_gp);
         break;
       }
     case Instruction::Switch : {
@@ -2262,11 +2380,13 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 
     // Other instructions...
     case Instruction::ICmp : {
-        gp = trans_ICmp(Inst);
+        goto_programt Icmp_inst = trans_ICmp(Inst);
+        gp.destructive_append(Icmp_inst);
         break;
       }
     case Instruction::FCmp : {
-        gp = trans_FCmp(Inst);
+        goto_programt Fcmp_inst = trans_FCmp(Inst);
+        gp.destructive_append(Fcmp_inst);
         break;
       }
     case Instruction::PHI : {
@@ -2353,7 +2473,9 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
-  symbol_tablet *symbol_table) {
+  symbol_tablet *symbol_table,
+  std::map <const Instruction*, goto_programt::targett>
+  &instruction_target_map) {
   // TODO(Rasika): use code_blockt
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
@@ -2362,7 +2484,8 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
     ie = b.end(); i != ie; ++i) {
       // const Instruction &inst = *i;
       // i -> dump();
-      goto_programt goto_instr = trans_instruction(*i, symbol_table);
+      goto_programt goto_instr = trans_instruction(*i, symbol_table,
+        instruction_target_map);
       gp.destructive_append(goto_instr);
       gp.update();
       errs() << "";
@@ -2393,14 +2516,27 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   // TODO(Rasika): check if definition
   //  is available or not, in built functions...
   goto_programt gp;
+  goto_programt::targett hi;
+  std::map <const BasicBlock*, goto_programt::targett> block_target_map;
+  std::map <const Instruction*, goto_programt::targett> instruction_target_map;
   errs() << "\tin trans_Function\n";
-  for (Function::const_iterator b = F.begin(), be = F.end(); b != be; ++b) {
+  Function::const_iterator b = F.begin(), be = F.end();
+  for (; b != be; ++b) {
     const BasicBlock &B = *b;
-    goto_programt goto_block = trans_Block(B, symbol_table);
+    goto_programt goto_block = trans_Block(B, symbol_table,
+      instruction_target_map);
+    register_language(new_ansi_c_language);
+    goto_programt::targett target = goto_block.instructions.begin();
+    // goto_block.output(std::cout);
     gp.destructive_append(goto_block);
     gp.update();
+    block_target_map.insert(
+      std::pair<const BasicBlock*, goto_programt::targett>(&(*b), target));
   }
   gp.add_instruction(END_FUNCTION);
+  errs() << "\n\n *********************************************\n";
+  set_branches(symbol_table, block_target_map, instruction_target_map);
+  errs() << "\n\n *********************************************\n";
   gp.update();
   // namespacet ns(*symbol_table);
 
@@ -2409,6 +2545,64 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   // std::cout << "\n...............................................\n";
   // errs() << "\tin trans_Function\n";
   return gp;
+}
+
+/*******************************************************************\
+
+   Function: llvm2goto_translator::set_branches
+
+    Inputs:
+     I - Pointer to the llvm module.
+
+    Outputs: Object of goto_functionst containing goto function corresponding
+             to given llvm function.
+
+    Purpose: Translate llvm module into goto functions. Call required functions
+             e.g. trans_Gloabals, trans_Block, etc.
+
+\*******************************************************************/
+
+void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
+  std::map <const BasicBlock*, goto_programt::targett> block_target_map,
+  std::map <const Instruction*, goto_programt::targett>
+  instruction_target_map) {
+  for (auto i = instruction_target_map.begin(),
+    ie = instruction_target_map.end(); i != ie; i++) {
+    // (*i).first->dump();
+    if (dyn_cast<BranchInst>((*i).first)->getNumSuccessors() == 2) {
+      goto_programt::targett then_part;
+      exprt guard;
+      if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
+        guard = trans_Inverse_Cmp(
+          dyn_cast<Instruction>(
+            dyn_cast<BranchInst>((*i).first)->getCondition()), symbol_table);
+      } else {
+        guard = true_exprt();
+      }
+      std::map <const BasicBlock*, goto_programt::targett>::iterator then_pair
+      = block_target_map.find(
+        dyn_cast<BasicBlock>(
+          dyn_cast<BranchInst>((*i).first)->getSuccessor(1)));
+      then_part = (*then_pair).second;
+      (*i).second->make_goto(then_part, guard);
+    } else {
+      goto_programt::targett then_part;
+      exprt guard;
+      if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
+        guard = trans_Cmp(
+          dyn_cast<Instruction>(
+            dyn_cast<BranchInst>((*i).first)->getCondition()), symbol_table);
+      } else {
+        guard = true_exprt();
+      }
+      std::map <const BasicBlock*, goto_programt::targett>::iterator then_pair
+      = block_target_map.find(
+        dyn_cast<BasicBlock>(
+          dyn_cast<BranchInst>((*i).first)->getSuccessor(0)));
+      then_part = (*then_pair).second;
+      (*i).second->make_goto(then_part, guard);
+    }
+  }
 }
 
 /*******************************************************************\

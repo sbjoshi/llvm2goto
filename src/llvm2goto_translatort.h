@@ -25,7 +25,10 @@ class llvm2goto_translatort {
  public:
     // symbol_tablet symbol_table;
     virtual goto_programt trans_Ret(const Instruction *I) = 0;
-    virtual goto_programt trans_Br(const Instruction *I) = 0;
+    virtual goto_programt trans_Br(const Instruction *I,
+        symbol_tablet *symbol_table,
+        std::map <const Instruction*, goto_programt::targett>
+        &instruction_target_map) = 0;
     virtual goto_programt trans_Switch(const Instruction *I) = 0;
     virtual goto_programt trans_IndirectBr(const Instruction *I) = 0;
     virtual goto_programt trans_Invoke(const Instruction *I) = 0;
@@ -79,6 +82,10 @@ class llvm2goto_translatort {
     virtual goto_programt trans_PtrToInt(const Instruction *I) = 0;
     virtual goto_programt trans_BitCast(const Instruction *I) = 0;
     virtual goto_programt trans_AddrSpaceCast(const Instruction *I) = 0;
+    virtual exprt trans_Cmp(const Instruction *I,
+        symbol_tablet *symbol_table) = 0;
+    virtual exprt trans_Inverse_Cmp(const Instruction *I,
+        symbol_tablet *symbol_table) = 0;
     virtual goto_programt trans_ICmp(const Instruction *I) = 0;
     virtual goto_programt trans_FCmp(const Instruction *I) = 0;
     virtual goto_programt trans_PHI(const Instruction *I) = 0;
@@ -98,11 +105,19 @@ class llvm2goto_translatort {
     virtual goto_programt trans_CleanupPad(const Instruction *I) = 0;
     virtual symbol_tablet trans_Globals(const Module *Mod) = 0;
     virtual goto_programt trans_instruction(const Instruction &I,
-        symbol_tablet *symbol_table) = 0;
+        symbol_tablet *symbol_table,
+        std::map <const Instruction*, goto_programt::targett>
+        &instruction_target_map) = 0;
     virtual goto_programt trans_Block(const BasicBlock &b,
-        symbol_tablet *symbol_table) = 0;
+        symbol_tablet *symbol_table,
+        std::map <const Instruction*, goto_programt::targett>
+        &instruction_target_map) = 0;
     virtual goto_programt trans_Function(const Function &F,
         symbol_tablet *symbol_table) = 0;
+    virtual void set_branches(symbol_tablet *symbol_table,
+  std::map <const BasicBlock*, goto_programt::targett> block_target_map,
+  std::map <const Instruction*, goto_programt::targett> instruction_target_map)
+    = 0;
     virtual goto_functionst trans_Program(Module *Mod) = 0;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATORT_H_"
