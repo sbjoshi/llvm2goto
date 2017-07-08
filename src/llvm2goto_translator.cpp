@@ -281,6 +281,9 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -381,6 +384,9 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_sub = gp.add_instruction();
+    decl_sub->make_decl();
+    decl_sub->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -481,6 +487,9 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_mul = gp.add_instruction();
+    decl_mul->make_decl();
+    decl_mul->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -581,6 +590,9 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_div = gp.add_instruction();
+    decl_div->make_decl();
+    decl_div->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -662,6 +674,9 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_div = gp.add_instruction();
+    decl_div->make_decl();
+    decl_div->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -762,6 +777,9 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_rem = gp.add_instruction();
+    decl_rem->make_decl();
+    decl_rem->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -843,6 +861,9 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     symbol.name = I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
+    goto_programt::targett decl_rem = gp.add_instruction();
+    decl_rem->make_decl();
+    decl_rem->code=code_declt(symbol.symbol_expr());
   }
   symbolt result = symbol_table.lookup(I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -993,6 +1014,9 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
     dyn_cast<AllocaInst>(I)->getAllocatedType());
   symbol.name = I->getName().str();
   symbol_table.add(symbol);
+  goto_programt::targett decl_alloc = gp.add_instruction();
+    decl_alloc->make_decl();
+    decl_alloc->code=code_declt(symbol.symbol_expr());
   return gp;
 }
 
@@ -1716,71 +1740,132 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     symbol_table->remove(dyn_cast<DIVariable>(mdn)->getName().str());
 
     // errs() << "\033[31;1m" << "DbgDeclareInst information :\n" << "\033[0m";
+    symbolt symbol;
     switch (dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
       ->getType()))->getPointerElementType()->getTypeID()) {
       // 16-bit floating point type
       case llvm::Type::TypeID::HalfTyID : {
         errs() << "\nHalf type";
-        symbol_table->add(symbol_creator::create_HalfTy(type, mdn));
+        symbol = symbol_creator::create_HalfTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
       }
       // 32-bit floating point type
       case llvm::Type::TypeID::FloatTyID : {
         errs() << "\nFloat type";
-        symbol_table->add(symbol_creator::create_FloatTy(type, mdn));
+        symbol = symbol_creator::create_FloatTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         break;
       }
       // 64-bit floating point type
       case llvm::Type::TypeID::DoubleTyID : {
-        symbol_table->add(symbol_creator::create_DoubleTy(type, mdn));
+        symbol = symbol_creator::create_DoubleTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nDouble type";
         break;
       }
       // 80-bit floating point type (X87)
       case llvm::Type::TypeID::X86_FP80TyID : {
-        symbol_table->add(symbol_creator::create_X86_FP80Ty(type, mdn));
+        symbol = symbol_creator::create_X86_FP80Ty(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nX86_FP80 type";
         break;
       }
       // 128-bit floating point type (112-bit mantissa)
       case llvm::Type::TypeID::FP128TyID : {
-        symbol_table->add(symbol_creator::create_FP128Ty(type, mdn));
+        symbol = symbol_creator::create_FP128Ty(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nFP128 type";
         break;
       }
       // 128-bit floating point type (two 64-bits, PowerPC)
       case llvm::Type::TypeID::PPC_FP128TyID : {
-        symbol_table->add(symbol_creator::create_PPC_FP128Ty(type, mdn));
+        symbol = symbol_creator::create_PPC_FP128Ty(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nPPC_FP128 type";
         break;
       }
       case llvm::Type::TypeID::IntegerTyID : {
-        symbol_table->add(symbol_creator::create_IntegerTy(type, mdn));
+        symbol = symbol_creator::create_IntegerTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nInteger type";
         break;
       }
       case llvm::Type::TypeID::StructTyID : {
         // const MDNode *dit = dyn_cast<MDNode>(*mmd);
-        symbol_table->add(symbol_creator::create_StructTy(type, mdn));
+        symbol = symbol_creator::create_StructTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nStruct type";
         break;
       }
       case llvm::Type::TypeID::ArrayTyID : {
-        symbol_table->add(symbol_creator::create_ArrayTy(type, mdn));
+        symbol = symbol_creator::create_ArrayTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nArray type";
         break;
       }
       case llvm::Type::TypeID::PointerTyID : {
-        symbol_table->add(symbol_creator::create_PointerTy(type, mdn));
+        symbol = symbol_creator::create_PointerTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nPointer type";
         break;
       }
       case llvm::Type::TypeID::VectorTyID : {
-        symbol_table->add(symbol_creator::create_VectorTy(type, mdn));
+        symbol = symbol_creator::create_VectorTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         errs() << "\nVector type";
         break;
       }
       case llvm::Type::TypeID::X86_MMXTyID : {
-        symbol_table->add(symbol_creator::create_X86_MMXTy(type, mdn));
+        symbol = symbol_creator::create_X86_MMXTy(type, mdn);
+        symbol_table->add(symbol);
+        goto_programt::targett decl_symbol = gp.add_instruction();
+        decl_symbol->make_decl();
+        decl_symbol->code=code_declt(symbol.symbol_expr());
+        decl_symbol->source_location = symbol.location;
         break;
       }
       case llvm::Type::TypeID::VoidTyID :
@@ -2398,7 +2483,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::Call : {
-        gp = trans_Call(Inst, symbol_table);
+        goto_programt Call_Inst = trans_Call(Inst, symbol_table);
+        gp.destructive_append(Call_Inst);
         break;
       }
     case Instruction::Shl : {
@@ -2649,6 +2735,8 @@ goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
     gp.destructive_append(func_gp);
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.body.swap(gp);
+    (*goto_functions.function_map.find(dstringt(F.getName()))).
+    second.type = to_code_type(fn.type);
   }
 
   namespacet ns(symbol_table);
