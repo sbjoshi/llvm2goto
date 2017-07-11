@@ -1898,7 +1898,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         default:
         errs() << "\ninvalid type for global variable";
     }
-  }/* else {
+  } else {
     const Function *function = dyn_cast<CallInst>(I)->getCalledFunction();
     if (function->begin() != function->end()) {
       code_function_callt call;
@@ -1945,7 +1945,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       goto_programt::targett call_inst = gp.add_instruction();
       call_inst->make_function_call(call);
     }
-  }*/
+  }
   return gp;
 }
 
