@@ -20,6 +20,7 @@ code_function_callt f;
 #include "util/std_types.h"
 #include "util/std_expr.h"
 #include "util/source_location.h"
+#include "util/replace_symbol.h"
 #include "langapi/mode.h"
 // #include <string.h>
 #include <iostream>
@@ -59,16 +60,36 @@ int main(){
   main.mode = ID_C;
   main.name = main_name;
   main.base_name = main_bname;
-  code_typet ct = code_typet();
+  code_typet ct = code_typet();/*
   code_typet::parameterst para;
   code_typet::parametert p1(x.type);
   para.push_back(p1);
-  ct.parameters() = para;
+  ct.parameters() = para;*/
   ct.return_type() = unsignedbv_typet(32);
   // static_cast<unsignedbv_typet &>(rt);
   main.type = ct;
   // main.value = from_integer(0,main.type);
   symbol_table.add(main);
+
+  symbolt mew;
+  mew.clear();
+  mew.is_static_lifetime=true;
+  mew.is_thread_local=false;
+  const irep_idt mew_bname = "mew";
+  const irep_idt mew_name = "mew";
+  mew.mode = ID_C;
+  mew.name = mew_name;
+  mew.base_name = mew_bname;
+  code_typet ct1 = code_typet();
+  code_typet::parameterst paras;
+  code_typet::parametert para_1(x.type);
+  paras.push_back(para_1);
+  ct1.parameters() = paras;
+  ct1.return_type() = unsignedbv_typet(32);
+  // static_cast<unsignedbv_typet &>(rt);
+  mew.type = ct1;
+  // mew.value = from_integer(0,mew.type);
+  symbol_table.add(mew);
 
   symbolt y;
   y.clear();
@@ -161,6 +182,33 @@ int main(){
    
   //build if(v1==v2) then jump to x=y
   goto_programt v;
+/*x
+main
+mew
+y
+z
+v1
+v2*/
+  goto_programt::targett decl_x = v.add_instruction();
+  decl_x->make_decl();
+  decl_x->code=code_declt(x.symbol_expr());
+
+  goto_programt::targett decl_y = v.add_instruction();
+  decl_y->make_decl();
+  decl_y->code=code_declt(y.symbol_expr());
+
+  goto_programt::targett decl_z = v.add_instruction();
+  decl_z->make_decl();
+  decl_z->code=code_declt(z.symbol_expr());
+
+  goto_programt::targett decl_v1 = v.add_instruction();
+  decl_v1->make_decl();
+  decl_v1->code=code_declt(v1.symbol_expr());
+
+  goto_programt::targett decl_v2 = v.add_instruction();
+  decl_v2->make_decl();
+  decl_v2->code=code_declt(v2.symbol_expr());
+
   goto_programt::targett v_ins = v.add_instruction();
   v_ins->make_goto(xy_ins);
   exprt guard = exprt(ID_lt);
@@ -175,39 +223,71 @@ int main(){
   v_ins1->guard = equal_exprt(z.symbol_expr(),y.symbol_expr());
   v_ins1->make_assumption(v_ins1->guard);
 
-  // goto_programt::targett asech = v.add_instruction();
-  // asech->guard = equal_exprt(v1.symbol_expr(), z.symbol_expr());
-  // asech->make_assertion(asech->guard);
-  // asech->code = code_assertt(asech->guard);
-
-  /*goto_programt::targett ifelse = v.add_instruction();
-  // ifelse->make_ifthenelse();
-  ifelse->make_goto(xy_ins);
-  code_ifthenelset mewwwwwwwwwww;
-  mewwwwwwwwwww.cond() = equal_exprt(z.symbol_expr(),y.symbol_expr());
-  mewwwwwwwwwww.then_case() = code_assignt(x.symbol_expr(), plus_exprt(y.symbol_expr(), from_integer(1,y.type)));
-  mewwwwwwwwwww.else_case() = code_assignt(x.symbol_expr(), plus_exprt(y.symbol_expr(), from_integer(10,y.type)));
-  ifelse->code = mewwwwwwwwwww;*/
-  v.update();
-
-  std::cout << "v.................\n";
-  v.output(ns, "x", std::cout);
-
-
   goto_functionst goto_functions;
   // goto_programt gp;
   goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >(dstringt("main"),
         goto_functionst::goto_functiont()));
+
+  goto_functions.function_map.insert(
+      std::pair<const dstringt, goto_functionst::goto_functiont >(dstringt("mew"),
+        goto_functionst::goto_functiont()));
+
+
+  code_function_callt call;
+  replace_symbolt replace;
+  // code_typet gf = ns.lookup(irep_idt("mew"));
+  goto_functionst::function_mapt::iterator f_it=
+    goto_functions.function_map.find(dstringt("mew"));
+  assert(f_it!=goto_functions.function_map.end());
+  goto_functionst::function_mapt::iterator f_it1=
+    goto_functions.function_map.find(dstringt("main"));
+  assert(f_it1!=goto_functions.function_map.end());
+  f_it->second.type = to_code_type(mew.type);
+  f_it1->second.type = to_code_type(main.type);
+  const goto_functionst::goto_functiont &gf=f_it->second;
+  call.function()=ns.lookup(dstringt("mew")).symbol_expr();
+  if(gf.type.return_type()!=empty_typet())
+  {
+    call.lhs()= y.symbol_expr();
+  }
+  std::cout << "\nmew" << gf.type.parameters().size() << "\n";
+  std::cout << "\nmain" << f_it1->second.type.parameters().size() << "\n";
+  for(code_typet::parameterst::const_iterator
+      p_it=gf.type.parameters().begin();
+      p_it!=gf.type.parameters().end();
+      p_it++)
+  {
+    call.arguments().push_back(x.symbol_expr());
+  }
+
+  goto_programt::targett v_func_call = v.add_instruction();
+  v_func_call->make_function_call(call);
+
+  v.add_instruction(END_FUNCTION);
+
+  v.update();
+
+  std::cout << "v.................\n";
+  v.output(ns, "x", std::cout);
+
+  goto_programt mew_prog;
+  goto_programt::targett mew1 = mew_prog.add_instruction();
+  mew1->make_skip();
+
+  goto_programt::targett mew2 = mew_prog.add_instruction(END_FUNCTION);
+
+
   std::cout << "\nname :" << (*goto_functions.function_map.find(dstringt("main"))).first.c_str();
   (*goto_functions.function_map.find(dstringt("main"))).second.body.swap(v);
+  std::cout << "\nname :" << (*goto_functions.function_map.find(dstringt("mew"))).first.c_str();
+  (*goto_functions.function_map.find(dstringt("mew"))).second.body.swap(mew_prog);
   std::cout << "\n goto_functions:";
   goto_functions.output(ns,std::cout);
   // std::cout << "\n goto_functions.function_map.find(dstringt(\"main\"))->second:";
   // goto_functions.function_map.find(dstringt("main"))->second.output(std::cout);
-  std::cout << "\n (*goto_functions.function_map.find(dstringt(\"main\"))).second.body:";
+  std::cout << "\n (*goto_functions.function_map.find(dstringt(\"main\"))).second.body:\n";
   (*goto_functions.function_map.find(dstringt("main"))).second.body.output(std::cout);
-  std::cout << "(\"rem\" \"\" (\"symbol\" \"type\" (\"signedbv\" \"width\" (\"32\")) \"identifier\" (\"y\")) \"\" (\"symbol\" \"type\" (\"signedbv\" \"width\" (\"32\")) \"identifier\" (\"z\")) \"type\" (\"signedbv\" \"width\" (\"32\")))";
 
   return 0;
 }

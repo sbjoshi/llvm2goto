@@ -42,7 +42,7 @@ symbolt symbol_creator::create_HalfTy(Type *type, MDNode *mdn) {
   global_variable.type = bvt;
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -70,7 +70,7 @@ symbolt symbol_creator::create_FloatTy(Type *type, MDNode *mdn) {
   global_variable.type = bvt;
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -98,7 +98,7 @@ symbolt symbol_creator::create_DoubleTy(Type *type, MDNode *mdn) {
   global_variable.type = bvt;
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -126,7 +126,7 @@ symbolt symbol_creator::create_X86_FP80Ty(Type *type, MDNode *mdn) {
   global_variable.type = bvt;
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -154,7 +154,7 @@ symbolt symbol_creator::create_FP128Ty(Type *type, MDNode *mdn) {
   global_variable.type = bvt;
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -182,7 +182,7 @@ symbolt symbol_creator::create_PPC_FP128Ty(Type *type, MDNode *mdn) {
   global_variable.type = bvt;
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -206,7 +206,7 @@ symbolt symbol_creator::create_X86_MMXTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   if (dyn_cast<DIGlobalVariable>(mdn)) {
     global_variable.is_static_lifetime = true;
   }
@@ -247,11 +247,11 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
   if (dyn_cast<DIGlobalVariable>(mdn) != NULL) {
     global_variable.location = locationt::get_location_global_variable(mdn);
     const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
-    global_variable.name = tmp_name;
+    global_variable.base_name = tmp_name;
   } else if (dyn_cast<DILocalVariable>(mdn) != NULL) {
     global_variable.location = locationt::get_location_global_variable(mdn);
     const irep_idt tmp_name = dyn_cast<DILocalVariable>(mdn)->getName().str();
-    global_variable.name = tmp_name;
+    global_variable.base_name = tmp_name;
   }
   global_variable.mode = ID_C;
   return global_variable;
@@ -425,7 +425,7 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -616,7 +616,7 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
 }
@@ -750,7 +750,7 @@ symbolt symbol_creator::create_PointerTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   return global_variable;
 }
 
@@ -881,7 +881,7 @@ symbolt symbol_creator::create_VectorTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   return global_variable;
 }
 
@@ -909,7 +909,7 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   const irep_idt tmp_bname = "tid";
   global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
@@ -1095,7 +1095,7 @@ symbolt symbol_creator::create_TokenTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   return global_variable;
 }
 
@@ -1122,7 +1122,7 @@ symbolt symbol_creator::create_LabelTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   return global_variable;
 }
 
@@ -1149,6 +1149,6 @@ symbolt symbol_creator::create_MetadataTy(Type *type, MDNode *mdn) {
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
-  global_variable.name = tmp_name;
+  global_variable.base_name = tmp_name;
   return global_variable;
 }

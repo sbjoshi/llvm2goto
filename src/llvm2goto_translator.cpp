@@ -272,20 +272,21 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -296,9 +297,9 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -309,9 +310,9 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -375,20 +376,21 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_sub = gp.add_instruction();
     decl_sub->make_decl();
     decl_sub->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -399,9 +401,9 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -412,9 +414,9 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -478,20 +480,21 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_mul = gp.add_instruction();
     decl_mul->make_decl();
     decl_mul->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -502,9 +505,9 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -515,9 +518,9 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -581,20 +584,21 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_div = gp.add_instruction();
     decl_div->make_decl();
     decl_div->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -605,9 +609,9 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -618,9 +622,9 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -665,20 +669,21 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_div = gp.add_instruction();
     decl_div->make_decl();
     decl_div->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -689,9 +694,9 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -702,9 +707,9 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -768,20 +773,21 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_rem = gp.add_instruction();
     decl_rem->make_decl();
     decl_rem->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -792,9 +798,9 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -805,9 +811,9 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -852,20 +858,21 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   I->dump();
   errs() << I->getName();
   try {
-    symbol_table.lookup(I->getName().str());
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
     std::allocator<char> > msg) {
     errs() << I->getName() << "not found\n adding symbol\n";
     // I->getType()->dump();
     symbolt symbol;
-    symbol.name = I->getName().str();
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
     symbol.type = symbol_creator::create_type(I->getType());
     symbol_table.add(symbol);
     goto_programt::targett decl_rem = gp.add_instruction();
     decl_rem->make_decl();
     decl_rem->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getName().str());
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
@@ -876,9 +883,9 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op1 = symbol_table.lookup(ub->getName().str());
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
     }
     exprt1 = op1.symbol_expr();
   }
@@ -889,9 +896,9 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
     } else {
-      op2 = symbol_table.lookup((ub + 1)->getName().str());
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
   }
@@ -1012,7 +1019,8 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
   symbolt symbol;
   symbol.type = symbol_creator::create_type(
     dyn_cast<AllocaInst>(I)->getAllocatedType());
-  symbol.name = I->getName().str();
+  symbol.base_name = I->getName().str();
+  symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
   symbol_table.add(symbol);
   goto_programt::targett decl_alloc = gp.add_instruction();
     decl_alloc->make_decl();
@@ -1063,7 +1071,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbol_tablet &symbol_table) {
   // errs() << "few things need to be handled in Store Instruction \n";
   goto_programt gp;
-  symbolt symbol = symbol_table.lookup(
+  symbol_table.show(std::cout);
+  symbolt symbol = symbol_table.lookup(I->getFunction()->getName().str() + "::" +
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str());
   exprt value_to_store;
   if (dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0))) {
@@ -1078,11 +1087,12 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     if (dyn_cast<StoreInst>(I)->getOperand(0)->hasName()) {
       errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
       // assert(false && "stop here\n");
-      value_to_store = symbol_table.lookup(
+      value_to_store = symbol_table.lookup(I->getFunction()->getName().str() + "::" +
       dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()).symbol_expr();
     } else if (dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))) {
-      std::string name = dyn_cast<LoadInst>(
-        dyn_cast<StoreInst>(I)->getOperand(0))->getOperand(0)->getName().str();
+      std::string name = I->getFunction()->getName().str() + "::" +
+        dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))
+        ->getOperand(0)->getName().str();
       value_to_store = symbol_table.lookup(name).symbol_expr();
     }
   }
@@ -1468,10 +1478,10 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     opnd1 = from_integer(val, type);
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    opnd1 = symbol_table->lookup(
+    opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" +
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
-    opnd1 = symbol_table->lookup(ub->getName().str()).symbol_expr();
+    opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + ub->getName().str()).symbol_expr();
   }
 
   if (dyn_cast<ConstantInt>(*(ub + 1))) {
@@ -1482,10 +1492,10 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     opnd2 = from_integer(val, type);
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
-    opnd2 = symbol_table->lookup(
+    opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
-    opnd2 = symbol_table->lookup((ub + 1)->getName().str()).symbol_expr();
+    opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str()).symbol_expr();
   }
 
 
@@ -1566,10 +1576,10 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     opnd1 = from_integer(val, type);
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    opnd1 = symbol_table->lookup(
+    opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
-    opnd1 = symbol_table->lookup(ub->getName().str()).symbol_expr();
+    opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + ub->getName().str()).symbol_expr();
   }
 
   if (dyn_cast<ConstantInt>(*(ub + 1))) {
@@ -1580,10 +1590,10 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     opnd2 = from_integer(val, type);
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
-    opnd2 = symbol_table->lookup(
+    opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
-    opnd2 = symbol_table->lookup((ub + 1)->getName().str()).symbol_expr();
+    opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str()).symbol_expr();
   }
   switch (dyn_cast<ICmpInst>(I)->getInversePredicate()) {
     case CmpInst::Predicate::ICMP_EQ : {
@@ -1747,6 +1757,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       case llvm::Type::TypeID::HalfTyID : {
         errs() << "\nHalf type";
         symbol = symbol_creator::create_HalfTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1757,6 +1768,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       case llvm::Type::TypeID::FloatTyID : {
         errs() << "\nFloat type";
         symbol = symbol_creator::create_FloatTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1767,6 +1779,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       // 64-bit floating point type
       case llvm::Type::TypeID::DoubleTyID : {
         symbol = symbol_creator::create_DoubleTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1778,6 +1791,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       // 80-bit floating point type (X87)
       case llvm::Type::TypeID::X86_FP80TyID : {
         symbol = symbol_creator::create_X86_FP80Ty(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1789,6 +1803,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       // 128-bit floating point type (112-bit mantissa)
       case llvm::Type::TypeID::FP128TyID : {
         symbol = symbol_creator::create_FP128Ty(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1800,6 +1815,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       // 128-bit floating point type (two 64-bits, PowerPC)
       case llvm::Type::TypeID::PPC_FP128TyID : {
         symbol = symbol_creator::create_PPC_FP128Ty(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1810,6 +1826,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       case llvm::Type::TypeID::IntegerTyID : {
         symbol = symbol_creator::create_IntegerTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1821,6 +1838,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       case llvm::Type::TypeID::StructTyID : {
         // const MDNode *dit = dyn_cast<MDNode>(*mmd);
         symbol = symbol_creator::create_StructTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1831,6 +1849,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       case llvm::Type::TypeID::ArrayTyID : {
         symbol = symbol_creator::create_ArrayTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1841,6 +1860,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       case llvm::Type::TypeID::PointerTyID : {
         symbol = symbol_creator::create_PointerTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1851,6 +1871,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       case llvm::Type::TypeID::VectorTyID : {
         symbol = symbol_creator::create_VectorTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1861,6 +1882,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       case llvm::Type::TypeID::X86_MMXTyID : {
         symbol = symbol_creator::create_X86_MMXTy(type, mdn);
+        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
         symbol_table->add(symbol);
         goto_programt::targett decl_symbol = gp.add_instruction();
         decl_symbol->make_decl();
@@ -1876,7 +1898,54 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         default:
         errs() << "\ninvalid type for global variable";
     }
-  }
+  }/* else {
+    const Function *function = dyn_cast<CallInst>(I)->getCalledFunction();
+    if (function->begin() != function->end()) {
+      code_function_callt call;
+      I->dump();
+      std::string func_name = function->getName().str();
+      symbolt symbol = namespacet(*symbol_table).lookup(dstringt(func_name));
+      call.function() = symbol.symbol_expr();
+      if(to_code_type(symbol.type).return_type()!=empty_typet()) {
+        symbolt ret;
+        ret.base_name = I->getName().str();
+        ret.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+        ret.type = symbol_creator::create_type(function->getReturnType());
+        symbol_table->add(ret);
+        // goto_programt::targett ret_decl = gp.add_instruction();
+        goto_programt::targett decl_ret = gp.add_instruction();
+        //TODO(Rasika) : function arguments sathi kahitari kara.
+        //TODO(Rasika) : lookup local and global variables.
+        decl_ret->make_decl();
+        decl_ret->code=code_declt(ret.symbol_expr());
+        call.lhs()= ret.symbol_expr();
+      }
+      llvm::User::const_value_op_iterator ub = I->value_op_begin();
+      for(code_typet::parameterst::const_iterator
+        p_it=to_code_type(symbol.type).parameters().begin();
+        p_it!=to_code_type(symbol.type).parameters().end();
+        p_it++) {
+        exprt expr;
+        if (dyn_cast<ConstantInt>(*ub)) {
+          uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
+          typet type = symbol_creator::create_type(
+            dyn_cast<ConstantInt>(*ub)->getType());
+          dyn_cast<ConstantInt>(*ub)->getType()->dump();
+          expr = from_integer(val, type);
+        } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+          li->getOperand(0)->dump();
+          expr = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
+            li->getOperand(0)->getName().str()).symbol_expr();
+        } else {
+          expr = symbol_table->lookup(I->getFunction()->getName().str() + "::" + ub->getName().str()).symbol_expr();
+        }
+        call.arguments().push_back(expr);
+        ub++;
+      }
+      goto_programt::targett call_inst = gp.add_instruction();
+      call_inst->make_function_call(call);
+    }
+  }*/
   return gp;
 }
 
@@ -2128,90 +2197,110 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                 // 16-bit floating point type
                 case llvm::Type::TypeID::HalfTyID : {
                   errs() << "\nHalf type";
-                  symbol_table.add(symbol_creator::create_HalfTy(
-                    GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                  symbolt symbol = symbol_creator::create_HalfTy(GV.getValueType(), dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                 }
                 // 32-bit floating point type
                 case llvm::Type::TypeID::FloatTyID : {
                   errs() << "\nFloat type";
-                  symbol_table.add(symbol_creator::create_FloatTy(
-                    GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                  symbolt symbol = symbol_creator::create_FloatTy(GV.getValueType(), dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   break;
                 }
                 // 64-bit floating point type
                 case llvm::Type::TypeID::DoubleTyID : {
-                  symbol_table.add(symbol_creator::create_DoubleTy(
+                  symbolt symbol = symbol_creator::create_DoubleTy(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nDouble type";
                   break;
                 }
                 // 80-bit floating point type (X87)
                 case llvm::Type::TypeID::X86_FP80TyID : {
-                  symbol_table.add(symbol_creator::create_X86_FP80Ty(
+                  symbolt symbol = symbol_creator::create_X86_FP80Ty(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nX86_FP80 type";
                   break;
                 }
                 // 128-bit floating point type (112-bit mantissa)
                 case llvm::Type::TypeID::FP128TyID : {
-                  symbol_table.add(symbol_creator::create_FP128Ty(
+                  symbolt symbol = symbol_creator::create_FP128Ty(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nFP128 type";
                   break;
                 }
                 // 128-bit floating point type (two 64-bits, PowerPC)
                 case llvm::Type::TypeID::PPC_FP128TyID : {
-                  symbol_table.add(symbol_creator::create_PPC_FP128Ty(
+                  symbolt symbol = symbol_creator::create_PPC_FP128Ty(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nPPC_FP128 type";
                   break;
                 }
                 case llvm::Type::TypeID::IntegerTyID : {
-                  symbol_table.add(symbol_creator::create_IntegerTy(
+                  symbolt symbol = symbol_creator::create_IntegerTy(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nInteger type";
                   break;
                 }
                 case llvm::Type::TypeID::StructTyID : {
                   const MDNode *dit = dyn_cast<MDNode>(*mmd);
-                  symbol_table.add(symbol_creator::create_StructTy(
+                  symbolt symbol = symbol_creator::create_StructTy(
                     GV.getValueType(),
-                    dit));
+                    dit);
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nStruct type";
                   break;
                 }
                 case llvm::Type::TypeID::ArrayTyID : {
-                  symbol_table.add(symbol_creator::create_ArrayTy(
+                  symbolt symbol = symbol_creator::create_ArrayTy(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nArray type";
                   break;
                 }
                 case llvm::Type::TypeID::PointerTyID : {
-                  symbol_table.add(symbol_creator::create_PointerTy(
+                  symbolt symbol = symbol_creator::create_PointerTy(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nPointer type";
                   break;
                 }
                 case llvm::Type::TypeID::VectorTyID : {
-                  symbol_table.add(symbol_creator::create_VectorTy(
+                  symbolt symbol = symbol_creator::create_VectorTy(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   errs() << "\nVector type";
                   break;
                 }
                 case llvm::Type::TypeID::X86_MMXTyID : {
-                  symbol_table.add(symbol_creator::create_X86_MMXTy(
+                  symbolt symbol = symbol_creator::create_X86_MMXTy(
                     GV.getValueType(),
-                    dyn_cast<MDNode>(*mmd)));
+                    dyn_cast<MDNode>(*mmd));
+                  symbol.name = symbol.base_name;
+                  symbol_table.add(symbol);
                   break;
                 }
                 case llvm::Type::TypeID::VoidTyID :
@@ -2725,7 +2814,15 @@ goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
     Type *functt = (dyn_cast<Type>(F.getFunctionType()));
     symbolt fn = symbol_creator::create_FunctionTy(functt);
     fn.name = dstringt(F.getName().str());
+    fn.base_name = fn.name;
     symbol_table.add(fn);
+    for (Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
+      arg_b != arg_e; arg_b++) {
+      symbolt arg;
+      arg.name = F.getName().str() + "::" + arg_b->getName().str();
+      arg.base_name = F.getName().str();
+      symbol_table.add(arg);
+    }
     goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >(
         dstringt(F.getName()),
