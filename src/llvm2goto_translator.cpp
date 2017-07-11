@@ -1071,7 +1071,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbol_tablet &symbol_table) {
   // errs() << "few things need to be handled in Store Instruction \n";
   goto_programt gp;
-  symbol_table.show(std::cout);
+  // symbol_table.show(std::cout);
   symbolt symbol = symbol_table.lookup(I->getFunction()->getName().str() + "::" +
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str());
   exprt value_to_store;
@@ -1238,7 +1238,7 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
   goto_programt gp;
-  assert(false && "ZExt is yet to be mapped \n");
+  // assert(false && "ZExt is yet to be mapped \n");
   return gp;
 }
 
@@ -1257,7 +1257,7 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SExt(const Instruction *I) {
   goto_programt gp;
-  assert(false && "SExt is yet to be mapped \n");
+  // assert(false && "SExt is yet to be mapped \n");
   return gp;
 }
 
@@ -1898,11 +1898,35 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         default:
         errs() << "\ninvalid type for global variable";
     }
+  } else if (dyn_cast<CallInst>(I)->getCalledFunction() == NULL) {
+    // dyn_cast<CallInst>(I)->dump();
+    const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
+    const Function *function = dyn_cast<Function>(called_val->stripPointerCasts());
+    if(function->getName().str() == "assume"){
+      errs() << "assume";
+      goto_programt::targett assume_inst = gp.add_instruction(ASSUME);
+      Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
+      exprt guard;
+      if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
+        guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);        
+      }
+      assume_inst->guard = guard;
+    }
+    if(function->getName().str() == "assert"){
+      errs() << "assert";
+      goto_programt::targett assert_inst = gp.add_instruction(ASSERT);
+      Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
+      exprt guard;
+      if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
+        guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
+      }
+      assert_inst->guard = guard;
+    }
   } else {
     const Function *function = dyn_cast<CallInst>(I)->getCalledFunction();
     if (function->begin() != function->end()) {
       code_function_callt call;
-      I->dump();
+      // I->dump();
       std::string func_name = function->getName().str();
       symbolt symbol = namespacet(*symbol_table).lookup(dstringt(func_name));
       call.function() = symbol.symbol_expr();
@@ -2803,6 +2827,13 @@ goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
   symbol_tablet symbol_table = trans_Globals(Mod);
   // symbol_table.show(std::cout);
   goto_programt gp;
+  for (Function &F : M) {
+    Type *functt = (dyn_cast<Type>(F.getFunctionType()));
+    symbolt fn = symbol_creator::create_FunctionTy(functt);
+    fn.name = dstringt(F.getName().str());
+    fn.base_name = fn.name;
+    symbol_table.add(fn);
+  }
   for (Function &F : M) {
     // SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
     // F.getAllMetadata(MDs);
