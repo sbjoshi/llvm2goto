@@ -21,8 +21,6 @@
 
 using namespace llvm;
 
-// TODO(Rasika): Take care of srem and sdiv.
-// TODO(Rasika): implement and, or, xor...
 // TODO(Rasika): handle signed comparison.
 
 /*******************************************************************\
@@ -271,29 +269,13 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_add = gp.add_instruction();
-    decl_add->make_decl();
-    decl_add->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -306,7 +288,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -316,6 +298,25 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -372,32 +373,16 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   symbol_tablet &symbol_table) {
   goto_programt gp;
-  // errs() << "Sub is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_sub = gp.add_instruction();
-    decl_sub->make_decl();
-    decl_sub->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -410,7 +395,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -420,6 +405,25 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -476,32 +480,16 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   symbol_tablet &symbol_table) {
   goto_programt gp;
-  // errs() << "Mul is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_mul = gp.add_instruction();
-    decl_mul->make_decl();
-    decl_mul->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -514,7 +502,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -524,6 +512,25 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -580,32 +587,16 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   symbol_tablet &symbol_table) {
   goto_programt gp;
-  // errs() << "UDiv is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_div = gp.add_instruction();
-    decl_div->make_decl();
-    decl_div->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -618,7 +609,7 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -628,6 +619,25 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -665,32 +675,16 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
 goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   symbol_tablet &symbol_table) {
   goto_programt gp;
-  // errs() << "SDiv is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_div = gp.add_instruction();
-    decl_div->make_decl();
-    decl_div->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -703,7 +697,7 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -713,6 +707,25 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -769,32 +782,16 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   symbol_tablet &symbol_table) {
   goto_programt gp;
-  // errs() << "URem is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_rem = gp.add_instruction();
-    decl_rem->make_decl();
-    decl_rem->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -807,7 +804,7 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -817,6 +814,25 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -854,32 +870,16 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
 goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   symbol_tablet &symbol_table) {
   goto_programt gp;
-  // errs() << "SRem is yet to be mapped \n";
+  // errs() << "Add is yet to be mapped \n";
   I->dump();
   errs() << I->getName();
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
-    errs() << I->getName() << "not found\n adding symbol\n";
-    // I->getType()->dump();
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = symbol_creator::create_type(I->getType());
-    symbol_table.add(symbol);
-    goto_programt::targett decl_rem = gp.add_instruction();
-    decl_rem->make_decl();
-    decl_rem->code=code_declt(symbol.symbol_expr());
-  }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, result.type);
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -892,7 +892,7 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, result.type);
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -902,6 +902,25 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  // errs() << "hi";
+  // symbol_table.show(std::cout);
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // errs() << "hi";
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -1022,9 +1041,9 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
   symbol.base_name = I->getName().str();
   symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
   symbol_table.add(symbol);
-  goto_programt::targett decl_alloc = gp.add_instruction();
-    decl_alloc->make_decl();
-    decl_alloc->code=code_declt(symbol.symbol_expr());
+  // goto_programt::targett decl_alloc = gp.add_instruction();
+  //   decl_alloc->make_decl();
+  //   decl_alloc->code=code_declt(symbol.symbol_expr());
   return gp;
 }
 
@@ -1747,9 +1766,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       dbgDeclareInst->getAddress()->getType()))->getPointerElementType()));
     MDNode *mdn = dyn_cast<MDNode>(dbgDeclareInst->getVariable());
     // symbolt &lookup(const irep_idt &identifier);
-    symbol_table->remove(dyn_cast<DIVariable>(mdn)->getName().str());
-
-    // errs() << "\033[31;1m" << "DbgDeclareInst information :\n" << "\033[0m";
+    symbol_table->remove(I->getFunction()->getName().str() + "::" + dyn_cast<DIVariable>(mdn)->getName().str());
     symbolt symbol;
     switch (dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
       ->getType()))->getPointerElementType()->getTypeID()) {
@@ -2201,11 +2218,8 @@ goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
 symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
   // TODO(Rasika): signed type.
   // TODO(Rasika): various name fields(cbmc).
-  // TODO(Rasika): struct, vector, array,...
   errs() << "in trans_Globals\n";
   symbol_tablet symbol_table;
-
-
   for (auto &GV : Mod->globals()) {
     SmallVector<MDNode *, 1> MDs;
     if (!GV.isDeclaration()) {
