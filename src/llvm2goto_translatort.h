@@ -23,8 +23,10 @@ using namespace llvm;
 #define SRC_LLVM2GOTO_TRANSLATORT_H_
 class llvm2goto_translatort {
  public:
+    Module *M;
     // symbol_tablet symbol_table;
-    virtual goto_programt trans_Ret(const Instruction *I) = 0;
+    virtual goto_programt trans_Ret(const Instruction *I,
+        const symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Br(const Instruction *I,
         symbol_tablet *symbol_table,
         std::map <const Instruction*, goto_programt::targett>
@@ -40,23 +42,28 @@ class llvm2goto_translatort {
     virtual goto_programt trans_CatchSwitch(const Instruction *I) = 0;
     virtual goto_programt trans_Add(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
-    virtual goto_programt trans_FAdd(const Instruction *I) = 0;
+    virtual goto_programt trans_FAdd(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Sub(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
-    virtual goto_programt trans_FSub(const Instruction *I) = 0;
+    virtual goto_programt trans_FSub(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Mul(const Instruction *I,
     symbol_tablet &symbol_table) = 0;
-    virtual goto_programt trans_FMul(const Instruction *I) = 0;
+    virtual goto_programt trans_FMul(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_UDiv(const Instruction *I,
     symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_SDiv(const Instruction *I,
     symbol_tablet &symbol_table) = 0;
-    virtual goto_programt trans_FDiv(const Instruction *I) = 0;
+    virtual goto_programt trans_FDiv(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_URem(const Instruction *I,
     symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_SRem(const Instruction *I,
     symbol_tablet &symbol_table) = 0;
-    virtual goto_programt trans_FRem(const Instruction *I) = 0;
+    virtual goto_programt trans_FRem(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_And(const Instruction *I) = 0;
     virtual goto_programt trans_Or(const Instruction *I) = 0;
     virtual goto_programt trans_Xor(const Instruction *I) = 0;
@@ -118,6 +125,6 @@ class llvm2goto_translatort {
   std::map <const BasicBlock*, goto_programt::targett> block_target_map,
   std::map <const Instruction*, goto_programt::targett> instruction_target_map)
     = 0;
-    virtual goto_functionst trans_Program(Module *Mod) = 0;
+    virtual goto_functionst trans_Program() = 0;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATORT_H_"

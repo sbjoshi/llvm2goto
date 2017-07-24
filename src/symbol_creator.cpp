@@ -39,7 +39,7 @@ symbolt symbol_creator::create_HalfTy(Type *type, MDNode *mdn) {
     global_variable.is_static_lifetime = true;
   }
   bitvector_typet bvt(ID_floatbv, 16);
-  global_variable.type = bvt;
+  global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.base_name = tmp_name;
@@ -67,7 +67,7 @@ symbolt symbol_creator::create_FloatTy(Type *type, MDNode *mdn) {
     global_variable.is_static_lifetime = true;
   }
   bitvector_typet bvt(ID_floatbv, 32);
-  global_variable.type = bvt;
+  global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.base_name = tmp_name;
@@ -95,7 +95,7 @@ symbolt symbol_creator::create_DoubleTy(Type *type, MDNode *mdn) {
     global_variable.is_static_lifetime = true;
   }
   bitvector_typet bvt(ID_floatbv, 64);
-  global_variable.type = bvt;
+  global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.base_name = tmp_name;
@@ -123,7 +123,7 @@ symbolt symbol_creator::create_X86_FP80Ty(Type *type, MDNode *mdn) {
     global_variable.is_static_lifetime = true;
   }
   bitvector_typet bvt(ID_floatbv, 80);
-  global_variable.type = bvt;
+  global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.base_name = tmp_name;
@@ -151,7 +151,7 @@ symbolt symbol_creator::create_FP128Ty(Type *type, MDNode *mdn) {
     global_variable.is_static_lifetime = true;
   }
   bitvector_typet bvt(ID_floatbv, 128);
-  global_variable.type = bvt;
+  global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.base_name = tmp_name;
@@ -179,7 +179,7 @@ symbolt symbol_creator::create_PPC_FP128Ty(Type *type, MDNode *mdn) {
     global_variable.is_static_lifetime = true;
   }
   bitvector_typet bvt(ID_floatbv, 128);
-  global_variable.type = bvt;
+  global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
   global_variable.base_name = tmp_name;
@@ -227,34 +227,37 @@ symbolt symbol_creator::create_X86_MMXTy(Type *type, MDNode *mdn) {
 
 \*******************************************************************/
 symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
-  symbolt global_variable;
-  global_variable.clear();
+  symbolt variable;
+  variable.clear();
   if (dyn_cast<DIGlobalVariable>(mdn)) {
-    global_variable.is_static_lifetime = true;
+    variable.is_static_lifetime = true;
   }
-  // type->dump();
-  // errs() << "\nhi1";
   if (type->getIntegerBitWidth() == 1) {
-  global_variable.type = bool_typet();
+  variable.type = bool_typet();
   } else {
-    // errs() << "\n hi2 \n";
-  global_variable.type = unsignedbv_typet(
+    variable.type = unsignedbv_typet(
     type->getIntegerBitWidth());
-  // global_variable.value = from_integer(0,
-  //   global_variable.type);
+  }
+  switch (dyn_cast<DIBasicType>(dyn_cast<DIVariable>(mdn)->getType())->getEncoding()) {
+    case dwarf::DW_ATE_signed :
+    case dwarf::DW_ATE_signed_char :
+    case dwarf::DW_EH_PE_signed : //errs() << "\n\t\t'''''''''''''''''''''''''''''''''''''''''''''\n";
+      variable.type = signedbv_typet(
+        type->getIntegerBitWidth());
+      break;
   }
   // mdn->dump();
   if (dyn_cast<DIGlobalVariable>(mdn) != NULL) {
-    global_variable.location = locationt::get_location_global_variable(mdn);
+    variable.location = locationt::get_location_global_variable(mdn);
     const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();
-    global_variable.base_name = tmp_name;
+    variable.base_name = tmp_name;
   } else if (dyn_cast<DILocalVariable>(mdn) != NULL) {
-    global_variable.location = locationt::get_location_global_variable(mdn);
+    variable.location = locationt::get_location_global_variable(mdn);
     const irep_idt tmp_name = dyn_cast<DILocalVariable>(mdn)->getName().str();
-    global_variable.base_name = tmp_name;
+    variable.base_name = tmp_name;
   }
-  global_variable.mode = ID_C;
-  return global_variable;
+  variable.mode = ID_C;
+  return variable;
 }
 
 /*******************************************************************\
@@ -292,37 +295,37 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
     switch ((*e)->getTypeID()) {
       case llvm::Type::TypeID::HalfTyID : {
       bitvector_typet bvt(ID_floatbv, 16);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::FloatTyID : {
       bitvector_typet bvt(ID_floatbv, 32);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::DoubleTyID : {
       bitvector_typet bvt(ID_floatbv, 64);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::X86_FP80TyID : {
       bitvector_typet bvt(ID_floatbv, 80);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::FP128TyID : {
       bitvector_typet bvt(ID_floatbv, 128);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::PPC_FP128TyID : {
       bitvector_typet bvt(ID_floatbv, 128);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
@@ -459,37 +462,37 @@ struct_union_typet symbol_creator::create_struct_union_type(Type *type,
     switch ((*e)->getTypeID()) {
       case llvm::Type::TypeID::HalfTyID : {
       bitvector_typet bvt(ID_floatbv, 16);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::FloatTyID : {
       bitvector_typet bvt(ID_floatbv, 32);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::DoubleTyID : {
       bitvector_typet bvt(ID_floatbv, 64);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::X86_FP80TyID : {
       bitvector_typet bvt(ID_floatbv, 80);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::FP128TyID : {
       bitvector_typet bvt(ID_floatbv, 128);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
       case llvm::Type::TypeID::PPC_FP128TyID : {
       bitvector_typet bvt(ID_floatbv, 128);
-      struct_union_typet::componentt component(ele_name, bvt);
+      struct_union_typet::componentt component(ele_name, to_floatbv_type(bvt));
       components.push_back(component);
       break;
       }
@@ -641,32 +644,32 @@ typet symbol_creator::create_array_type(Type *type,
   switch (dyn_cast<ArrayType>(type)->getArrayElementType()->getTypeID()) {
   // 16-bit floating point type
   case llvm::Type::TypeID::HalfTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 16);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 16));
     break;
   }
   // 32-bit floating point type
   case llvm::Type::TypeID::FloatTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 32);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
     break;
   }
   // 64-bit floating point type
   case llvm::Type::TypeID::DoubleTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 64);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
     break;
   }
   // 80-bit floating point type (X87)
   case llvm::Type::TypeID::X86_FP80TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 80);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 80));
     break;
   }
   // 128-bit floating point type (112-bit mantissa)
   case llvm::Type::TypeID::FP128TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 128);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
     break;
   }
   // 128-bit floating point type (two 64-bits, PowerPC)
   case llvm::Type::TypeID::PPC_FP128TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 128);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
     break;
   }
   case llvm::Type::TypeID::IntegerTyID : {
@@ -774,32 +777,32 @@ typet symbol_creator::create_pointer_type(Type *type,
   switch (dyn_cast<PointerType>(type)->getPointerElementType()->getTypeID()) {
   // 16-bit floating point type
   case llvm::Type::TypeID::HalfTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 16);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 16));
     break;
   }
   // 32-bit floating point type
   case llvm::Type::TypeID::FloatTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 32);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
     break;
   }
   // 64-bit floating point type
   case llvm::Type::TypeID::DoubleTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 64);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
     break;
   }
   // 80-bit floating point type (X87)
   case llvm::Type::TypeID::X86_FP80TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 80);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 80));
     break;
   }
   // 128-bit floating point type (112-bit mantissa)
   case llvm::Type::TypeID::FP128TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 128);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
     break;
   }
   // 128-bit floating point type (two 64-bits, PowerPC)
   case llvm::Type::TypeID::PPC_FP128TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 128);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
     break;
   }
   case llvm::Type::TypeID::IntegerTyID : {
@@ -933,32 +936,32 @@ typet symbol_creator::create_type(Type *type) {
   switch (type->getTypeID()) {
   // 16-bit floating point type
   case llvm::Type::TypeID::HalfTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 16);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 16));
     break;
   }
   // 32-bit floating point type
   case llvm::Type::TypeID::FloatTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 32);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
     break;
   }
   // 64-bit floating point type
   case llvm::Type::TypeID::DoubleTyID : {
-    ele_type = bitvector_typet(ID_floatbv, 64);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
     break;
   }
   // 80-bit floating point type (X87)
   case llvm::Type::TypeID::X86_FP80TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 80);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 80));
     break;
   }
   // 128-bit floating point type (112-bit mantissa)
   case llvm::Type::TypeID::FP128TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 128);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
     break;
   }
   // 128-bit floating point type (two 64-bits, PowerPC)
   case llvm::Type::TypeID::PPC_FP128TyID : {
-    ele_type = bitvector_typet(ID_floatbv, 128);
+    ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
     break;
   }
   case llvm::Type::TypeID::IntegerTyID : {

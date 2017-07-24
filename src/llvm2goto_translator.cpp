@@ -6,6 +6,7 @@
 #include "llvm2goto_translator.h"
 
 #include <llvm/IR/Type.h>
+#include "llvm/ADT/APFloat.h"
 
 #include <utility>
 #include <memory>
@@ -18,10 +19,17 @@
 #include "langapi/mode.h"
 
 #include "ansi-c/ansi_c_language.h"
-
+#include "util/ieee_float.h"
 using namespace llvm;
 
 // TODO(Rasika): handle signed comparison.
+
+llvm2goto_translator::llvm2goto_translator(Module *M) {
+    this->M = M;
+}
+
+llvm2goto_translator::~llvm2goto_translator() {
+}
 
 /*******************************************************************\
 
@@ -36,11 +44,21 @@ using namespace llvm;
     Purpose: Map llvm::Instruction::Ret to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Ret(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
+  const symbol_tablet &symbol_table) {
   goto_programt gp;
   goto_programt::targett ret_inst = gp.add_instruction();
-  ret_inst->make_skip();
-  errs() << "Ret is yet to be mapped \n";
+  code_returnt cret;
+  dyn_cast<ReturnInst>(I)->getReturnValue()->dump();
+  // symbolt ret_symb = symbol_table.lookup(I->getFunction()->getName()->c_str()
+  //   + "::" + );
+  // temp.name = irep_idt("temp");
+  // temp.type = unsignedbv_typet(32);
+  // cret.return_value() = temp.symbol_expr();
+  ret_inst->make_return();
+  ret_inst->code = cret;
+  // to_code_return(ret_inst->code).return_value() = exprt();
+  // assert(false && "Ret is yet to be mapped \n");
   return gp;
 }
 
@@ -331,7 +349,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -351,9 +369,95 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     Purpose: Map llvm::Instruction::FAdd to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "FAdd is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (dyn_cast<ConstantFP>(*ub)) {
+      errs() << "ConstantFP";
+      Type *floattype = dyn_cast<Type>((*ub)->getType());
+      if (floattype->isFloatTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_float(val);
+        exprt1 = ieee_fl.to_expr();
+      } else if (floattype->isDoubleTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_double(val);
+        exprt1 = ieee_fl.to_expr();
+      } else {
+        assert(false && "This floating point type in above instruction is not handled");
+      }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (dyn_cast<ConstantFP>(*(ub+1))) {
+    errs() << "ConstantFP";
+    Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
+    if (floattype->isFloatTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_float(val);
+      exprt2 = ieee_fl.to_expr();
+    } else if (floattype->isDoubleTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_double(val);
+      exprt2 = ieee_fl.to_expr();
+    } else {
+      assert(false && "This floating point type in above instruction is not handled");
+    }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    plus_exprt(exprt1, exprt2));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -438,7 +542,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -458,9 +562,95 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     Purpose: Map llvm::Instruction::FSub to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_FSub(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "FSub is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (dyn_cast<ConstantFP>(*ub)) {
+      errs() << "ConstantFP";
+      Type *floattype = dyn_cast<Type>((*ub)->getType());
+      if (floattype->isFloatTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_float(val);
+        exprt1 = ieee_fl.to_expr();
+      } else if (floattype->isDoubleTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_double(val);
+        exprt1 = ieee_fl.to_expr();
+      } else {
+        assert(false && "This floating point type in above instruction is not handled");
+      }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (dyn_cast<ConstantFP>(*(ub+1))) {
+    errs() << "ConstantFP";
+    Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
+    if (floattype->isFloatTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_float(val);
+      exprt2 = ieee_fl.to_expr();
+    } else if (floattype->isDoubleTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_double(val);
+      exprt2 = ieee_fl.to_expr();
+    } else {
+      assert(false && "This floating point type in above instruction is not handled");
+    }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    minus_exprt(exprt1, exprt2));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -545,7 +735,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -565,9 +755,95 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     Purpose: Map llvm::Instruction::FMul to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_FMul(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "FMul is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (dyn_cast<ConstantFP>(*ub)) {
+      errs() << "ConstantFP";
+      Type *floattype = dyn_cast<Type>((*ub)->getType());
+      if (floattype->isFloatTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_float(val);
+        exprt1 = ieee_fl.to_expr();
+      } else if (floattype->isDoubleTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_double(val);
+        exprt1 = ieee_fl.to_expr();
+      } else {
+        assert(false && "This floating point type in above instruction is not handled");
+      }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (dyn_cast<ConstantFP>(*(ub+1))) {
+    errs() << "ConstantFP";
+    Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
+    if (floattype->isFloatTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_float(val);
+      exprt2 = ieee_fl.to_expr();
+    } else if (floattype->isDoubleTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_double(val);
+      exprt2 = ieee_fl.to_expr();
+    } else {
+      assert(false && "This floating point type in above instruction is not handled");
+    }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    mult_exprt(exprt1, exprt2));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -652,7 +928,7 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -740,7 +1016,7 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -760,9 +1036,95 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     Purpose: Map llvm::Instruction::FDiv to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "FDiv is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (dyn_cast<ConstantFP>(*ub)) {
+      errs() << "ConstantFP";
+      Type *floattype = dyn_cast<Type>((*ub)->getType());
+      if (floattype->isFloatTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_float(val);
+        exprt1 = ieee_fl.to_expr();
+      } else if (floattype->isDoubleTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_double(val);
+        exprt1 = ieee_fl.to_expr();
+      } else {
+        assert(false && "This floating point type in above instruction is not handled");
+      }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (dyn_cast<ConstantFP>(*(ub+1))) {
+    errs() << "ConstantFP";
+    Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
+    if (floattype->isFloatTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_float(val);
+      exprt2 = ieee_fl.to_expr();
+    } else if (floattype->isDoubleTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_double(val);
+      exprt2 = ieee_fl.to_expr();
+    } else {
+      assert(false && "This floating point type in above instruction is not handled");
+    }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    div_exprt(exprt1, exprt2));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -847,7 +1209,7 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -935,7 +1297,7 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     location.set_working_directory(loc
           ->getScope()->getFile()->getDirectory().str());
     location.set_line(loc->getLine());
-    // location.set_column(loc->getCol());
+    location.set_column(loc->getColumn());
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -955,9 +1317,95 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     Purpose: Map llvm::Instruction::FRem to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_FRem(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "FRem is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (dyn_cast<ConstantFP>(*ub)) {
+      errs() << "ConstantFP";
+      Type *floattype = dyn_cast<Type>((*ub)->getType());
+      if (floattype->isFloatTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_float(val);
+        exprt1 = ieee_fl.to_expr();
+      } else if (floattype->isDoubleTy()) {
+        float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_double(val);
+        exprt1 = ieee_fl.to_expr();
+      } else {
+        assert(false && "This floating point type in above instruction is not handled");
+      }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (dyn_cast<ConstantFP>(*(ub+1))) {
+    errs() << "ConstantFP";
+    Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
+    if (floattype->isFloatTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_float(val);
+      exprt2 = ieee_fl.to_expr();
+    } else if (floattype->isDoubleTy()) {
+      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      ieee_floatt ieee_fl = ieee_floatt();
+      ieee_fl.from_double(val);
+      exprt2 = ieee_fl.to_expr();
+    } else {
+      assert(false && "This floating point type in above instruction is not handled");
+    }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    errs() << I->getName() << "not found\n adding symbol\n";
+    // I->getType()->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett add_inst = gp.add_instruction();
+  add_inst->make_assignment();
+  add_inst->code = code_assignt(result.symbol_expr(),
+    mod_exprt(exprt1, exprt2));
+  add_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  add_inst->source_location = location;
+  add_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -1099,6 +1547,23 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       uint64_t val = dyn_cast<ConstantInt>(
       dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
       value_to_store = from_integer(val, symbol.type);
+    } else if (dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+      errs() << "ConstantFP";
+      Type *floattype = dyn_cast<Type>(dyn_cast<StoreInst>(I)->getOperand(0)->getType());
+      if (floattype->isFloatTy()) {
+        float val = dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_float(val);
+        value_to_store = ieee_fl.to_expr();
+      } else if (floattype->isDoubleTy()) {
+        float val = dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF().convertToFloat();
+        ieee_floatt ieee_fl = ieee_floatt();
+        ieee_fl.from_double(val);
+        value_to_store = ieee_fl.to_expr();
+      } else {
+        assert(false && "This floating point type in above instruction is not handled");
+      }
+      // assert(false && "This constant type is not handled");
     } else {
       assert(false && "This constant type is not handled");
     }
@@ -1314,6 +1779,7 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I) {
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I) {
   goto_programt gp;
+  // errs() << "FPExt is yet to be mapped \n";
   assert(false && "FPExt is yet to be mapped \n");
   return gp;
 }
@@ -2387,7 +2853,7 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
   switch (I.getOpcode()) {
     // Terminators
     case Instruction::Ret : {
-      goto_programt ret_gp = trans_Ret(Inst);
+      goto_programt ret_gp = trans_Ret(Inst, *symbol_table);
         gp.destructive_append(ret_gp);
         break;
       }
@@ -2441,7 +2907,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::FAdd : {
-        gp = trans_FAdd(Inst);
+        goto_programt fadd_inst = trans_FAdd(Inst, *symbol_table);
+        gp.destructive_append(fadd_inst);
         break;
       }
     case Instruction::Sub : {
@@ -2450,7 +2917,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::FSub : {
-        gp = trans_FSub(Inst);
+        goto_programt fsub_inst = trans_FSub(Inst, *symbol_table);
+        gp.destructive_append(fsub_inst);
         break;
       }
     case Instruction::Mul : {
@@ -2459,7 +2927,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::FMul : {
-        gp = trans_FMul(Inst);
+        goto_programt fmul_inst = trans_FMul(Inst, *symbol_table);
+        gp.destructive_append(fmul_inst);
         break;
       }
     case Instruction::UDiv : {
@@ -2473,7 +2942,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::FDiv : {
-        gp = trans_FDiv(Inst);
+        goto_programt fdiv_inst = trans_FDiv(Inst, *symbol_table);
+        gp.destructive_append(fdiv_inst);
         break;
       }
     case Instruction::URem : {
@@ -2487,7 +2957,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::FRem : {
-        gp = trans_FRem(Inst);
+        goto_programt frem_inst = trans_FRem(Inst, *symbol_table);
+        gp.destructive_append(frem_inst);
         break;
       }
 
@@ -2832,23 +3303,23 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
              e.g. trans_Gloabals, trans_Block, etc.
 
 \*******************************************************************/
-goto_functionst llvm2goto_translator::trans_Program(Module *Mod) {
+goto_functionst llvm2goto_translator::trans_Program() {
   // TODO(Rasika): check for presence of function body
-  Module &M = *Mod;
+  // Module &M = *M;
   // errs() << "in trans_Program\n";
   goto_functionst goto_functions;
   // goto_functionst::goto_functiont goto_function;
-  symbol_tablet symbol_table = trans_Globals(Mod);
+  symbol_tablet symbol_table = trans_Globals(M);
   // symbol_table.show(std::cout);
   goto_programt gp;
-  for (Function &F : M) {
+  for (Function &F : *M) {
     Type *functt = (dyn_cast<Type>(F.getFunctionType()));
     symbolt fn = symbol_creator::create_FunctionTy(functt);
     fn.name = dstringt(F.getName().str());
     fn.base_name = fn.name;
     symbol_table.add(fn);
   }
-  for (Function &F : M) {
+  for (Function &F : *M) {
     // SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
     // F.getAllMetadata(MDs);
     // if(F.hasMetadata()) {

@@ -9,8 +9,10 @@ using namespace llvm;
 #define SRC_LLVM2GOTO_TRANSLATOR_H_
 class llvm2goto_translator :public llvm2goto_translatort{
  public:
-  symbol_tablet symbol_table;
-  goto_programt trans_Ret(const Instruction *I);
+  llvm2goto_translator(Module *M);
+  ~llvm2goto_translator();
+  goto_programt trans_Ret(const Instruction *I,
+    const symbol_tablet &symbol_table);
   goto_programt trans_Br(const Instruction *I, symbol_tablet *symbol_tablet,
     std::map <const Instruction*, goto_programt::targett>
     &instruction_target_map);
@@ -25,23 +27,28 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_CatchSwitch(const Instruction *I);
   goto_programt trans_Add(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_FAdd(const Instruction *I);
+  goto_programt trans_FAdd(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_Sub(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_FSub(const Instruction *I);
+  goto_programt trans_FSub(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_Mul(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_FMul(const Instruction *I);
+  goto_programt trans_FMul(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_UDiv(const Instruction *I,
     symbol_tablet &symbol_table);
   goto_programt trans_SDiv(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_FDiv(const Instruction *I);
+  goto_programt trans_FDiv(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_URem(const Instruction *I,
     symbol_tablet &symbol_table);
   goto_programt trans_SRem(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_FRem(const Instruction *I);
+  goto_programt trans_FRem(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_And(const Instruction *I);
   goto_programt trans_Or(const Instruction *I);
   goto_programt trans_Xor(const Instruction *I);
@@ -103,6 +110,6 @@ class llvm2goto_translator :public llvm2goto_translatort{
   std::map <const BasicBlock*, goto_programt::targett> block_target_map,
   std::map <const Instruction*, goto_programt::targett> instruction_target_map);
 
-  goto_functionst trans_Program(Module *Mod);
+  goto_functionst trans_Program();
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATOR_H_"

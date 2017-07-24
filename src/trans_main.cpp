@@ -100,7 +100,17 @@ int main(){
   y.mode = ID_C;
   y.name = y_name;
   y.base_name = y_bname;
-  y.type = signedbv_typet(32);
+  bitvector_typet bvt(ID_floatbv, 64);
+  std::cout << "1 ";
+  y.type = bvt;
+  std::cout << "2 ";
+  floatbv_typet fbt = to_floatbv_type(bvt);
+  std::cout << "3 ";
+  ieee_floatt ieee_fl = ieee_floatt();
+  ieee_fl.from_double(1.5);
+  y.value = ieee_fl.to_expr();
+  std::cout << "4 ";
+  // ieee_floatt ieee_fl = ieee_floatt(to_floatbv_type(bvt));
   // y.value = from_integer(1,y.type);
   symbol_table.add(y);
 
@@ -162,7 +172,10 @@ int main(){
   xz.output(ns, "x", std::cout);
   std::cout << "xz................\n";
   xz.output(std::cout);
-   
+  
+  goto_programt::targett y_ass = xz.add_instruction();
+  y_ass->make_assignment();
+  y_ass->code = code_assignt(y.symbol_expr(), ieee_fl.to_expr());
   // build x=y;skip;
   goto_programt xy;
   goto_programt::targett xy_ins = xy.add_instruction();
@@ -327,8 +340,8 @@ int main(int argc, char **argv) {
     errs() << "Please turn off all the optimization flags.\n";
     return 1;
   }
-  llvm2goto_translator llvm2goto;
-  llvm2goto.trans_Program(M);
+  llvm2goto_translator llvm2goto = llvm2goto_translator(M);
+  llvm2goto.trans_Program();
   return 0;
 }
 #endif
