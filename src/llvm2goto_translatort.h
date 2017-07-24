@@ -102,9 +102,12 @@ class llvm2goto_translatort {
     virtual goto_programt trans_Select(const Instruction *I) = 0;
     virtual goto_programt trans_Call(const Instruction *I,
         symbol_tablet *symbol_table) = 0;
-    virtual goto_programt trans_Shl(const Instruction *I) = 0;
-    virtual goto_programt trans_LShr(const Instruction *I) = 0;
-    virtual goto_programt trans_AShr(const Instruction *I) = 0;
+    virtual goto_programt trans_Shl(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
+    virtual goto_programt trans_LShr(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
+    virtual goto_programt trans_AShr(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_VAArg(const Instruction *I) = 0;
     virtual goto_programt trans_ExtractElement(const Instruction *I) = 0;
     virtual goto_programt trans_InsertElement(const Instruction *I) = 0;

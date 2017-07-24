@@ -2620,9 +2620,70 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     Purpose: Map llvm::Instruction::Shl to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Shl(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "Shl is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+
+  goto_programt::targett shl_inst = gp.add_instruction();
+  shl_inst->make_assignment();
+  shl_inst->code = code_assignt(result.symbol_expr(),
+    shl_exprt(exprt1, exprt2));
+  shl_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  shl_inst->source_location = location;
+  shl_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -2639,9 +2700,70 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I) {
     Purpose: Map llvm::Instruction::LShr to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_LShr(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "LShr is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+
+  goto_programt::targett lshr_inst = gp.add_instruction();
+  lshr_inst->make_assignment();
+  lshr_inst->code = code_assignt(result.symbol_expr(),
+    lshr_exprt(exprt1, exprt2));
+  lshr_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  lshr_inst->source_location = location;
+  lshr_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -2658,9 +2780,70 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I) {
     Purpose: Map llvm::Instruction::AShr to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_AShr(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
+  symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "AShr is yet to be mapped \n");
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+      li->getOperand(0)->dump();
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+    }
+    exprt2 = op2.symbol_expr();
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+
+  goto_programt::targett ashr_inst = gp.add_instruction();
+  ashr_inst->make_assignment();
+  ashr_inst->code = code_assignt(result.symbol_expr(),
+    ashr_exprt(exprt1, exprt2));
+  ashr_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  ashr_inst->source_location = location;
+  ashr_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -3240,15 +3423,18 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::Shl : {
-        gp = trans_Shl(Inst);
+        goto_programt shl_Inst = trans_Shl(Inst, *symbol_table);
+        gp.destructive_append(shl_Inst);
         break;
       }
     case Instruction::LShr : {
-        gp = trans_LShr(Inst);
+        goto_programt lshr_Inst = trans_LShr(Inst, *symbol_table);
+        gp.destructive_append(lshr_Inst);
         break;
       }
     case Instruction::AShr : {
-        gp = trans_AShr(Inst);
+        goto_programt ashr_Inst = trans_AShr(Inst, *symbol_table);
+        gp.destructive_append(ashr_Inst);
         break;
       }
     case Instruction::VAArg : {

@@ -84,9 +84,12 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_PHI(const Instruction *I);
   goto_programt trans_Select(const Instruction *I);
   goto_programt trans_Call(const Instruction *I, symbol_tablet *symbol_table);
-  goto_programt trans_Shl(const Instruction *I);
-  goto_programt trans_LShr(const Instruction *I);
-  goto_programt trans_AShr(const Instruction *I);
+  goto_programt trans_Shl(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_LShr(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_AShr(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_VAArg(const Instruction *I);
   goto_programt trans_ExtractElement(const Instruction *I);
   goto_programt trans_InsertElement(const Instruction *I);
