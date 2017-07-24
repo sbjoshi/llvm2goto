@@ -49,9 +49,12 @@ class llvm2goto_translator :public llvm2goto_translatort{
     symbol_tablet &symbol_table);
   goto_programt trans_FRem(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_And(const Instruction *I);
-  goto_programt trans_Or(const Instruction *I);
-  goto_programt trans_Xor(const Instruction *I);
+  goto_programt trans_And(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_Or(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_Xor(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_Alloca(const Instruction *I,
         symbol_tablet &symbol_table);
   goto_programt trans_Load(const Instruction *I);

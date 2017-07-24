@@ -64,9 +64,12 @@ class llvm2goto_translatort {
     symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_FRem(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
-    virtual goto_programt trans_And(const Instruction *I) = 0;
-    virtual goto_programt trans_Or(const Instruction *I) = 0;
-    virtual goto_programt trans_Xor(const Instruction *I) = 0;
+    virtual goto_programt trans_And(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
+    virtual goto_programt trans_Or(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
+    virtual goto_programt trans_Xor(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Alloca(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Load(const Instruction *I) = 0;
