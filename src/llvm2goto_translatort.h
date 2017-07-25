@@ -80,8 +80,10 @@ class llvm2goto_translatort {
     virtual goto_programt trans_Fence(const Instruction *I) = 0;
     virtual goto_programt trans_GetElementPtr(const Instruction *I) = 0;
     virtual goto_programt trans_Trunc(const Instruction *I) = 0;
-    virtual goto_programt trans_ZExt(const Instruction *I) = 0;
-    virtual goto_programt trans_SExt(const Instruction *I) = 0;
+    virtual goto_programt trans_ZExt(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
+    virtual goto_programt trans_SExt(const Instruction *I,
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_FPTrunc(const Instruction *I) = 0;
     virtual goto_programt trans_FPExt(const Instruction *I) = 0;
     virtual goto_programt trans_FPToUI(const Instruction *I) = 0;

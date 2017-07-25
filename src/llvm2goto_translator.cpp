@@ -1871,9 +1871,60 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I) {
     Purpose: Map llvm::Instruction::ZExt to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
+  symbol_tablet &symbol_table) {
+  assert(!dyn_cast<ZExtInst>(I)->isLosslessCast() && "This type conversion is lossy.");
   goto_programt gp;
-  // assert(false && "ZExt is yet to be mapped \n");
+  typet dest_type = signedbv_typet(dyn_cast<ZExtInst>(I)->getDestTy()->getIntegerBitWidth());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1;
+  exprt exprt1;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+          li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+    decl_add->function = irep_idt(I->getFunction()->getName().str());
+    decl_add->source_location = location;
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett zext_inst = gp.add_instruction();
+  zext_inst->make_assignment();
+  typecast_exprt tce(exprt1, dest_type);
+  zext_inst->code = code_assignt(result.symbol_expr(), tce);
+  zext_inst->function = irep_idt(I->getFunction()->getName().str());
+  zext_inst->source_location = location;
+  zext_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -1890,9 +1941,60 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I) {
     Purpose: Map llvm::Instruction::SExt to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_SExt(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
+  symbol_tablet &symbol_table) {
+  assert(!dyn_cast<SExtInst>(I)->isLosslessCast() && "This type conversion is lossy.");
   goto_programt gp;
-  // assert(false && "SExt is yet to be mapped \n");
+  typet dest_type = signedbv_typet(dyn_cast<SExtInst>(I)->getDestTy()->getIntegerBitWidth());
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1;
+  exprt exprt1;
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+          li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
+  try {
+    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = exprt1.type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+    decl_add->function = irep_idt(I->getFunction()->getName().str());
+    decl_add->source_location = location;
+  }
+  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  goto_programt::targett zext_inst = gp.add_instruction();
+  zext_inst->make_assignment();
+  typecast_exprt tce(exprt1, dest_type);
+  zext_inst->code = code_assignt(result.symbol_expr(), tce);
+  zext_inst->function = irep_idt(I->getFunction()->getName().str());
+  zext_inst->source_location = location;
+  zext_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -2391,137 +2493,64 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       case llvm::Type::TypeID::HalfTyID : {
         errs() << "\nHalf type";
         symbol = symbol_creator::create_HalfTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
       }
       // 32-bit floating point type
       case llvm::Type::TypeID::FloatTyID : {
         errs() << "\nFloat type";
         symbol = symbol_creator::create_FloatTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         break;
       }
       // 64-bit floating point type
       case llvm::Type::TypeID::DoubleTyID : {
         symbol = symbol_creator::create_DoubleTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nDouble type";
         break;
       }
       // 80-bit floating point type (X87)
       case llvm::Type::TypeID::X86_FP80TyID : {
         symbol = symbol_creator::create_X86_FP80Ty(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nX86_FP80 type";
         break;
       }
       // 128-bit floating point type (112-bit mantissa)
       case llvm::Type::TypeID::FP128TyID : {
         symbol = symbol_creator::create_FP128Ty(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nFP128 type";
         break;
       }
       // 128-bit floating point type (two 64-bits, PowerPC)
       case llvm::Type::TypeID::PPC_FP128TyID : {
         symbol = symbol_creator::create_PPC_FP128Ty(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nPPC_FP128 type";
         break;
       }
       case llvm::Type::TypeID::IntegerTyID : {
         symbol = symbol_creator::create_IntegerTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nInteger type";
         break;
       }
       case llvm::Type::TypeID::StructTyID : {
-        // const MDNode *dit = dyn_cast<MDNode>(*mmd);
         symbol = symbol_creator::create_StructTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nStruct type";
         break;
       }
       case llvm::Type::TypeID::ArrayTyID : {
         symbol = symbol_creator::create_ArrayTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nArray type";
         break;
       }
       case llvm::Type::TypeID::PointerTyID : {
         symbol = symbol_creator::create_PointerTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nPointer type";
         break;
       }
       case llvm::Type::TypeID::VectorTyID : {
         symbol = symbol_creator::create_VectorTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         errs() << "\nVector type";
         break;
       }
       case llvm::Type::TypeID::X86_MMXTyID : {
         symbol = symbol_creator::create_X86_MMXTy(type, mdn);
-        symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
-        symbol_table->add(symbol);
-        goto_programt::targett decl_symbol = gp.add_instruction();
-        decl_symbol->make_decl();
-        decl_symbol->code=code_declt(symbol.symbol_expr());
-        decl_symbol->source_location = symbol.location;
         break;
       }
       case llvm::Type::TypeID::VoidTyID :
@@ -2532,6 +2561,22 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         default:
         errs() << "\ninvalid type for global variable";
     }
+    symbol.name = I->getFunction()->getName().str() + "::" + symbol.base_name.c_str();
+    symbol_table->add(symbol);
+    goto_programt::targett decl_symbol = gp.add_instruction();
+    decl_symbol->make_decl();
+    decl_symbol->code=code_declt(symbol.symbol_expr());
+    source_locationt location = symbol.location;
+    if (&(I->getDebugLoc()) != NULL) {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+    decl_symbol->source_location = location;
   } else if (dyn_cast<CallInst>(I)->getCalledFunction() == NULL) {
     // dyn_cast<CallInst>(I)->dump();
     const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
@@ -3350,11 +3395,13 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
         break;
       }
     case Instruction::ZExt : {
-        gp = trans_ZExt(Inst);
+        goto_programt zext_gp = trans_ZExt(Inst, *symbol_table);
+        gp.destructive_append(zext_gp);
         break;
       }
     case Instruction::SExt : {
-        gp = trans_SExt(Inst);
+        goto_programt sext_gp = trans_SExt(Inst, *symbol_table);
+        gp.destructive_append(sext_gp);
         break;
       }
     case Instruction::FPTrunc : {

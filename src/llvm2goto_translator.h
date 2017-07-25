@@ -65,8 +65,10 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_Fence(const Instruction *I);
   goto_programt trans_GetElementPtr(const Instruction *I);
   goto_programt trans_Trunc(const Instruction *I);
-  goto_programt trans_ZExt(const Instruction *I);
-  goto_programt trans_SExt(const Instruction *I);
+  goto_programt trans_ZExt(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_SExt(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_FPTrunc(const Instruction *I);
   goto_programt trans_FPExt(const Instruction *I);
   goto_programt trans_FPToUI(const Instruction *I);
