@@ -64,17 +64,24 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_AtomicRMW(const Instruction *I);
   goto_programt trans_Fence(const Instruction *I);
   goto_programt trans_GetElementPtr(const Instruction *I);
-  goto_programt trans_Trunc(const Instruction *I);
+  goto_programt trans_Trunc(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_ZExt(const Instruction *I,
     symbol_tablet &symbol_table);
   goto_programt trans_SExt(const Instruction *I,
     symbol_tablet &symbol_table);
-  goto_programt trans_FPTrunc(const Instruction *I);
-  goto_programt trans_FPExt(const Instruction *I);
-  goto_programt trans_FPToUI(const Instruction *I);
-  goto_programt trans_FPToSI(const Instruction *I);
-  goto_programt trans_UIToFP(const Instruction *I);
-  goto_programt trans_SIToFP(const Instruction *I);
+  goto_programt trans_FPTrunc(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_FPExt(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_FPToUI(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_FPToSI(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_UIToFP(const Instruction *I,
+    symbol_tablet &symbol_table);
+  goto_programt trans_SIToFP(const Instruction *I,
+    symbol_tablet &symbol_table);
   goto_programt trans_IntToPtr(const Instruction *I);
   goto_programt trans_PtrToInt(const Instruction *I);
   goto_programt trans_BitCast(const Instruction *I);
