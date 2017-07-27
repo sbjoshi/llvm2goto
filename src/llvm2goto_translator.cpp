@@ -20,6 +20,7 @@
 
 #include "ansi-c/ansi_c_language.h"
 #include "util/ieee_float.h"
+
 using namespace llvm;
 
 // TODO(Rasika): handle signed comparison.
@@ -47,16 +48,65 @@ llvm2goto_translator::~llvm2goto_translator() {
 goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
   const symbol_tablet &symbol_table) {
   goto_programt gp;
+  Value *ub = dyn_cast<ReturnInst>(I)->getReturnValue();
+  symbolt op1;
+  exprt exprt1;
+  if (dyn_cast<Constant>(ub)) {
+    if (const ConstantInt *cint = dyn_cast<ConstantInt>(ub)) {
+      uint64_t val;
+      val = cint->getZExtValue();
+      exprt1 = from_integer(val, symbol_creator::create_type(ub->getType()));
+    } else if (dyn_cast<ConstantFP>(ub)) {
+        errs() << "ConstantFP";
+        Type *floattype = dyn_cast<Type>((ub)->getType());
+        if (floattype->isFloatTy()) {
+          float val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToFloat();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_float(val);
+          exprt1 = ieee_fl.to_expr();
+        } else if (floattype->isDoubleTy()) {
+          float val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToDouble();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_double(val);
+          exprt1 = ieee_fl.to_expr();
+        } else {
+          ub->dump();
+          assert(false && "This floating point type in above instruction is not handled");
+        }
+    } else {
+      ub->dump();
+      assert(false && "This constant type in above instruction is not handled");
+    }
+  } else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
+      li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    } else {
+          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+    }
+    exprt1 = op1.symbol_expr();
+  }
+  source_locationt location;
+  if (&(I->getDebugLoc()) != NULL) {
+    const DebugLoc loc = I->getDebugLoc();
+    location.set_file(loc
+          ->getScope()->getFile()->getFilename().str());
+    location.set_working_directory(loc
+          ->getScope()->getFile()->getDirectory().str());
+    location.set_line(loc->getLine());
+    location.set_column(loc->getColumn());
+  }
   goto_programt::targett ret_inst = gp.add_instruction();
   code_returnt cret;
-  dyn_cast<ReturnInst>(I)->getReturnValue()->dump();
+  // dyn_cast<ReturnInst>(I)->getReturnValue()->dump();
   // symbolt ret_symb = symbol_table.lookup(I->getFunction()->getName()->c_str()
   //   + "::" + );
   // temp.name = irep_idt("temp");
   // temp.type = unsignedbv_typet(32);
-  // cret.return_value() = temp.symbol_expr();
+  cret.return_value() = exprt1;
   ret_inst->make_return();
   ret_inst->code = cret;
+  ret_inst->source_location = location;
   // to_code_return(ret_inst->code).return_value() = exprt();
   // assert(false && "Ret is yet to be mapped \n");
   return gp;
@@ -389,6 +439,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -414,6 +465,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     } else {
+      (ub+1)->dump();
       assert(false && "This floating point type in above instruction is not handled");
     }
   } else {
@@ -577,6 +629,7 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -602,6 +655,7 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     } else {
+      (ub+1)->dump();
       assert(false && "This floating point type in above instruction is not handled");
     }
   } else {
@@ -760,6 +814,7 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -785,6 +840,7 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     } else {
+      (ub+1)->dump();
       assert(false && "This floating point type in above instruction is not handled");
     }
   } else {
@@ -1023,6 +1079,7 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -1048,6 +1105,7 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     } else {
+      (ub+1)->dump();
       assert(false && "This floating point type in above instruction is not handled");
     }
   } else {
@@ -1286,6 +1344,7 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -1311,6 +1370,7 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     } else {
+      (ub+1)->dump();
       assert(false && "This floating point type in above instruction is not handled");
     }
   } else {
@@ -1712,16 +1772,16 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
         ieee_fl.from_double(val);
         value_to_store = ieee_fl.to_expr();
       } else {
+        I->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
-      // assert(false && "This constant type is not handled");
     } else {
+      I->dump();
       assert(false && "This constant type is not handled");
     }
   } else {
     if (dyn_cast<StoreInst>(I)->getOperand(0)->hasName()) {
       errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
-      // assert(false && "stop here\n");
       value_to_store = symbol_table.lookup(I->getFunction()->getName().str() + "::" +
       dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()).symbol_expr();
     } else if (dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))) {
@@ -2084,6 +2144,7 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -2167,6 +2228,7 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -2249,6 +2311,7 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -2331,6 +2394,7 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       } else {
+        ub->dump();
         assert(false && "This floating point type in above instruction is not handled");
       }
   } else {
@@ -3999,7 +4063,7 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   // TODO(Rasika): check if definition
   //  is available or not, in built functions...
   goto_programt gp;
-  goto_programt::targett hi;
+  // goto_programt::targett hi;
   std::map <const BasicBlock*, goto_programt::targett> block_target_map;
   std::map <const Instruction*, goto_programt::targett> instruction_target_map;
   errs() << "\tin trans_Function\n";
@@ -4174,6 +4238,9 @@ goto_functionst llvm2goto_translator::trans_Program() {
       errs() << (*it).first.c_str() << "\n";
       it->second.body.output(std::cout);
   }*/
+  // cmdlinet cmdline;
+  // compilet compile(cmdline);
+  // compile.write_object_file("mew.goto", symbol_table, goto_functions);
   errs() << "in trans_Program\n";
   return goto_functions;
 }
