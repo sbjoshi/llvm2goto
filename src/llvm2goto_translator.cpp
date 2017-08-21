@@ -14,11 +14,14 @@
 #include <map>
 
 #include "symbol_creator.h"
+#include "entry_point.h"
 
 #include "llvm/IR/IntrinsicInst.h"
 #include "langapi/mode.h"
 
 #include "ansi-c/ansi_c_language.h"
+#include "util/cmdline.h"
+#include "goto-cc/compile.h"
 #include "util/ieee_float.h"
 
 using namespace llvm;
@@ -338,10 +341,9 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
+  int flag = 2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
-    uint64_t val;
-    val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    flag = 1;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -352,9 +354,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
-    uint64_t val;
-    val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    flag = 0;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -363,6 +363,27 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
       op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
+    std::cout << exprt2.pretty();
+  }
+  if (exprt2.type().id() == ID_signedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
+    typet type = exprt2.type();
+    exprt1 = from_integer(val, type);
+  }
+  if (exprt1.type().id() == ID_signedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
+    typet type = exprt1.type();
+    exprt2 = from_integer(val, type);
+  }
+  if (exprt2.type().id() == ID_unsignedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
+    typet type = exprt2.type();
+    exprt1 = from_integer(val, type);
+  }
+  if (exprt1.type().id() == ID_unsignedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = exprt1.type();
+    exprt2 = from_integer(val, type);
   }
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
@@ -535,10 +556,9 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
+  int flag = 2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
-    uint64_t val;
-    val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    flag = 1;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -549,9 +569,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
-    uint64_t val;
-    val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    flag = 0;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -560,6 +578,27 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
       op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
+    std::cout << exprt2.pretty();
+  }
+  if (exprt2.type().id() == ID_signedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
+    typet type = exprt2.type();
+    exprt1 = from_integer(val, type);
+  }
+  if (exprt1.type().id() == ID_signedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
+    typet type = exprt1.type();
+    exprt2 = from_integer(val, type);
+  }
+  if (exprt2.type().id() == ID_unsignedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
+    typet type = exprt2.type();
+    exprt1 = from_integer(val, type);
+  }
+  if (exprt1.type().id() == ID_unsignedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = exprt1.type();
+    exprt2 = from_integer(val, type);
   }
   try {
     symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
@@ -720,10 +759,9 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
+  int flag = 2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
-    uint64_t val;
-    val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    flag = 1;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -734,9 +772,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
-    uint64_t val;
-    val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    flag = 0;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -745,6 +781,27 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
       op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
     }
     exprt2 = op2.symbol_expr();
+    std::cout << exprt2.pretty();
+  }
+  if (exprt2.type().id() == ID_signedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
+    typet type = exprt2.type();
+    exprt1 = from_integer(val, type);
+  }
+  if (exprt1.type().id() == ID_signedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
+    typet type = exprt1.type();
+    exprt2 = from_integer(val, type);
+  }
+  if (exprt2.type().id() == ID_unsignedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
+    typet type = exprt2.type();
+    exprt1 = from_integer(val, type);
+  }
+  if (exprt1.type().id() == ID_unsignedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = exprt1.type();
+    exprt2 = from_integer(val, type);
   }
   try {
     symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
@@ -987,8 +1044,8 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
-    val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    val = cint->getSExtValue();
+    exprt1 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -1000,8 +1057,8 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   }
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
-    val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    val = cint->getSExtValue();
+    exprt2 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -1252,8 +1309,8 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
-    val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    val = cint->getSExtValue();
+    exprt1 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
@@ -1265,8 +1322,8 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   }
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
     uint64_t val;
-    val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    val = cint->getSExtValue();
+    exprt2 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
@@ -1985,8 +2042,9 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
 goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
   symbol_tablet &symbol_table) {
   assert(!dyn_cast<ZExtInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  // symbol_table.show(std::cout);
   goto_programt gp;
-  typet dest_type = signedbv_typet(dyn_cast<ZExtInst>(I)->getDestTy()->getIntegerBitWidth());
+  typet dest_type = unsignedbv_typet(dyn_cast<ZExtInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
@@ -2020,7 +2078,8 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     symbolt symbol;
     symbol.base_name = I->getName().str();
     symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    symbol.type = exprt1.type();
+    // symbol.type = exprt1.type();
+    symbol.type = dest_type;
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
@@ -2677,12 +2736,9 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   exprt condition;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
+  int flag = 2;
   if (dyn_cast<ConstantInt>(*ub)) {
-    uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
-    typet type = symbol_creator::create_type(
-      dyn_cast<ConstantInt>(*ub)->getType());
-    dyn_cast<ConstantInt>(*ub)->getType()->dump();
-    opnd1 = from_integer(val, type);
+    flag = 1;
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
     opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" +
@@ -2692,17 +2748,38 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   }
 
   if (dyn_cast<ConstantInt>(*(ub + 1))) {
-    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
-    typet type = symbol_creator::create_type(
-      dyn_cast<ConstantInt>(*(ub+1))->getType());
-    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
-    opnd2 = from_integer(val, type);
+    flag = 0;
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
     opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str()).symbol_expr();
+  }
+
+  if (opnd2.type().id() == ID_signedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
+    typet type = opnd2.type();
+    // dyn_cast<ConstantInt>(*(ub))->getType()->dump();
+    opnd1 = from_integer(val, type);
+  }
+  if (opnd1.type().id() == ID_signedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
+    typet type = opnd1.type();
+    // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
+    opnd2 = from_integer(val, type);
+  }
+  if (opnd2.type().id() == ID_unsignedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
+    typet type = opnd2.type();
+    // dyn_cast<ConstantInt>(*(ub))->getType()->dump();
+    opnd1 = from_integer(val, type);
+  }
+  if (opnd1.type().id() == ID_unsignedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = opnd1.type();
+    // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
+    opnd2 = from_integer(val, type);
   }
 
 
@@ -2720,29 +2797,29 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::ICMP_UGT :
     case CmpInst::Predicate::ICMP_SGT : {
       errs() << "\n ICMP_GT\n";
-      condition = exprt(ID_gt);
-      condition.copy_to_operands(opnd1, opnd2);
+      condition = binary_relation_exprt(opnd1, ID_gt, opnd2);
+      // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::ICMP_UGE : {
     case CmpInst::Predicate::ICMP_SGE :
       errs() << "\n ICMP_GE\n";
-      condition = exprt(ID_ge);
-      condition.copy_to_operands(opnd1, opnd2);
+      condition = binary_relation_exprt(opnd1, ID_ge, opnd2);
+      // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::ICMP_ULT :
     case CmpInst::Predicate::ICMP_SLT : {
       errs() << "\n ICMP_LT\n";
-      condition = exprt(ID_lt);
-      condition.copy_to_operands(opnd1, opnd2);
+      condition = binary_relation_exprt(opnd1, ID_lt, opnd2);
+      // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::ICMP_ULE :
     case CmpInst::Predicate::ICMP_SLE : {
       errs() << "\n ICMP_LE\n";
-      condition = exprt(ID_le);
-      condition.copy_to_operands(opnd1, opnd2);
+      condition = binary_relation_exprt(opnd1, ID_le, opnd2);
+      // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
@@ -2775,32 +2852,38 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
   I->dump();
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
+  int flag = 2;
   if (dyn_cast<ConstantInt>(*ub)) {
-    uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
-    typet type = symbol_creator::create_type(
-      dyn_cast<ConstantInt>(*ub)->getType());
-    dyn_cast<ConstantInt>(*ub)->getType()->dump();
-    opnd1 = from_integer(val, type);
+    flag = 1;
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
+    opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" +
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
     opnd1 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + ub->getName().str()).symbol_expr();
   }
 
   if (dyn_cast<ConstantInt>(*(ub + 1))) {
-    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
-    typet type = symbol_creator::create_type(
-      dyn_cast<ConstantInt>(*(ub+1))->getType());
-    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
-    opnd2 = from_integer(val, type);
+    flag = 0;
   } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + 
       li->getOperand(0)->getName().str()).symbol_expr();
   } else {
     opnd2 = symbol_table->lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str()).symbol_expr();
+  }
+
+  if (opnd2.type().id() == ID_signedbv && flag == 1) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = opnd2.type();
+    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
+    opnd1 = from_integer(val, type);
+  }
+  if (opnd1.type().id() == ID_signedbv && flag == 0) {
+    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+    typet type = opnd1.type();
+    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
+    opnd2 = from_integer(val, type);
   }
   switch (dyn_cast<ICmpInst>(I)->getInversePredicate()) {
     case CmpInst::Predicate::ICMP_EQ : {
@@ -2865,10 +2948,38 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     Purpose: Map llvm::Instruction::ICmp to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I, symbol_tablet *symbol_table) {
   goto_programt gp;
+  try {
+    symbol_table->lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+    std::allocator<char> > msg) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.type = bool_typet();
+    symbol_table->add(symbol);
+    goto_programt::targett decl_cmp = gp.add_instruction();
+    decl_cmp->make_decl();
+    decl_cmp->code=code_declt(symbol.symbol_expr());
+    decl_cmp->function = irep_idt(I->getFunction()->getName().str());
+    // decl_cmp->source_location = location;
+  }
   goto_programt::targett Icmp_inst = gp.add_instruction();
-  Icmp_inst->make_skip();
+
+  typet dest_type = unsignedbv_typet(1);
+  // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
+  // uitofp_inst->code = code_assignt(result.symbol_expr(), tce);
+// goto_programt::targett uitofp_inst = gp.add_instruction();
+//   uitofp_inst->make_assignment();
+//   uitofp_inst->function = irep_idt(I->getFunction()->getName().str());
+//   uitofp_inst->source_location = location;
+//   uitofp_inst->type = goto_program_instruction_typet::ASSIGN;
+
+  Icmp_inst->make_assignment();
+  Icmp_inst->code = code_assignt(
+    symbol_table->lookup(I->getFunction()->getName().str() + "::" + I->getName().str()).symbol_expr(),
+    trans_Cmp(I, symbol_table));
   // errs() << "ICmp is yet to be mapped \n";
   return gp;
 }
@@ -3053,21 +3164,31 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     if(function->getName().str() == "assume"){
       errs() << "assume";
       goto_programt::targett assume_inst = gp.add_instruction(ASSUME);
-      Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
-      exprt guard;
-      if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
-        guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);        
-      }
+  //     typet dest_type = unsignedbv_typet(1);
+  // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
+      // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
+      exprt guard = typecast_exprt(symbol_table->lookup(
+        I->getFunction()->getName().str() + "::" + dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->getName().str()).symbol_expr(),
+      bool_typet());
+      // exprt guard;
+      // if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
+      //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
+      // }
       assume_inst->guard = guard;
     }
     if(function->getName().str() == "assert"){
       errs() << "assert";
       goto_programt::targett assert_inst = gp.add_instruction(ASSERT);
-      Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
-      exprt guard;
-      if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
-        guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
-      }
+  //     typet dest_type = unsignedbv_typet(1);
+  // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
+      // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
+      exprt guard = typecast_exprt(symbol_table->lookup(
+        I->getFunction()->getName().str() + "::" + dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->getName().str()).symbol_expr(),
+      bool_typet());
+      // exprt guard;
+      // if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
+      //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
+      // }
       assert_inst->guard = guard;
     }
   } else {
@@ -3696,6 +3817,7 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
   std::map <const Instruction*, goto_programt::targett>
   &instruction_target_map) {
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
+  I.dump();
   const Instruction *Inst = &I;
   goto_programt gp;
   switch (I.getOpcode()) {
@@ -3923,7 +4045,7 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 
     // Other instructions...
     case Instruction::ICmp : {
-        goto_programt Icmp_inst = trans_ICmp(Inst);
+        goto_programt Icmp_inst = trans_ICmp(Inst, symbol_table);
         gp.destructive_append(Icmp_inst);
         break;
       }
@@ -4173,6 +4295,22 @@ goto_functionst llvm2goto_translator::trans_Program() {
   goto_functionst goto_functions;
   // goto_functionst::goto_functiont goto_function;
   symbol_tablet symbol_table = trans_Globals(M);
+
+  symbolt initialize_function;
+  initialize_function.clear();
+  initialize_function.is_static_lifetime=true;
+  initialize_function.is_thread_local=false;
+  const irep_idt initialize_function_bname = INITIALIZE_FUNCTION;
+  const irep_idt initialize_function_name = INITIALIZE_FUNCTION;
+  initialize_function.mode = ID_C;
+  initialize_function.name = initialize_function_name;
+  initialize_function.base_name = initialize_function_bname;
+  code_typet ct = code_typet();
+  ct.return_type() = unsignedbv_typet(32);
+  initialize_function.value = exprt();
+  initialize_function.type = ct;
+  symbol_table.add(initialize_function);
+
   // symbol_table.show(std::cout);
   goto_programt gp;
   for (Function &F : *M) {
@@ -4214,6 +4352,13 @@ goto_functionst llvm2goto_translator::trans_Program() {
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.type = to_code_type(fn.type);
   }
+
+  // std::cout << "\033[1;31m calling set_entry_point \033[0m";
+  set_entry_point(goto_functions, symbol_table);
+  // std::cout << "\033[1;31m set_entry_point done \033[0m";
+  cmdlinet cmdline;
+  compilet compile(cmdline);
+  compile.write_object_file(M->getSourceFileName() + ".goto", symbol_table, goto_functions);
 
   namespacet ns(symbol_table);
 

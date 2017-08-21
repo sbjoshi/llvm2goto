@@ -88,7 +88,7 @@ class llvm2goto_translator :public llvm2goto_translatort{
   goto_programt trans_AddrSpaceCast(const Instruction *I);
   exprt trans_Cmp(const Instruction *I, symbol_tablet *symbol_table);
   exprt trans_Inverse_Cmp(const Instruction *I, symbol_tablet *symbol_table);
-  goto_programt trans_ICmp(const Instruction *I);
+  goto_programt trans_ICmp(const Instruction *I, symbol_tablet *symbol_table);
   goto_programt trans_FCmp(const Instruction *I);
   goto_programt trans_PHI(const Instruction *I);
   goto_programt trans_Select(const Instruction *I);

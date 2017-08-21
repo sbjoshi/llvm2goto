@@ -2,315 +2,13 @@
 
 
 */
-/*
-code_function_callt f;
-    // we don't bother setting the type
-    f.lhs()=cf.lhs();
-    f.function()=symbol_exprt("pthread_create", code_typet());
-    exprt n=null_pointer_exprt(pointer_typet(empty_typet()));
-    f.arguments().push_back(n);
-    f.arguments().push_back(n);
-    f.arguments().push_back(cf.function());
-    f.arguments().push_back(cf.arguments().front());
-*/
-#if 0
-#include "util/arith_tools.h"
-#include "util/ieee_float.h"
-#include "util/symbol_table.h"
-#include "util/std_types.h"
-#include "util/std_expr.h"
-#include "util/source_location.h"
-#include "util/replace_symbol.h"
-#include "langapi/mode.h"
-// #include <string.h>
-#include <iostream>
-#include "ansi-c/ansi_c_language.h"
-#include "goto-programs/goto_functions.h"
-#include "goto-programs/goto_functions_template.h"
-
-
-
-// 
-
-
-
-int main(){
-
-  symbol_tablet symbol_table;
-
-  symbolt x;
-  x.clear();
-  x.is_static_lifetime=true;
-  x.is_thread_local=false;
-  const irep_idt x_bname = "x";
-  const irep_idt x_name = "x";
-  x.mode = ID_C;
-  x.name = x_name;
-  x.base_name = x_bname;
-  x.type = signedbv_typet(32);
-  // x.value = from_integer(0,x.type);
-  symbol_table.add(x);
-
-  symbolt main;
-  main.clear();
-  main.is_static_lifetime=true;
-  main.is_thread_local=false;
-  const irep_idt main_bname = "main";
-  const irep_idt main_name = "main";
-  main.mode = ID_C;
-  main.name = main_name;
-  main.base_name = main_bname;
-  code_typet ct = code_typet();/*
-  code_typet::parameterst para;
-  code_typet::parametert p1(x.type);
-  para.push_back(p1);
-  ct.parameters() = para;*/
-  ct.return_type() = unsignedbv_typet(32);
-  // static_cast<unsignedbv_typet &>(rt);
-  main.type = ct;
-  // main.value = from_integer(0,main.type);
-  symbol_table.add(main);
-
-  symbolt mew;
-  mew.clear();
-  mew.is_static_lifetime=true;
-  mew.is_thread_local=false;
-  const irep_idt mew_bname = "mew";
-  const irep_idt mew_name = "mew";
-  mew.mode = ID_C;
-  mew.name = mew_name;
-  mew.base_name = mew_bname;
-  code_typet ct1 = code_typet();
-  code_typet::parameterst paras;
-  code_typet::parametert para_1(x.type);
-  paras.push_back(para_1);
-  ct1.parameters() = paras;
-  ct1.return_type() = unsignedbv_typet(32);
-  // static_cast<unsignedbv_typet &>(rt);
-  mew.type = ct1;
-  // mew.value = from_integer(0,mew.type);
-  symbol_table.add(mew);
-
-  symbolt y;
-  y.clear();
-  y.is_static_lifetime=true;
-  y.is_thread_local=false;
-  const irep_idt y_bname = "y";
-  const irep_idt y_name = "y";
-  y.mode = ID_C;
-  y.name = y_name;
-  y.base_name = y_bname;
-  bitvector_typet bvt(ID_floatbv, 64);
-  std::cout << "1 ";
-  y.type = bvt;
-  std::cout << "2 ";
-  floatbv_typet fbt = to_floatbv_type(bvt);
-  std::cout << "3 ";
-  ieee_floatt ieee_fl = ieee_floatt();
-  ieee_fl.from_double(1.5);
-  y.value = ieee_fl.to_expr();
-  std::cout << "4 ";
-  // ieee_floatt ieee_fl = ieee_floatt(to_floatbv_type(bvt));
-  // y.value = from_integer(1,y.type);
-  symbol_table.add(y);
-
-  symbolt z;
-  z.clear();
-  z.is_static_lifetime=true;
-  z.is_thread_local=false;
-  const irep_idt z_bname = "z";
-  const irep_idt z_name = "z";
-  z.mode = ID_C;
-  z.name = z_name;
-  z.base_name = z_bname;
-  z.type = signedbv_typet(32);
-  // z.value = from_integer(2,z.type);
-  symbol_table.add(z);
-
-  symbolt v1;
-  v1.clear();
-  v1.is_static_lifetime=true;
-  v1.is_thread_local=false;
-  const irep_idt v1_bname = "v1";
-  const irep_idt v1_name = "v1";
-  v1.mode = ID_C;
-  v1.name = v1_name;
-  v1.base_name = v1_bname;
-  v1.type = unsignedbv_typet(32);
-  v1.value = from_integer(3,v1.type);
-  symbol_table.add(v1);
-
-  symbolt v2;
-  v2.clear();
-  v2.is_static_lifetime=true;
-  v2.is_thread_local=false;
-  const irep_idt v2_bname = "v2";
-  const irep_idt v2_name = "v2";
-  v2.mode = ID_C;
-  v2.name = v2_name;
-  v2.base_name = v2_bname;
-  v2.type = unsignedbv_typet(32);
-  v2.value = from_integer(4,v2.type);
-  symbol_table.add(v2);
-
-  namespacet ns(symbol_table);
-  register_language(new_ansi_c_language);
-
-  ns.get_symbol_table().show(std::cout);
-
-  goto_programt xz;
-  goto_programt::targett xz_ins = xz.add_instruction();
-   
-  //build x=z
-  xz_ins->make_assignment();
-  xz_ins->code = code_assignt(x.symbol_expr(),mod_exprt(y.symbol_expr(),z.symbol_expr()));
-  // std::cout << "\nhello    " << (mod_exprt(y.symbol_expr(),z.symbol_expr())).pretty() << "\n............................................\n";
-  // std::cout << "\nhello    " << (plus_exprt(y.symbol_expr(),z.symbol_expr())).pretty() << "\n............................................\n";
-  // from_expr(ns, "main", xz_ins->code);
-  std::cout << " xz ....\n";
-  xz.update();
-  xz.output(ns, "x", std::cout);
-  std::cout << "xz................\n";
-  xz.output(std::cout);
-  
-  goto_programt::targett y_ass = xz.add_instruction();
-  y_ass->make_assignment();
-  y_ass->code = code_assignt(y.symbol_expr(), ieee_fl.to_expr());
-  // build x=y;skip;
-  goto_programt xy;
-  goto_programt::targett xy_ins = xy.add_instruction();
-  xy_ins->make_assignment();
-  xy_ins->code = code_assignt(x.symbol_expr(),y.symbol_expr());
-  // goto_programt::targett sk1_ins = xy.add_instruction();
-  // sk1_ins->make_skip();
-  xy.update();
-  std::cout << "xy................\n";
-  xy.output(std::cout);
-  // xy.output(ns, "x", std::cout);
-   
-  //jump to skip after x=z
-  goto_programt::targett tmp1_ins = xz.add_instruction();
-  tmp1_ins->make_goto(xy_ins);
-   
-   
-  //build if(v1==v2) then jump to x=y
-  goto_programt v;
-/*x
-main
-mew
-y
-z
-v1
-v2*/
-  goto_programt::targett decl_x = v.add_instruction();
-  decl_x->make_decl();
-  decl_x->code=code_declt(x.symbol_expr());
-
-  goto_programt::targett decl_y = v.add_instruction();
-  decl_y->make_decl();
-  decl_y->code=code_declt(y.symbol_expr());
-
-  goto_programt::targett decl_z = v.add_instruction();
-  decl_z->make_decl();
-  decl_z->code=code_declt(z.symbol_expr());
-
-  goto_programt::targett decl_v1 = v.add_instruction();
-  decl_v1->make_decl();
-  decl_v1->code=code_declt(v1.symbol_expr());
-
-  goto_programt::targett decl_v2 = v.add_instruction();
-  decl_v2->make_decl();
-  decl_v2->code=code_declt(v2.symbol_expr());
-
-  goto_programt::targett v_ins = v.add_instruction();
-  v_ins->make_goto(xy_ins);
-  exprt guard = exprt(ID_lt);
-  guard.copy_to_operands(v1.symbol_expr(), v2.symbol_expr());
-  v_ins->guard = guard;
-  // v_ins->guard = equal_exprt(v1.symbol_expr(),v2.symbol_expr());
-
-  v.destructive_append(xz);
-  v.destructive_append(xy);
-
-  goto_programt::targett v_ins1 = v.add_instruction();
-  v_ins1->guard = equal_exprt(z.symbol_expr(),y.symbol_expr());
-  v_ins1->make_assumption(v_ins1->guard);
-
-  goto_functionst goto_functions;
-  // goto_programt gp;
-  goto_functions.function_map.insert(
-      std::pair<const dstringt, goto_functionst::goto_functiont >(dstringt("main"),
-        goto_functionst::goto_functiont()));
-
-  goto_functions.function_map.insert(
-      std::pair<const dstringt, goto_functionst::goto_functiont >(dstringt("mew"),
-        goto_functionst::goto_functiont()));
-
-
-  code_function_callt call;
-  replace_symbolt replace;
-  // code_typet gf = ns.lookup(irep_idt("mew"));
-  goto_functionst::function_mapt::iterator f_it=
-    goto_functions.function_map.find(dstringt("mew"));
-  assert(f_it!=goto_functions.function_map.end());
-  goto_functionst::function_mapt::iterator f_it1=
-    goto_functions.function_map.find(dstringt("main"));
-  assert(f_it1!=goto_functions.function_map.end());
-  f_it->second.type = to_code_type(mew.type);
-  f_it1->second.type = to_code_type(main.type);
-  const goto_functionst::goto_functiont &gf=f_it->second;
-  call.function()=ns.lookup(dstringt("mew")).symbol_expr();
-  if(gf.type.return_type()!=empty_typet())
-  {
-    call.lhs()= y.symbol_expr();
-  }
-  std::cout << "\nmew" << gf.type.parameters().size() << "\n";
-  std::cout << "\nmain" << f_it1->second.type.parameters().size() << "\n";
-  for(code_typet::parameterst::const_iterator
-      p_it=gf.type.parameters().begin();
-      p_it!=gf.type.parameters().end();
-      p_it++)
-  {
-    call.arguments().push_back(x.symbol_expr());
-  }
-
-  goto_programt::targett v_func_call = v.add_instruction();
-  v_func_call->make_function_call(call);
-
-  v.add_instruction(END_FUNCTION);
-
-  v.update();
-
-  std::cout << "v.................\n";
-  v.output(ns, "x", std::cout);
-
-  goto_programt mew_prog;
-  goto_programt::targett mew1 = mew_prog.add_instruction();
-  mew1->make_skip();
-
-  goto_programt::targett mew2 = mew_prog.add_instruction(END_FUNCTION);
-
-
-  std::cout << "\nname :" << (*goto_functions.function_map.find(dstringt("main"))).first.c_str();
-  (*goto_functions.function_map.find(dstringt("main"))).second.body.swap(v);
-  std::cout << "\nname :" << (*goto_functions.function_map.find(dstringt("mew"))).first.c_str();
-  (*goto_functions.function_map.find(dstringt("mew"))).second.body.swap(mew_prog);
-  std::cout << "\n goto_functions:";
-  goto_functions.output(ns,std::cout);
-  // std::cout << "\n goto_functions.function_map.find(dstringt(\"main\"))->second:";
-  // goto_functions.function_map.find(dstringt("main"))->second.output(std::cout);
-  std::cout << "\n (*goto_functions.function_map.find(dstringt(\"main\"))).second.body:\n";
-  (*goto_functions.function_map.find(dstringt("main"))).second.body.output(std::cout);
-
-  return 0;
-}
-
-#endif
 #if 1
 #include <iostream>
 #include <memory>
 
 #include "llvm2goto_translator.h"
+// #include "scope.h"
+// #include "entry_point.h"
 #include "llvm/IRReader/IRReader.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/SourceMgr.h"
@@ -342,6 +40,135 @@ int main(int argc, char **argv) {
   }
   llvm2goto_translator llvm2goto = llvm2goto_translator(M);
   llvm2goto.trans_Program();
+  // scope::calculate_scope(*M);
   return 0;
+}
+#endif
+
+#if 0
+#include "util/arith_tools.h"
+#include "util/cmdline.h"
+#include "goto-cc/compile.h"
+#include "linking/static_lifetime_init.h"
+#include "langapi/mode.h"
+#include <iostream>
+#include "ansi-c/ansi_c_entry_point.h"
+#include "ansi-c/ansi_c_language.h"
+
+goto_programt block_to_prog(code_blockt cb) {
+  goto_programt gp;
+  for (unsigned int b = 0; b < cb.operands().size(); b++) {
+    goto_programt::targett ins = gp.add_instruction();
+    codet c = to_code(cb.operands()[b]);
+    if(ID_assign == c.get_statement()) {
+      ins->make_assignment();
+      ins->code = code_assignt(c.operands()[0],c.operands()[1]);
+    } else if(ID_output == c.get_statement()) {
+      ins->make_other(c);
+    } else if(ID_label == c.get_statement()) {
+      ins->make_skip();
+    } else if(ID_function_call == c.get_statement()) {
+      ins->make_function_call(c);
+    } else {
+      ins->code = c;
+    }
+  }
+  gp.add_instruction(END_FUNCTION);
+  gp.update();
+  return gp;
+}
+
+int main() {
+  symbol_tablet symbol_table;
+
+  symbolt x;
+  // x.clear();
+  // thread_counter.is_static_lifetime=true;
+  const irep_idt x_bname = "x";
+  const irep_idt x_name = "x";
+  x.mode = ID_C;
+  x.name = x_name;
+  x.base_name = x_bname;
+  x.type = signedbv_typet(32);
+  x.value = from_integer(0,x.type);
+  symbol_table.add(x);
+
+  symbolt main;
+  // main.clear();
+  const irep_idt main_bname = "main";
+  const irep_idt main_name = "main";
+  main.mode = ID_C;
+  main.name = main_name;
+  main.base_name = main_bname;
+  code_typet ct = code_typet();
+  ct.return_type() = unsignedbv_typet(32);
+  main.type = ct;
+  symbol_table.add(main);
+
+  symbolt initialize_function;
+  // initialize_function.clear();
+  const irep_idt initialize_function_bname = INITIALIZE_FUNCTION;
+  const irep_idt initialize_function_name = INITIALIZE_FUNCTION;
+  initialize_function.mode = ID_C;
+  initialize_function.name = initialize_function_name;
+  initialize_function.base_name = initialize_function_bname;
+  initialize_function.type = ct;
+  symbol_table.add(initialize_function);
+
+  goto_functionst goto_functions;
+
+  
+  goto_programt v;
+  code_blockt block;
+  goto_programt::targett decl_x = v.add_instruction();
+  decl_x->make_decl();
+  decl_x->code=code_declt(x.symbol_expr());
+  block.add(decl_x->code);
+  goto_programt::targett assert_inst = v.add_instruction();
+  assert_inst->make_assertion(equal_exprt(x.symbol_expr(),from_integer(0,x.type)));
+  block.add(assert_inst->code);
+  goto_programt::targett ret_inst = v.add_instruction();
+  code_returnt cret;
+  cret.return_value() = from_integer(0, x.type);
+  ret_inst->make_return();
+  ret_inst->code = cret;
+  block.add(ret_inst->code);
+  goto_programt::targett ef = v.add_instruction(END_FUNCTION);
+  block.add(ef->code);
+  v.update();
+  symbol_table.lookup("main").value.swap(block);
+
+  goto_functions.function_map.insert(
+      std::pair<const dstringt, goto_functionst::goto_functiont >(dstringt("main"),
+        goto_functionst::goto_functiont()));
+  (*goto_functions.function_map.find(dstringt("main"))).second.body.swap(v);
+  message_clientt mct;
+  ansi_c_entry_point(symbol_table, "main", mct.get_message_handler());
+  goto_functions.function_map.insert(
+    std::pair<const dstringt, goto_functionst::goto_functiont >(INITIALIZE_FUNCTION,
+    goto_functionst::goto_functiont()));
+  code_blockt initialize_function_block = to_code_block(to_code(symbol_table.lookup(INITIALIZE_FUNCTION).value));
+  goto_programt v1 = block_to_prog(initialize_function_block);
+  (*goto_functions.function_map.find(INITIALIZE_FUNCTION)).second.body.swap(v1);
+
+  goto_functions.function_map.insert(
+    std::pair<const dstringt, goto_functionst::goto_functiont >("_start",
+    goto_functionst::goto_functiont()));
+  code_blockt _start_block = to_code_block(to_code(symbol_table.lookup("_start").value));
+  goto_programt v2 = block_to_prog(_start_block);
+  goto_functions.function_map.insert(
+    std::pair<const dstringt, goto_functionst::goto_functiont >("_start",
+      goto_functionst::goto_functiont()));
+  (*goto_functions.function_map.find("_start")).second.body.swap(v2);
+
+  namespacet ns(symbol_table);
+  register_language(new_ansi_c_language);
+
+  symbol_table.show(std::cout);
+  goto_functions.output(ns, std::cout);
+
+  cmdlinet cmdline;
+  compilet compile(cmdline);
+  compile.write_object_file("mew.goto", symbol_table, goto_functions);
 }
 #endif
