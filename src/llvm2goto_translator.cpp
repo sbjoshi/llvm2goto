@@ -15,6 +15,7 @@
 
 #include "symbol_creator.h"
 #include "entry_point.h"
+#include "scope.h"
 
 #include "llvm/IR/IntrinsicInst.h"
 #include "langapi/mode.h"
@@ -82,16 +83,37 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
     }
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
-      li->getOperand(0)->dump();
       op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    	// dyn_cast<Instruction>(li->getOperand(0))->dump();
+    	// errs() << "\n 0";
+      // if (&(dyn_cast<Instruction>(li->getOperand(0))->getDebugLoc()) != NULL) {
+      // 	errs() << "\n 1";
+      // 	const DebugLoc loc = dyn_cast<Instruction>(li->getOperand(0))->getDebugLoc();
+      // 	loc->getScope()->dump();
+      // 	errs() << "\n 2";
+      // 	std::string name = scope_name_map.find(loc->getScope())->second; // + "::" + li->getOperand(0)->getName().str();
+      // 	errs() << "\n 3" << name;
+      // 	op1 = symbol_table.lookup(name);
+      // 	errs() << "\n 4";
+      // 	assert(false);
+      // }
     } else {
           op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+          if (&(dyn_cast<Instruction>(ub)->getDebugLoc()) != NULL) {
+          	const DebugLoc loc = dyn_cast<Instruction>(ub)->getDebugLoc();
+          	std::string name = scope_name_map.find(loc->getScope())->second;
+          	op1 = symbol_table.lookup(name);
+          	assert(false);
+          }
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
   if (&(I->getDebugLoc()) != NULL) {
     const DebugLoc loc = I->getDebugLoc();
+    // errs() << ".....||||||||||||||||.....\n";
+    // loc->getScope()->dump();
+    // errs() << ".....||||||||||||||||.....\n";
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
     location.set_working_directory(loc
@@ -342,7 +364,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   symbolt op1, op2;
   exprt exprt1, exprt2;
   int flag = 2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if (dyn_cast<ConstantInt>(*ub)) {
     flag = 1;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
@@ -353,7 +375,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if (dyn_cast<ConstantInt>(*(ub+1))) {
     flag = 0;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
@@ -557,7 +579,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   symbolt op1, op2;
   exprt exprt1, exprt2;
   int flag = 2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if (dyn_cast<ConstantInt>(*ub)) {
     flag = 1;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
@@ -568,7 +590,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if (dyn_cast<ConstantInt>(*(ub+1))) {
     flag = 0;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
@@ -760,7 +782,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   symbolt op1, op2;
   exprt exprt1, exprt2;
   int flag = 2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if (dyn_cast<ConstantInt>(*ub)) {
     flag = 1;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
@@ -771,7 +793,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if (dyn_cast<ConstantInt>(*(ub+1))) {
     flag = 0;
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
@@ -4185,7 +4207,9 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   // TODO(Rasika): check if definition
   //  is available or not, in built functions...
   goto_programt gp;
-  // goto_programt::targett hi;
+  scope_tree st;
+  // std::map<DIScope*, std::string> scope_name_map;
+  st.get_scope_name_map(*(M->begin()), &scope_name_map);
   std::map <const BasicBlock*, goto_programt::targett> block_target_map;
   std::map <const Instruction*, goto_programt::targett> instruction_target_map;
   errs() << "\tin trans_Function\n";

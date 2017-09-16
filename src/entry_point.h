@@ -22,7 +22,7 @@ void set_function_symbol_value(goto_functionst::function_mapt function_map, symb
 void add_function_definitions(std::string name, goto_functionst &goto_functions, symbol_tablet &symbol_table) {
   goto_programt gp;
   code_blockt cb = to_code_block(to_code(symbol_table.lookup(name).value));
-  for (int b = 0; b < cb.operands().size(); b++) {
+  for (unsigned int b = 0; b < cb.operands().size(); b++) {
     goto_programt::targett ins = gp.add_instruction();
     codet c = to_code(cb.operands()[b]);
     if(ID_assign == c.get_statement()) {

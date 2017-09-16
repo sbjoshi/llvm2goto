@@ -143,7 +143,8 @@ void scope_tree::populate_names(std::map<DIScope*, std::string> *scope_name_map,
     scope_name_map->insert(std::pair<DIScope*, std::string>(node->scope,
       parent_name + "::" + node->name));
   }
-  scope_node *start = node->first_child, *end = node->last_child;
+  scope_node *start = node->first_child;
+   // *end = node->last_child;
   while (start != NULL) {
     populate_names(scope_name_map, start);
     start = start->right_sibling;
