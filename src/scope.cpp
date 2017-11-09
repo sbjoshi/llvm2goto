@@ -243,8 +243,17 @@ void scope_tree::construct_tree(const Function &F) {
             == Metadata::MetadataKind::DILocationKind) {
             DILocation *loc = dyn_cast<DILocation>(md->second);
             switch (loc->getScope()->getMetadataID()) {
+              case llvm::Metadata::MetadataKind::DILexicalBlockFileKind: {
+                DIScope *S = dyn_cast<DIScope>(loc->getScope());
+                S = dyn_cast<DILocalScope>(S)->getNonLexicalBlockFileScope();
+                if (scope_scope_node_map.find(S)
+                  == scope_scope_node_map.end()) {
+                  S->dump();
+                  add_node(S);
+                }
+                break;
+              }
               case llvm::Metadata::MetadataKind::DILexicalBlockKind:
-              case llvm::Metadata::MetadataKind::DILexicalBlockFileKind:
               case llvm::Metadata::MetadataKind::DISubprogramKind:
               case llvm::Metadata::MetadataKind::DIModuleKind:
               case llvm::Metadata::MetadataKind::DINamespaceKind:
@@ -259,6 +268,7 @@ void scope_tree::construct_tree(const Function &F) {
                 DIScope *S = dyn_cast<DIScope>(loc->getScope());
                 if (scope_scope_node_map.find(S)
                   == scope_scope_node_map.end()) {
+                  S->dump();
                   add_node(S);
                 }
             }

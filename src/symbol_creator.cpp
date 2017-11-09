@@ -246,7 +246,6 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
         type->getIntegerBitWidth());
       break;
   }
-  // mdn->dump();
   if (dyn_cast<DIGlobalVariable>(mdn) != NULL) {
     variable.location = locationt::get_location_global_variable(mdn);
     const irep_idt tmp_name = dyn_cast<DIGlobalVariable>(mdn)->getName().str();

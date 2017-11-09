@@ -125,7 +125,12 @@ class llvm2goto_translator :public llvm2goto_translatort{
   std::map <const BasicBlock*, goto_programt::targett> block_target_map,
   std::map <const Instruction*, goto_programt::targett> instruction_target_map);
 
+  std::string get_arg_name(const Instruction*);
+
   goto_functionst trans_Program();
+  // scope to name of the scope.
   std::map<DIScope*, std::string> scope_name_map;
+  // var name to full name.
+  std::map<std::string, std::string> var_name_map;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATOR_H_"
