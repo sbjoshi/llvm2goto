@@ -1993,9 +1993,9 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2009,13 +2009,15 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2024,7 +2026,7 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett trunc_inst = gp.add_instruction();
   trunc_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2064,9 +2066,9 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2080,13 +2082,15 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     // symbol.type = exprt1.type();
     symbol.type = dest_type;
     symbol_table.add(symbol);
@@ -2096,7 +2100,7 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett zext_inst = gp.add_instruction();
   zext_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2135,9 +2139,9 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(I->getOperand(0)->getName().str())->second);
     } else {
-          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2151,13 +2155,15 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2166,7 +2172,7 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett zext_inst = gp.add_instruction();
   zext_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2218,9 +2224,9 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2234,13 +2240,15 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2249,7 +2257,7 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett fptrunc_inst = gp.add_instruction();
   fptrunc_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2302,9 +2310,9 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2318,13 +2326,15 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2333,7 +2343,7 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett fpext_inst = gp.add_instruction();
   fpext_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2385,9 +2395,9 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2401,13 +2411,15 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2416,7 +2428,7 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett fp_to_ui = gp.add_instruction();
   fp_to_ui->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2468,9 +2480,9 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2484,13 +2496,15 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2499,7 +2513,7 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett fp_to_si = gp.add_instruction();
   fp_to_si->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2538,9 +2552,9 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2554,13 +2568,15 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2569,7 +2585,7 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett uitofp_inst = gp.add_instruction();
   uitofp_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2608,9 +2624,9 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-          op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -2624,13 +2640,15 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     location.set_line(loc->getLine());
     location.set_column(loc->getColumn());
   }
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2639,7 +2657,7 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
   goto_programt::targett sitofp_inst = gp.add_instruction();
   sitofp_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
