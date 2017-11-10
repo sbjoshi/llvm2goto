@@ -1521,9 +1521,9 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -1534,29 +1534,31 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
 
   goto_programt::targett and_inst = gp.add_instruction();
   and_inst->make_assignment();
@@ -1608,9 +1610,9 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -1621,29 +1623,31 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
     symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
 
   goto_programt::targett or_inst = gp.add_instruction();
   or_inst->make_assignment();
@@ -1695,9 +1699,9 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op1 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + ub->getName().str());
+      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
@@ -1708,29 +1712,31 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   } else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + li->getOperand(0)->getName().str());
+      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
     } else {
-      op2 = symbol_table.lookup(I->getFunction()->getName().str() + "::" + (ub + 1)->getName().str());
+      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
-  try {
-    symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    std::allocator<char> > msg) {
+  // try {
+  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
+  //   std::allocator<char> > msg) {
+  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
 
   goto_programt::targett xor_inst = gp.add_instruction();
   xor_inst->make_assignment();
