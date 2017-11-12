@@ -1,5 +1,5 @@
 /* Copyright
-
+Author : Rasika
 
 */
 #include <iostream>
@@ -21,7 +21,8 @@
 using namespace llvm;
 #ifndef SRC_LLVM2GOTO_TRANSLATORT_H_
 #define SRC_LLVM2GOTO_TRANSLATORT_H_
-class llvm2goto_translatort {
+class llvm2goto_translatort
+{
  public:
     Module *M;
     // symbol_tablet symbol_table;

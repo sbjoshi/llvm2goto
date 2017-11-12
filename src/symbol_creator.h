@@ -1,7 +1,8 @@
 /* Copyright
-
+Author : Rasika
 
 */
+
 #include "util/symbol_table.h"
 #include <string.h>
 #include "llvm/IR/GlobalVariable.h"
@@ -11,7 +12,8 @@
 using namespace llvm;
 #ifndef SRC_SYMBOL_CREATOR_H_
 #define SRC_SYMBOL_CREATOR_H_
-class symbol_creator{
+class symbol_creator
+{
  public:
   static symbolt create_HalfTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_FloatTy(Type *type, llvm::MDNode *mdn);

@@ -1,5 +1,5 @@
 /* Copyright
-
+Author : Rasika
 
 */
 #include "llvm2goto_translatort.h"
@@ -7,9 +7,10 @@
 using namespace llvm;
 #ifndef SRC_LLVM2GOTO_TRANSLATOR_H_
 #define SRC_LLVM2GOTO_TRANSLATOR_H_
-class llvm2goto_translator :public llvm2goto_translatort{
+class llvm2goto_translator:public llvm2goto_translatort
+{
  public:
-  llvm2goto_translator(Module *M);
+  explicit llvm2goto_translator(Module *M);
   ~llvm2goto_translator();
   goto_programt trans_Ret(const Instruction *I,
     const symbol_tablet &symbol_table);

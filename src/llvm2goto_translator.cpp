@@ -1,5 +1,5 @@
 /* Copyright
-
+Author : Rasika
 
 */
 
@@ -31,11 +31,13 @@ using namespace llvm;
 // TODO(Rasika): handle signed comparison.
 // TODO(Rasika): change getScope to getNonLexicalBlockFileScope.
 
-llvm2goto_translator::llvm2goto_translator(Module *M) {
+llvm2goto_translator::llvm2goto_translator(Module *M)
+{
     this->M = M;
 }
 
-llvm2goto_translator::~llvm2goto_translator() {
+llvm2goto_translator::~llvm2goto_translator()
+{
 }
 
 /*******************************************************************\
@@ -52,55 +54,77 @@ llvm2goto_translator::~llvm2goto_translator() {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
-  const symbol_tablet &symbol_table) {
+  const symbol_tablet &symbol_table)
+{
   // assert(false);
   goto_programt gp;
   Value *ub = dyn_cast<ReturnInst>(I)->getReturnValue();
   symbolt op1;
   exprt exprt1;
   // TODO(Rasika): handle other constant type.
-  if (dyn_cast<Constant>(ub)) {
-    if (const ConstantInt *cint = dyn_cast<ConstantInt>(ub)) {
+  if(dyn_cast<Constant>(ub))
+  {
+    if(const ConstantInt *cint = dyn_cast<ConstantInt>(ub))
+    {
       uint64_t val;
       val = cint->getZExtValue();
       exprt1 = from_integer(val, symbol_creator::create_type(ub->getType()));
-    } else if (dyn_cast<ConstantFP>(ub)) {
+    }
+    else if(dyn_cast<ConstantFP>(ub))
+    {
         errs() << "ConstantFP";
         Type *floattype = dyn_cast<Type>((ub)->getType());
-        if (floattype->isFloatTy()) {
+        if(floattype->isFloatTy())
+        {
           float val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToFloat();
           ieee_floatt ieee_fl = ieee_floatt();
           ieee_fl.from_float(val);
           exprt1 = ieee_fl.to_expr();
-        } else if (floattype->isDoubleTy()) {
+        }
+        else if(floattype->isDoubleTy())
+        {
           float val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
           ieee_fl.from_double(val);
           exprt1 = ieee_fl.to_expr();
-        } else {
-          ub->dump();
-          assert(false && "This floating point type in above instruction is not handled");
         }
-    } else {
+        else
+        {
+          ub->dump();
+          assert(false
+            && "This floating point type in above instruction is not handled");
+        }
+    }
+    else
+    {
       ub->dump();
       assert(false && "This constant type in above instruction is not handled");
     }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
-      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
-          if (&(dyn_cast<Instruction>(ub)->getDebugLoc()) != NULL) {
-          	const DebugLoc loc = dyn_cast<Instruction>(ub)->getDebugLoc();
-          	std::string name = scope_name_map.find(loc->getScope())->second;
-          	op1 = symbol_table.lookup(name);
-          	assert(false);
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(ub))
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+          op1 = symbol_table.lookup(var_name_map.find(
+            ub->getName().str())->second);
+          if(&(dyn_cast<Instruction>(ub)->getDebugLoc()) != NULL)
+          {
+            const DebugLoc loc = dyn_cast<Instruction>(ub)->getDebugLoc();
+            std::string name = scope_name_map.find(loc->getScope())->second;
+            op1 = symbol_table.lookup(name);
+            assert(false);
           }
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -134,16 +158,20 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
 goto_programt llvm2goto_translator::trans_Br(const Instruction *I,
   symbol_tablet *symbol_table,
   std::map <const Instruction*, goto_programt::targett>
-  &instruction_target_map) {
+  &instruction_target_map)
+{
   goto_programt gp;
   // errs() << "Br is yet to be mapped \n";
   I->dump();
-  if (dyn_cast<BranchInst>(I)->getNumSuccessors() == 2) {
+  if(dyn_cast<BranchInst>(I)->getNumSuccessors() == 2)
+  {
     goto_programt::targett br_ins = gp.add_instruction();
     instruction_target_map.insert(std::pair<const Instruction*,
       goto_programt::targett>(I, br_ins));
     gp.update();
-  } else {
+  }
+  else
+  {
     goto_programt::targett br_ins = gp.add_instruction();
     instruction_target_map.insert(std::pair<const Instruction*,
       goto_programt::targett>(I, br_ins));
@@ -166,7 +194,8 @@ goto_programt llvm2goto_translator::trans_Br(const Instruction *I,
     Purpose: Map llvm::Instruction::Switch to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Switch(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Switch(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "Switch is yet to be mapped \n");
   return gp;
@@ -185,7 +214,8 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I) {
     Purpose: Map llvm::Instruction::IndirectBr to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "IndirectBr is yet to be mapped \n");
   return gp;
@@ -204,7 +234,8 @@ goto_programt llvm2goto_translator::trans_IndirectBr(const Instruction *I) {
     Purpose: Map llvm::Instruction::Invoke to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "Invoke is yet to be mapped \n");
   return gp;
@@ -223,7 +254,8 @@ goto_programt llvm2goto_translator::trans_Invoke(const Instruction *I) {
     Purpose: Map llvm::Instruction::Resume to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Resume(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Resume(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "Resume is yet to be mapped \n");
   return gp;
@@ -242,7 +274,8 @@ goto_programt llvm2goto_translator::trans_Resume(const Instruction *I) {
     Purpose: Map llvm::Instruction::Unreachable to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "Unreachable is yet to be mapped \n");
   return gp;
@@ -261,7 +294,8 @@ goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I) {
     Purpose: Map llvm::Instruction::CleanupRet to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "CleanupRet is yet to be mapped \n");
   return gp;
@@ -280,7 +314,8 @@ goto_programt llvm2goto_translator::trans_CleanupRet(const Instruction *I) {
     Purpose: Map llvm::Instruction::CatchRet to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "CatchRet is yet to be mapped \n");
   return gp;
@@ -299,7 +334,8 @@ goto_programt llvm2goto_translator::trans_CatchRet(const Instruction *I) {
     Purpose: Map llvm::Instruction::CatchPad to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "CatchPad is yet to be mapped \n");
   return gp;
@@ -318,7 +354,8 @@ goto_programt llvm2goto_translator::trans_CatchPad(const Instruction *I) {
     Purpose: Map llvm::Instruction::CatchSwitch to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "CatchSwitch is yet to be mapped \n");
   return gp;
@@ -338,69 +375,94 @@ goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   int flag = 2;
-  if (dyn_cast<ConstantInt>(*ub)) {
+  if(dyn_cast<ConstantInt>(*ub))
+  {
     flag = 1;
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantInt>(*(ub+1))) {
+  if(dyn_cast<ConstantInt>(*(ub+1)))
+  {
     flag = 0;
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
     std::cout << exprt2.pretty();
   }
-  if (exprt2.type().id() == ID_signedbv && flag == 1) {
+  if(exprt2.type().id() == ID_signedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
     typet type = exprt2.type();
     exprt1 = from_integer(val, type);
   }
-  if (exprt1.type().id() == ID_signedbv && flag == 0) {
+  if(exprt1.type().id() == ID_signedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
     typet type = exprt1.type();
     exprt2 = from_integer(val, type);
   }
-  if (exprt2.type().id() == ID_unsignedbv && flag == 1) {
+  if(exprt2.type().id() == ID_unsignedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
     typet type = exprt2.type();
     exprt1 = from_integer(val, type);
   }
-  if (exprt1.type().id() == ID_unsignedbv && flag == 0) {
+  if(exprt1.type().id() == ID_unsignedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
     typet type = exprt1.type();
     exprt2 = from_integer(val, type);
   }
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
     // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(),symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -410,7 +472,8 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -438,62 +501,93 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   // Operands can be constant of one of the six floating point types or
   // a load instruction.
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantFP>(*(ub+1))) {
+  if(dyn_cast<ConstantFP>(*(ub+1)))
+  {
     errs() << "ConstantFP";
     Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
-    if (floattype->isFloatTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+    if(floattype->isFloatTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToFloat();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
-    } else if (floattype->isDoubleTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+    }
+    else if(floattype->isDoubleTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
-    } else {
-      (ub+1)->dump();
-      assert(false && "This floating point type in above instruction is not handled");
     }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    else
+    {
+      (ub+1)->dump();
+      assert(false
+        && "This floating point type in above instruction is not handled");
+    }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
@@ -501,21 +595,27 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(
+      I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
   // Add instruction in llvm becomes an assignment statement in goto,
@@ -524,7 +624,8 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -552,69 +653,94 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   int flag = 2;
-  if (dyn_cast<ConstantInt>(*ub)) {
+  if(dyn_cast<ConstantInt>(*ub))
+  {
     flag = 1;
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantInt>(*(ub+1))) {
+  if(dyn_cast<ConstantInt>(*(ub+1)))
+  {
     flag = 0;
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
     std::cout << exprt2.pretty();
   }
-  if (exprt2.type().id() == ID_signedbv && flag == 1) {
+  if(exprt2.type().id() == ID_signedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
     typet type = exprt2.type();
     exprt1 = from_integer(val, type);
   }
-  if (exprt1.type().id() == ID_signedbv && flag == 0) {
+  if(exprt1.type().id() == ID_signedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
     typet type = exprt1.type();
     exprt2 = from_integer(val, type);
   }
-  if (exprt2.type().id() == ID_unsignedbv && flag == 1) {
+  if(exprt2.type().id() == ID_unsignedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
     typet type = exprt2.type();
     exprt1 = from_integer(val, type);
   }
-  if (exprt1.type().id() == ID_unsignedbv && flag == 0) {
+  if(exprt1.type().id() == ID_unsignedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
     typet type = exprt1.type();
     exprt2 = from_integer(val, type);
   }
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
     // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(),symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -624,7 +750,8 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     minus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -652,86 +779,125 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantFP>(*(ub+1))) {
+  if(dyn_cast<ConstantFP>(*(ub+1)))
+  {
     errs() << "ConstantFP";
     Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
-    if (floattype->isFloatTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+    if(floattype->isFloatTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToFloat();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
-    } else if (floattype->isDoubleTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+    }
+    else if(floattype->isDoubleTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
-    } else {
-      (ub+1)->dump();
-      assert(false && "This floating point type in above instruction is not handled");
     }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    else
+    {
+      (ub+1)->dump();
+      assert(false
+        && "This floating point type in above instruction is not handled");
+    }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    // std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+    // std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(dyn_cast<DIScope>(I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope()))->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(
+      dyn_cast<DIScope>(
+        I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope()))->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fsub_inst = gp.add_instruction();
   fsub_inst->make_assignment();
   fsub_inst->code = code_assignt(result.symbol_expr(),
     minus_exprt(exprt1, exprt2));
   fsub_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -759,69 +925,94 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
   int flag = 2;
-  if (dyn_cast<ConstantInt>(*ub)) {
+  if(dyn_cast<ConstantInt>(*ub))
+  {
     flag = 1;
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantInt>(*(ub+1))) {
+  if(dyn_cast<ConstantInt>(*(ub+1)))
+  {
     flag = 0;
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
     std::cout << exprt2.pretty();
   }
-  if (exprt2.type().id() == ID_signedbv && flag == 1) {
+  if(exprt2.type().id() == ID_signedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
     typet type = exprt2.type();
     exprt1 = from_integer(val, type);
   }
-  if (exprt1.type().id() == ID_signedbv && flag == 0) {
+  if(exprt1.type().id() == ID_signedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
     typet type = exprt1.type();
     exprt2 = from_integer(val, type);
   }
-  if (exprt2.type().id() == ID_unsignedbv && flag == 1) {
+  if(exprt2.type().id() == ID_unsignedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
     typet type = exprt2.type();
     exprt1 = from_integer(val, type);
   }
-  if (exprt1.type().id() == ID_unsignedbv && flag == 0) {
+  if(exprt1.type().id() == ID_unsignedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
     typet type = exprt1.type();
     exprt2 = from_integer(val, type);
   }
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
     // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(),symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett add_inst = gp.add_instruction();
   add_inst->make_assignment();
@@ -831,7 +1022,8 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     mult_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -859,86 +1051,124 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantFP>(*(ub+1))) {
+  if(dyn_cast<ConstantFP>(*(ub+1)))
+  {
     errs() << "ConstantFP";
     Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
-    if (floattype->isFloatTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+    if(floattype->isFloatTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToFloat();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
-    } else if (floattype->isDoubleTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+    }
+    else if(floattype->isDoubleTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
-    } else {
-      (ub+1)->dump();
-      assert(false && "This floating point type in above instruction is not handled");
     }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    else
+    {
+      (ub+1)->dump();
+      assert(false
+        && "This floating point type in above instruction is not handled");
+    }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(dyn_cast<DIScope>(I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope()))->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(dyn_cast<DIScope>(
+      I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope()))->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fmul_inst = gp.add_instruction();
   fmul_inst->make_assignment();
   fmul_inst->code = code_assignt(result.symbol_expr(),
     mult_exprt(exprt1, exprt2));
   fmul_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -966,53 +1196,75 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett udiv_inst = gp.add_instruction();
   udiv_inst->make_assignment();
@@ -1020,7 +1272,8 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   udiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1048,53 +1301,77 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getSExtValue();
-    exprt1 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    exprt1 = from_integer(val, signedbv_typet(
+      I->getType()->getIntegerBitWidth()));
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getSExtValue();
-    exprt2 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    exprt2 = from_integer(val, signedbv_typet(
+      I->getType()->getIntegerBitWidth()));
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett sdiv_inst = gp.add_instruction();
   sdiv_inst->make_assignment();
@@ -1102,7 +1379,8 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   sdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1130,86 +1408,123 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantFP>(*(ub+1))) {
+  if(dyn_cast<ConstantFP>(*(ub+1)))
+  {
     errs() << "ConstantFP";
     Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
-    if (floattype->isFloatTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+    if(floattype->isFloatTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToFloat();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
-    } else if (floattype->isDoubleTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+    }
+    else if(floattype->isDoubleTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
-    } else {
-      (ub+1)->dump();
-      assert(false && "This floating point type in above instruction is not handled");
     }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    else
+    {
+      (ub+1)->dump();
+      assert(false
+        && "This floating point type in above instruction is not handled");
+    }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fdiv_inst = gp.add_instruction();
   fdiv_inst->make_assignment();
   fdiv_inst->code = code_assignt(result.symbol_expr(),
     div_exprt(exprt1, exprt2));
   fdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1237,53 +1552,75 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if(var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string,std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett urem_inst = gp.add_instruction();
   urem_inst->make_assignment();
@@ -1291,7 +1628,8 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   urem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1319,53 +1657,77 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getSExtValue();
-    exprt1 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    exprt1 = from_integer(val,
+      signedbv_typet(I->getType()->getIntegerBitWidth()));
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getSExtValue();
-    exprt2 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    exprt2 = from_integer(val,
+      signedbv_typet(I->getType()->getIntegerBitWidth()));
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett srem_inst = gp.add_instruction();
   srem_inst->make_assignment();
@@ -1373,7 +1735,8 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   srem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1401,86 +1764,123 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (dyn_cast<ConstantFP>(*(ub+1))) {
+  if(dyn_cast<ConstantFP>(*(ub+1)))
+  {
     errs() << "ConstantFP";
     Type *floattype = dyn_cast<Type>((*(ub+1))->getType());
-    if (floattype->isFloatTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+    if(floattype->isFloatTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToFloat();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
-    } else if (floattype->isDoubleTy()) {
-      float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+    }
+    else if(floattype->isDoubleTy())
+    {
+      float val = dyn_cast<ConstantFP>(
+        *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
-    } else {
-      (ub+1)->dump();
-      assert(false && "This floating point type in above instruction is not handled");
     }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+    else
+    {
+      (ub+1)->dump();
+      assert(false
+        && "This floating point type in above instruction is not handled");
+    }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett frem_inst = gp.add_instruction();
   frem_inst->make_assignment();
   frem_inst->code = code_assignt(result.symbol_expr(),
     mod_exprt(exprt1, exprt2));
   frem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1508,35 +1908,52 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_And(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
@@ -1544,21 +1961,26 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett and_inst = gp.add_instruction();
   and_inst->make_assignment();
@@ -1568,7 +1990,8 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
     bitand_exprt(exprt1, exprt2));
   and_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1597,35 +2020,52 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
@@ -1633,21 +2073,25 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
     symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett or_inst = gp.add_instruction();
   or_inst->make_assignment();
@@ -1657,7 +2101,8 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
     bitor_exprt(exprt1, exprt2));
   or_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1686,35 +2131,52 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
@@ -1722,21 +2184,26 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett xor_inst = gp.add_instruction();
   xor_inst->make_assignment();
@@ -1746,7 +2213,8 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
     bitxor_exprt(exprt1, exprt2));
   xor_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -1775,7 +2243,8 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   // errs() << "Alloca is yet to be mapped \n";
   symbolt symbol;
@@ -1784,7 +2253,8 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
   symbol.base_name = I->getName().str();
   symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
   symbol_table.add(symbol);
-  var_name_map.insert(std::pair<std::string, std::string>(I->getName().str(), symbol.name.c_str()));
+  var_name_map.insert(std::pair<std::string, std::string>(
+    I->getName().str(), symbol.name.c_str()));
   // goto_programt::targett decl_alloc = gp.add_instruction();
   //   decl_alloc->make_decl();
   //   decl_alloc->code=code_declt(symbol.symbol_expr());
@@ -1804,7 +2274,8 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
     Purpose: Map llvm::Instruction::Load to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Load(const Instruction *I)
+{
   goto_programt gp;
   errs() << "Load is yet to be mapped \n";
   /*errs() << " getIterator :";
@@ -1831,42 +2302,67 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
-  const symbol_tablet &symbol_table) {
+  const symbol_tablet &symbol_table)
+{
   goto_programt gp;
-  symbolt symbol = symbol_table.lookup(var_name_map.find(dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
+  symbolt symbol = symbol_table.lookup(var_name_map.find(
+    dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
   exprt value_to_store;
-  if (dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0))) {
-    if (dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+  if(dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0)))
+  {
+    if(dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0)))
+    {
       uint64_t val = dyn_cast<ConstantInt>(
       dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
       value_to_store = from_integer(val, symbol.type);
-    } else if (dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+    }
+    else if(dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0)))
+    {
       errs() << "ConstantFP";
-      Type *floattype = dyn_cast<Type>(dyn_cast<StoreInst>(I)->getOperand(0)->getType());
-      if (floattype->isFloatTy()) {
-        float val = dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF().convertToFloat();
+      Type *floattype = dyn_cast<Type>(
+        dyn_cast<StoreInst>(I)->getOperand(0)->getType());
+      if(floattype->isFloatTy())
+      {
+        float val = dyn_cast<ConstantFP>(
+          dyn_cast<StoreInst>(I)->getOperand(0))->
+        getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         value_to_store = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
-        float val = dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF().convertToDouble();
+      }
+      else if(floattype->isDoubleTy())
+      {
+        float val = dyn_cast<ConstantFP>(
+          dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF().
+        convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         value_to_store = ieee_fl.to_expr();
-      } else {
-        I->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-    } else {
+      else
+      {
+        I->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+    }
+    else
+    {
       I->dump();
       assert(false && "This constant type is not handled");
     }
-  } else {
-    if (dyn_cast<StoreInst>(I)->getOperand(0)->hasName()) {
+  }
+  else
+  {
+    if(dyn_cast<StoreInst>(I)->getOperand(0)->hasName())
+    {
       errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
       value_to_store = symbol_table.lookup(var_name_map.find(
-        dyn_cast<StoreInst>(I)->getOperand(0)->getName().str())->second).symbol_expr();
-    } else if (dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+        dyn_cast<StoreInst>(I)->getOperand(0)->getName().
+        str())->second).symbol_expr();
+    }
+    else if(dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0)))
+    {
       std::string name = var_name_map.find(
         dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))
         ->getOperand(0)->getName().str())->second;
@@ -1901,7 +2397,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_AtomicCmpXchg(
-  const Instruction *I) {
+  const Instruction *I)
+{
   goto_programt gp;
   assert(false && "AtomicCmpXchg is yet to be mapped \n");
   return gp;
@@ -1920,7 +2417,8 @@ goto_programt llvm2goto_translator::trans_AtomicCmpXchg(
     Purpose: Map llvm::Instruction::AtomicRMW to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "AtomicRMW is yet to be mapped \n");
   return gp;
@@ -1939,7 +2437,8 @@ goto_programt llvm2goto_translator::trans_AtomicRMW(const Instruction *I) {
     Purpose: Map llvm::Instruction::Fence to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Fence(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "Fence is yet to be mapped \n");
   return gp;
@@ -1959,7 +2458,8 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_GetElementPtr(
-  const Instruction *I) {
+  const Instruction *I)
+{
   goto_programt gp;
   assert(false && "GetElementPtr is yet to be mapped \n");
   return gp;
@@ -1979,28 +2479,40 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<TruncInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<TruncInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = unsignedbv_typet(dyn_cast<TruncInst>(I)->getDestTy()->getIntegerBitWidth());
+  typet dest_type = unsignedbv_typet(
+    dyn_cast<TruncInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+          op1 = symbol_table.lookup(var_name_map.find(
+            ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2010,14 +2522,18 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2026,7 +2542,8 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett trunc_inst = gp.add_instruction();
   trunc_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2051,29 +2568,41 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<ZExtInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<ZExtInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   // symbol_table.show(std::cout);
   goto_programt gp;
-  typet dest_type = unsignedbv_typet(dyn_cast<ZExtInst>(I)->getDestTy()->getIntegerBitWidth());
+  typet dest_type = unsignedbv_typet(
+    dyn_cast<ZExtInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+          op1 = symbol_table.lookup(var_name_map.find(
+            ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2083,14 +2612,18 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     // symbol.type = exprt1.type();
     symbol.type = dest_type;
     symbol_table.add(symbol);
@@ -2100,7 +2633,8 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett zext_inst = gp.add_instruction();
   zext_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2125,28 +2659,40 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<SExtInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<SExtInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = signedbv_typet(dyn_cast<SExtInst>(I)->getDestTy()->getIntegerBitWidth());
+  typet dest_type = signedbv_typet(
+    dyn_cast<SExtInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(var_name_map.find(I->getOperand(0)->getName().str())->second);
-    } else {
-          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+      op1 = symbol_table.lookup(var_name_map.find(
+        I->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+          op1 = symbol_table.lookup(var_name_map.find(
+            ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2156,14 +2702,18 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2172,7 +2722,8 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett zext_inst = gp.add_instruction();
   zext_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2197,41 +2748,59 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<FPTruncInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<FPTruncInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(dyn_cast<FPTruncInst>(I)->getDestTy());
+  typet dest_type = symbol_creator::create_type(
+    dyn_cast<FPTruncInst>(I)->getDestTy());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2241,14 +2810,18 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2257,7 +2830,8 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fptrunc_inst = gp.add_instruction();
   fptrunc_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2282,42 +2856,60 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<FPExtInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<FPExtInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(dyn_cast<FPExtInst>(I)->getDestTy());
+  typet dest_type = symbol_creator::create_type(
+    dyn_cast<FPExtInst>(I)->getDestTy());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
       floattype->dump();
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false
+          && "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2327,14 +2919,18 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2343,7 +2939,8 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fpext_inst = gp.add_instruction();
   fpext_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2368,41 +2965,59 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<FPToUIInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<FPToUIInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = unsignedbv_typet(dyn_cast<FPToUIInst>(I)->getDestTy()->getIntegerBitWidth());
+  typet dest_type = unsignedbv_typet(
+    dyn_cast<FPToUIInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false &&
+          "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2412,14 +3027,18 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2428,7 +3047,8 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fp_to_ui = gp.add_instruction();
   fp_to_ui->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2453,41 +3073,59 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<FPToSIInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<FPToSIInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = signedbv_typet(dyn_cast<FPToSIInst>(I)->getDestTy()->getIntegerBitWidth());
+  typet dest_type = signedbv_typet(
+    dyn_cast<FPToSIInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (dyn_cast<ConstantFP>(*ub)) {
+  if(dyn_cast<ConstantFP>(*ub))
+  {
       errs() << "ConstantFP";
       Type *floattype = dyn_cast<Type>((*ub)->getType());
-      if (floattype->isFloatTy()) {
+      if(floattype->isFloatTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
-      } else if (floattype->isDoubleTy()) {
+      }
+      else if(floattype->isDoubleTy())
+      {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
-      } else {
-        ub->dump();
-        assert(false && "This floating point type in above instruction is not handled");
       }
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      else
+      {
+        ub->dump();
+        assert(false &&
+          "This floating point type in above instruction is not handled");
+      }
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2497,14 +3135,18 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2513,7 +3155,8 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett fp_to_si = gp.add_instruction();
   fp_to_si->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2538,28 +3181,40 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<UIToFPInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<UIToFPInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(dyn_cast<UIToFPInst>(I)->getDestTy());
+  typet dest_type = symbol_creator::create_type(
+    dyn_cast<UIToFPInst>(I)->getDestTy());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+          op1 = symbol_table.lookup(var_name_map.find(
+            ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2569,14 +3224,18 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2585,7 +3244,8 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett uitofp_inst = gp.add_instruction();
   uitofp_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2610,28 +3270,40 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
-  symbol_tablet &symbol_table) {
-  assert(!dyn_cast<SIToFPInst>(I)->isLosslessCast() && "This type conversion is lossy.");
+  symbol_tablet &symbol_table)
+{
+  assert(!dyn_cast<SIToFPInst>(I)->isLosslessCast()
+    && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(dyn_cast<SIToFPInst>(I)->getDestTy());
+  typet dest_type = symbol_creator::create_type(
+    dyn_cast<SIToFPInst>(I)->getDestTy());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getSExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
           li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-          op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+          op1 = symbol_table.lookup(var_name_map.find(
+            ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -2641,14 +3313,18 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     location.set_column(loc->getColumn());
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2657,7 +3333,8 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
   goto_programt::targett sitofp_inst = gp.add_instruction();
   sitofp_inst->make_assignment();
   typecast_exprt tce(exprt1, dest_type);
@@ -2681,7 +3358,8 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     Purpose: Map llvm::Instruction::IntToPtr to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "IntToPtr is yet to be mapped \n");
   return gp;
@@ -2700,7 +3378,8 @@ goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
     Purpose: Map llvm::Instruction::PtrToInt to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "PtrToInt is yet to be mapped \n");
   return gp;
@@ -2719,7 +3398,8 @@ goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
     Purpose: Map llvm::Instruction::BitCast to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "BitCast is yet to be mapped \n");
   return gp;
@@ -2739,7 +3419,8 @@ goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_AddrSpaceCast(
-  const Instruction *I) {
+  const Instruction *I)
+{
   goto_programt gp;
   assert(false && "AddrSpaceCast is yet to be mapped \n");
   return gp;
@@ -2759,49 +3440,67 @@ goto_programt llvm2goto_translator::trans_AddrSpaceCast(
 
 \*******************************************************************/
 exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
-  symbol_tablet *symbol_table) {
+  symbol_tablet *symbol_table)
+{
   exprt condition;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
   int flag = 2;
-  if (dyn_cast<ConstantInt>(*ub)) {
+  if(dyn_cast<ConstantInt>(*ub))
+  {
     flag = 1;
-  } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+  {
     li->getOperand(0)->dump();
     opnd1 = symbol_table->lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second).symbol_expr();
-  } else {
-    opnd1 = symbol_table->lookup(var_name_map.find(ub->getName().str())->second).symbol_expr();
+  }
+  else
+  {
+    opnd1 = symbol_table->lookup(var_name_map.find(
+      ub->getName().str())->second).symbol_expr();
   }
 
-  if (dyn_cast<ConstantInt>(*(ub + 1))) {
+  if(dyn_cast<ConstantInt>(*(ub + 1)))
+  {
     flag = 0;
-  } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+  {
     li->getOperand(0)->dump();
-    opnd2 = symbol_table->lookup(var_name_map.find(li->getOperand(0)->getName().str())->second).symbol_expr();
-  } else {
-    opnd2 = symbol_table->lookup(var_name_map.find((ub + 1)->getName().str())->second).symbol_expr();
+    opnd2 = symbol_table->lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second).symbol_expr();
+  }
+  else
+  {
+    opnd2 = symbol_table->lookup(var_name_map.find(
+      (ub + 1)->getName().str())->second).symbol_expr();
   }
 
-  if (opnd2.type().id() == ID_signedbv && flag == 1) {
+  if(opnd2.type().id() == ID_signedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
     typet type = opnd2.type();
     // dyn_cast<ConstantInt>(*(ub))->getType()->dump();
     opnd1 = from_integer(val, type);
   }
-  if (opnd1.type().id() == ID_signedbv && flag == 0) {
+  if(opnd1.type().id() == ID_signedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
     typet type = opnd1.type();
     // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
     opnd2 = from_integer(val, type);
   }
-  if (opnd2.type().id() == ID_unsignedbv && flag == 1) {
+  if(opnd2.type().id() == ID_unsignedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
     typet type = opnd2.type();
     // dyn_cast<ConstantInt>(*(ub))->getType()->dump();
     opnd1 = from_integer(val, type);
   }
-  if (opnd1.type().id() == ID_unsignedbv && flag == 0) {
+  if(opnd1.type().id() == ID_unsignedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
     typet type = opnd1.type();
     // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
@@ -2809,25 +3508,30 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   }
 
 
-  switch (dyn_cast<ICmpInst>(I)->getPredicate()) {
-    case CmpInst::Predicate::ICMP_EQ : {
+  switch(dyn_cast<ICmpInst>(I)->getPredicate())
+  {
+    case CmpInst::Predicate::ICMP_EQ :
+    {
       condition = equal_exprt(opnd1, opnd2);
       errs() << "\n ICMP_EQ\n";
       break;
     }
-    case CmpInst::Predicate::ICMP_NE : {
+    case CmpInst::Predicate::ICMP_NE :
+    {
       condition = notequal_exprt(opnd1, opnd2);
       errs() << "\n ICMP_NE\n";
       break;
     }
     case CmpInst::Predicate::ICMP_UGT :
-    case CmpInst::Predicate::ICMP_SGT : {
+    case CmpInst::Predicate::ICMP_SGT :
+    {
       errs() << "\n ICMP_GT\n";
       condition = binary_relation_exprt(opnd1, ID_gt, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
-    case CmpInst::Predicate::ICMP_UGE : {
+    case CmpInst::Predicate::ICMP_UGE :
+    {
     case CmpInst::Predicate::ICMP_SGE :
       errs() << "\n ICMP_GE\n";
       condition = binary_relation_exprt(opnd1, ID_ge, opnd2);
@@ -2835,20 +3539,23 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       break;
     }
     case CmpInst::Predicate::ICMP_ULT :
-    case CmpInst::Predicate::ICMP_SLT : {
+    case CmpInst::Predicate::ICMP_SLT :
+    {
       errs() << "\n ICMP_LT\n";
       condition = binary_relation_exprt(opnd1, ID_lt, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::ICMP_ULE :
-    case CmpInst::Predicate::ICMP_SLE : {
+    case CmpInst::Predicate::ICMP_SLE :
+    {
       errs() << "\n ICMP_LE\n";
       condition = binary_relation_exprt(opnd1, ID_le, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
-    case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
+    case CmpInst::Predicate::BAD_ICMP_PREDICATE :
+    {
       errs() << "\n BAD_ICMP_PREDICATE\n";
       break;
     }
@@ -2873,61 +3580,83 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
 
 \*******************************************************************/
 exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
-  symbol_tablet *symbol_table) {
+  symbol_tablet *symbol_table)
+{
   exprt condition;
   I->dump();
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
   int flag = 2;
-  if (dyn_cast<ConstantInt>(*ub)) {
+  if(dyn_cast<ConstantInt>(*ub))
+  {
     flag = 1;
-  } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+  {
     li->getOperand(0)->dump();
-    opnd1 = symbol_table->lookup(var_name_map.find(li->getOperand(0)->getName().str())->second).symbol_expr();
-  } else {
-    opnd1 = symbol_table->lookup(var_name_map.find(ub->getName().str())->second).symbol_expr();
+    opnd1 = symbol_table->lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second).symbol_expr();
+  }
+  else
+  {
+    opnd1 = symbol_table->lookup(var_name_map.find(
+      ub->getName().str())->second).symbol_expr();
   }
 
-  if (dyn_cast<ConstantInt>(*(ub + 1))) {
+  if(dyn_cast<ConstantInt>(*(ub + 1)))
+  {
     flag = 0;
-  } else if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+  {
     li->getOperand(0)->dump();
-    opnd2 = symbol_table->lookup(var_name_map.find(li->getOperand(0)->getName().str())->second).symbol_expr();
-  } else {
-    opnd2 = symbol_table->lookup(var_name_map.find((ub + 1)->getName().str())->second).symbol_expr();
+    opnd2 = symbol_table->lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second).symbol_expr();
+  }
+  else
+  {
+    opnd2 = symbol_table->lookup(var_name_map.find(
+      (ub + 1)->getName().str())->second).symbol_expr();
   }
 
-  if (opnd2.type().id() == ID_signedbv && flag == 1) {
+  if(opnd2.type().id() == ID_signedbv && flag == 1)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
     typet type = opnd2.type();
     dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
     opnd1 = from_integer(val, type);
   }
-  if (opnd1.type().id() == ID_signedbv && flag == 0) {
+  if(opnd1.type().id() == ID_signedbv && flag == 0)
+  {
     uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
     typet type = opnd1.type();
     dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
     opnd2 = from_integer(val, type);
   }
-  switch (dyn_cast<ICmpInst>(I)->getInversePredicate()) {
-    case CmpInst::Predicate::ICMP_EQ : {
+  switch(dyn_cast<ICmpInst>(I)->getInversePredicate())
+  {
+    case CmpInst::Predicate::ICMP_EQ :
+    {
       condition = equal_exprt(opnd1, opnd2);
       errs() << "\n ICMP_EQ\n";
       break;
     }
-    case CmpInst::Predicate::ICMP_NE : {
+    case CmpInst::Predicate::ICMP_NE :
+    {
       condition = notequal_exprt(opnd1, opnd2);
       errs() << "\n ICMP_NE\n";
       break;
     }
     case CmpInst::Predicate::ICMP_UGT :
-    case CmpInst::Predicate::ICMP_SGT : {
+    case CmpInst::Predicate::ICMP_SGT :
+    {
       errs() << "\n ICMP_GT\n";
       condition = exprt(ID_gt);
       condition.copy_to_operands(opnd1, opnd2);
       break;
     }
-    case CmpInst::Predicate::ICMP_UGE : {
+    case CmpInst::Predicate::ICMP_UGE :
+    {
     case CmpInst::Predicate::ICMP_SGE :
       errs() << "\n ICMP_GE\n";
       condition = exprt(ID_ge);
@@ -2935,20 +3664,23 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
       break;
     }
     case CmpInst::Predicate::ICMP_ULT :
-    case CmpInst::Predicate::ICMP_SLT : {
+    case CmpInst::Predicate::ICMP_SLT :
+    {
       errs() << "\n ICMP_LT\n";
       condition = exprt(ID_lt);
       condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::ICMP_ULE :
-    case CmpInst::Predicate::ICMP_SLE : {
+    case CmpInst::Predicate::ICMP_SLE :
+    {
       errs() << "\n ICMP_LE\n";
       condition = exprt(ID_le);
       condition.copy_to_operands(opnd1, opnd2);
       break;
     }
-    case CmpInst::Predicate::BAD_ICMP_PREDICATE : {
+    case CmpInst::Predicate::BAD_ICMP_PREDICATE :
+    {
       errs() << "\n BAD_ICMP_PREDICATE\n";
       break;
     }
@@ -2972,17 +3704,23 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     Purpose: Map llvm::Instruction::ICmp to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I, symbol_tablet *symbol_table) {
+goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
+  symbol_tablet *symbol_table)
+{
   goto_programt gp;
   // try {
-  //   symbol_table->lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table->lookup
+  // (I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = bool_typet();
     symbol_table->add(symbol);
     goto_programt::targett decl_cmp = gp.add_instruction();
@@ -3004,7 +3742,8 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I, symbol_tabl
 
   Icmp_inst->make_assignment();
   Icmp_inst->code = code_assignt(
-    symbol_table->lookup(var_name_map.find(I->getName().str())->second).symbol_expr(),
+    symbol_table->lookup(var_name_map.find(
+      I->getName().str())->second).symbol_expr(),
     trans_Cmp(I, symbol_table));
   // errs() << "ICmp is yet to be mapped \n";
   return gp;
@@ -3023,7 +3762,8 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I, symbol_tabl
     Purpose: Map llvm::Instruction::FCmp to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I)
+{
   goto_programt gp;
   goto_programt::targett Icmp_inst = gp.add_instruction();
   Icmp_inst->make_skip();
@@ -3044,7 +3784,8 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I) {
     Purpose: Map llvm::Instruction::PHI to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_PHI(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_PHI(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "PHI is yet to be mapped \n");
   return gp;
@@ -3063,7 +3804,8 @@ goto_programt llvm2goto_translator::trans_PHI(const Instruction *I) {
     Purpose: Map llvm::Instruction::Select to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_Select(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_Select(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "Select is yet to be mapped \n");
   return gp;
@@ -3081,14 +3823,17 @@ goto_programt llvm2goto_translator::trans_Select(const Instruction *I) {
     Purpose: .
 
 \*******************************************************************/
-std::string llvm2goto_translator::get_arg_name(const Instruction *I) {
+std::string llvm2goto_translator::get_arg_name(const Instruction *I)
+{
   std::string temp_str;
   raw_string_ostream rso(temp_str);
   dyn_cast<CallInst>(I)->arg_begin()->get()->print(rso);
   std::string arg = rso.str();
   int i=arg.size();
-  for(; i>=0; i--) {
-    if(arg[i] == '%') {
+  for(; i>=0; i--)
+  {
+    if(arg[i] == '%')
+    {
       break;
     }
   }
@@ -3109,10 +3854,12 @@ std::string llvm2goto_translator::get_arg_name(const Instruction *I) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
-  symbol_tablet *symbol_table) {
+  symbol_tablet *symbol_table)
+{
   goto_programt gp;
-  //errs() << "Call is yet to be mapped \n";
-  if (const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I)) {
+  // errs() << "Call is yet to be mapped \n";
+  if(const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I))
+  {
     Type *type = &(*dyn_cast<Type>(dyn_cast<PointerType>(dyn_cast<Type>(
       dbgDeclareInst->getAddress()->getType()))->getPointerElementType()));
     MDNode *mdn = dyn_cast<MDNode>(dbgDeclareInst->getVariable());
@@ -3122,71 +3869,87 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     std::string full_name_to_remove = m->second;
     var_name_map.erase(m);
     symbol_table->remove(full_name_to_remove);
-    errs() << "adding " << scope_name_map.find(dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())->getNonLexicalBlockFileScope())->second + "::" + dyn_cast<DIVariable>(mdn)->getName().str() + "\n";
+    errs() << "adding " << scope_name_map.find(
+      dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())->
+      getNonLexicalBlockFileScope())->second
+      + "::" + dyn_cast<DIVariable>(mdn)->getName().str() + "\n";
     symbolt symbol;
-    switch (dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
-      ->getType()))->getPointerElementType()->getTypeID()) {
+    switch(dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
+      ->getType()))->getPointerElementType()->getTypeID())
+    {
       // 16-bit floating point type
-      case llvm::Type::TypeID::HalfTyID : {
+      case llvm::Type::TypeID::HalfTyID :
+      {
         errs() << "\nHalf type";
         symbol = symbol_creator::create_HalfTy(type, mdn);
       }
       // 32-bit floating point type
-      case llvm::Type::TypeID::FloatTyID : {
+      case llvm::Type::TypeID::FloatTyID :
+      {
         errs() << "\nFloat type";
         symbol = symbol_creator::create_FloatTy(type, mdn);
         break;
       }
       // 64-bit floating point type
-      case llvm::Type::TypeID::DoubleTyID : {
+      case llvm::Type::TypeID::DoubleTyID :
+      {
         symbol = symbol_creator::create_DoubleTy(type, mdn);
         errs() << "\nDouble type";
         break;
       }
       // 80-bit floating point type (X87)
-      case llvm::Type::TypeID::X86_FP80TyID : {
+      case llvm::Type::TypeID::X86_FP80TyID :
+      {
         symbol = symbol_creator::create_X86_FP80Ty(type, mdn);
         errs() << "\nX86_FP80 type";
         break;
       }
       // 128-bit floating point type (112-bit mantissa)
-      case llvm::Type::TypeID::FP128TyID : {
+      case llvm::Type::TypeID::FP128TyID :
+      {
         symbol = symbol_creator::create_FP128Ty(type, mdn);
         errs() << "\nFP128 type";
         break;
       }
       // 128-bit floating point type (two 64-bits, PowerPC)
-      case llvm::Type::TypeID::PPC_FP128TyID : {
+      case llvm::Type::TypeID::PPC_FP128TyID :
+      {
         symbol = symbol_creator::create_PPC_FP128Ty(type, mdn);
         errs() << "\nPPC_FP128 type";
         break;
       }
-      case llvm::Type::TypeID::IntegerTyID : {
+      case llvm::Type::TypeID::IntegerTyID :
+      {
         symbol = symbol_creator::create_IntegerTy(type, mdn);
         errs() << "\nInteger type";
         break;
       }
-      case llvm::Type::TypeID::StructTyID : {
+      case llvm::Type::TypeID::StructTyID :
+      {
         symbol = symbol_creator::create_StructTy(type, mdn);
         errs() << "\nStruct type";
         break;
       }
-      case llvm::Type::TypeID::ArrayTyID : {
+      case llvm::Type::TypeID::ArrayTyID :
+      {
         symbol = symbol_creator::create_ArrayTy(type, mdn);
         errs() << "\nArray type";
         break;
       }
-      case llvm::Type::TypeID::PointerTyID : {
+      case llvm::Type::TypeID::PointerTyID :
+      {
         symbol = symbol_creator::create_PointerTy(type, mdn);
         errs() << "\nPointer type";
         break;
       }
-      case llvm::Type::TypeID::VectorTyID : {
+      case llvm::Type::TypeID::VectorTyID :
+      {
         symbol = symbol_creator::create_VectorTy(type, mdn);
         errs() << "\nVector type";
         break;
       }
-      case llvm::Type::TypeID::X86_MMXTyID : {
+      case llvm::Type::TypeID::X86_MMXTyID :
+      {
         symbol = symbol_creator::create_X86_MMXTy(type, mdn);
         break;
       }
@@ -3198,14 +3961,18 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         default:
         errs() << "\ninvalid type for global variable";
     }
-    symbol.name = scope_name_map.find(dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())->getNonLexicalBlockFileScope())->second + "::" + dyn_cast<DIVariable>(mdn)->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(name_to_remove, symbol.name.c_str()));
+    symbol.name = scope_name_map.find(dyn_cast<DILocalScope>(
+      I->getDebugLoc()->getScope())->getNonLexicalBlockFileScope())->second
+    + "::" + dyn_cast<DIVariable>(mdn)->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      name_to_remove, symbol.name.c_str()));
     symbol_table->add(symbol);
     goto_programt::targett decl_symbol = gp.add_instruction();
     decl_symbol->make_decl();
     decl_symbol->code=code_declt(symbol.symbol_expr());
     source_locationt location = symbol.location;
-    if (&(I->getDebugLoc()) != NULL) {
+    if(&(I->getDebugLoc()) != NULL)
+    {
       const DebugLoc loc = I->getDebugLoc();
       location.set_file(loc
             ->getScope()->getFile()->getFilename().str());
@@ -3215,59 +3982,74 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       location.set_column(loc->getColumn());
     }
     decl_symbol->source_location = location;
-  } else if (dyn_cast<CallInst>(I)->getCalledFunction() == NULL) {
+  }
+  else if(dyn_cast<CallInst>(I)->getCalledFunction() == NULL)
+  {
     // dyn_cast<CallInst>(I)->dump();
     const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
-    const Function *function = dyn_cast<Function>(called_val->stripPointerCasts());
-    if(function->getName().str() == "assume"){
+    const Function *function = dyn_cast<Function>(
+      called_val->stripPointerCasts());
+    if(function->getName().str() == "assume")
+    {
       errs() << "assume";
       goto_programt::targett assume_inst = gp.add_instruction(ASSUME);
   //     typet dest_type = unsignedbv_typet(1);
   // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
       // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
       exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
-        dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->getName().str())->second).symbol_expr(),
+        dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->
+        getName().str())->second).symbol_expr(),
         bool_typet());
       // exprt guard;
-      // if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
+      // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()){
       //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
       // }
       assume_inst->guard = guard;
     }
-    if(function->getName().str() == "assert"){
+    if(function->getName().str() == "assert")
+    {
       errs() << "assert";
       goto_programt::targett assert_inst = gp.add_instruction(ASSERT);
   //     typet dest_type = unsignedbv_typet(1);
   // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
       // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
       exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
-              dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->getName().str())->second).symbol_expr(),
+        dyn_cast<Instruction>(
+          *I->value_op_begin())->value_op_begin()->getName().str())->second).
+      symbol_expr(),
       bool_typet());
       // exprt guard;
-      // if (Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()) {
+      // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin())
+      // {
       //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
       // }
       assert_inst->guard = guard;
     }
-  } else {
+  }
+  else
+  {
     const Function *function = dyn_cast<CallInst>(I)->getCalledFunction();
-    if (function->begin() != function->end()) {
+    if(function->begin() != function->end())
+    {
       code_function_callt call;
       // I->dump();
       std::string func_name = function->getName().str();
       symbolt symbol = namespacet(*symbol_table).lookup(dstringt(func_name));
       call.function() = symbol.symbol_expr();
-      if(to_code_type(symbol.type).return_type()!=empty_typet()) {
+      if(to_code_type(symbol.type).return_type()!=empty_typet())
+      {
         symbolt ret;
         ret.base_name = I->getName().str();
-        ret.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-        var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+        ret.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+          + "::" + I->getName().str();
+        var_name_map.insert(std::pair<std::string, std::string>(
+          symbol.base_name.c_str(), symbol.name.c_str()));
         ret.type = symbol_creator::create_type(function->getReturnType());
         symbol_table->add(ret);
         // goto_programt::targett ret_decl = gp.add_instruction();
         goto_programt::targett decl_ret = gp.add_instruction();
-        //TODO(Rasika) : function arguments sathi kahitari kara.
-        //TODO(Rasika) : lookup local and global variables.
+        // TODO(Rasika) : function arguments sathi kahitari kara.
+        // TODO(Rasika) : lookup local and global variables.
         decl_ret->make_decl();
         decl_ret->code=code_declt(ret.symbol_expr());
         call.lhs()= ret.symbol_expr();
@@ -3276,20 +4058,27 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       for(code_typet::parameterst::const_iterator
         p_it=to_code_type(symbol.type).parameters().begin();
         p_it!=to_code_type(symbol.type).parameters().end();
-        p_it++) {
+        p_it++)
+      {
         exprt expr;
-        if (dyn_cast<ConstantInt>(*ub)) {
+        if(dyn_cast<ConstantInt>(*ub))
+        {
           uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
           typet type = symbol_creator::create_type(
             dyn_cast<ConstantInt>(*ub)->getType());
           dyn_cast<ConstantInt>(*ub)->getType()->dump();
           expr = from_integer(val, type);
-        } else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+        }
+        else if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+        {
           li->getOperand(0)->dump();
           expr = symbol_table->lookup(var_name_map.find(
-                      li->getOperand(0)->getName().str())->second).symbol_expr();
-        } else {
-          expr = symbol_table->lookup(var_name_map.find(ub->getName().str())->second).symbol_expr();
+                   li->getOperand(0)->getName().str())->second).symbol_expr();
+        }
+        else
+        {
+          expr = symbol_table->lookup(var_name_map.find(
+            ub->getName().str())->second).symbol_expr();
         }
         call.arguments().push_back(expr);
         ub++;
@@ -3315,53 +4104,75 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett shl_inst = gp.add_instruction();
   shl_inst->make_assignment();
@@ -3369,7 +4180,8 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
     shl_exprt(exprt1, exprt2));
   shl_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -3397,42 +4209,61 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
     symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
@@ -3442,7 +4273,8 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett lshr_inst = gp.add_instruction();
   lshr_inst->make_assignment();
@@ -3450,7 +4282,8 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
     lshr_exprt(exprt1, exprt2));
   lshr_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -3478,53 +4311,75 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
-  symbol_tablet &symbol_table) {
+  symbol_tablet &symbol_table)
+{
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*ub))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+    {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op1 = symbol_table.lookup(var_name_map.find(ub->getName().str())->second);
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op1 = symbol_table.lookup(var_name_map.find(
+        ub->getName().str())->second);
     }
     exprt1 = op1.symbol_expr();
   }
-  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1))) {
+  if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
+  {
     uint64_t val;
     val = cint->getZExtValue();
     exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
-  } else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
+  }
+  else
+  {
+    if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+    {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(var_name_map.find(li->getOperand(0)->getName().str())->second);
-    } else {
-      op2 = symbol_table.lookup(var_name_map.find((ub + 1)->getName().str())->second);
+      op2 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+    }
+    else
+    {
+      op2 = symbol_table.lookup(var_name_map.find(
+        (ub + 1)->getName().str())->second);
     }
     exprt2 = op2.symbol_expr();
   }
   // try {
-  //   symbol_table.lookup(I->getFunction()->getName().str() + "::" + I->getName().str());
+  //   symbol_table.lookup(
+  // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg) {
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
+  //   std::allocator<char> > msg){
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::" + I->getName().str();
-    var_name_map.insert(std::pair<std::string, std::string>(symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
     symbol.type = exprt1.type();
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
     decl_add->code=code_declt(symbol.symbol_expr());
   }
-  symbolt result = symbol_table.lookup(var_name_map.find(I->getName().str())->second);
+  symbolt result = symbol_table.lookup(var_name_map.find(
+    I->getName().str())->second);
 
   goto_programt::targett ashr_inst = gp.add_instruction();
   ashr_inst->make_assignment();
@@ -3532,7 +4387,8 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
     ashr_exprt(exprt1, exprt2));
   ashr_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if (&(I->getDebugLoc()) != NULL) {
+  if(&(I->getDebugLoc()) != NULL)
+  {
     const DebugLoc loc = I->getDebugLoc();
     location.set_file(loc
           ->getScope()->getFile()->getFilename().str());
@@ -3559,7 +4415,8 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
     Purpose: Map llvm::Instruction::VAArg to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "VAArg is yet to be mapped \n");
   return gp;
@@ -3579,7 +4436,8 @@ goto_programt llvm2goto_translator::trans_VAArg(const Instruction *I) {
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ExtractElement(
-  const Instruction *I) {
+  const Instruction *I)
+{
   goto_programt gp;
   assert(false && "ExtractElement is yet to be mapped \n");
   return gp;
@@ -3599,7 +4457,8 @@ goto_programt llvm2goto_translator::trans_ExtractElement(
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_InsertElement(
-  const Instruction *I) {
+  const Instruction *I)
+{
   goto_programt gp;
   assert(false && "InsertElement is yet to be mapped \n");
   return gp;
@@ -3619,7 +4478,8 @@ goto_programt llvm2goto_translator::trans_InsertElement(
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_ShuffleVector(
-  const Instruction *I) {
+  const Instruction *I)
+{
   goto_programt gp;
   assert(false && "ShuffleVector is yet to be mapped \n");
   return gp;
@@ -3638,7 +4498,8 @@ goto_programt llvm2goto_translator::trans_ShuffleVector(
     Purpose: Map llvm::Instruction::ExtractValue to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "ExtractValue is yet to be mapped \n");
   return gp;
@@ -3657,7 +4518,8 @@ goto_programt llvm2goto_translator::trans_ExtractValue(const Instruction *I) {
     Purpose: Map llvm::Instruction::InsertValue to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "InsertValue is yet to be mapped \n");
   return gp;
@@ -3676,7 +4538,8 @@ goto_programt llvm2goto_translator::trans_InsertValue(const Instruction *I) {
     Purpose: Map llvm::Instruction::LandingPad to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "LandingPad is yet to be mapped \n");
   return gp;
@@ -3695,7 +4558,8 @@ goto_programt llvm2goto_translator::trans_LandingPad(const Instruction *I) {
     Purpose: Map llvm::Instruction::CleanupPad to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I)
+{
   goto_programt gp;
   assert(false && "CleanupPad is yet to be mapped \n");
   return gp;
@@ -3714,40 +4578,53 @@ goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
              llvm global variable.
 
 \*******************************************************************/
-symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
+symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod)
+{
   // TODO(Rasika): signed type.
   // TODO(Rasika): various name fields(cbmc).
   errs() << "in trans_Globals\n";
   symbol_tablet symbol_table;
-  for (auto &GV : Mod->globals()) {
+  for(auto &GV : Mod->globals())
+  {
     SmallVector<MDNode *, 1> MDs;
-    if (!GV.isDeclaration()) {
+    if(!GV.isDeclaration())
+    {
       GV.getMetadata(LLVMContext::MD_dbg, MDs);
-      if (!MDs.empty()) {
-        for (auto md = MDs.begin(), mde = MDs.end(); md != mde; md++) {
+      if(!MDs.empty())
+      {
+        for(auto md = MDs.begin(), mde = MDs.end(); md != mde; md++)
+        {
           symbolt global_variable;
           global_variable.clear();
           global_variable.is_static_lifetime = true;
-          for (auto mmd = (*md)->op_begin(); mmd != (*md)->op_end(); ++mmd) {
-            if (mmd->get()) {
-              switch (GV.getValueType()->getTypeID()) {
+          for(auto mmd = (*md)->op_begin(); mmd != (*md)->op_end(); ++mmd)
+          {
+            if(mmd->get())
+            {
+              switch(GV.getValueType()->getTypeID())
+              {
                 // 16-bit floating point type
-                case llvm::Type::TypeID::HalfTyID : {
+                case llvm::Type::TypeID::HalfTyID :
+                {
                   errs() << "\nHalf type";
-                  symbolt symbol = symbol_creator::create_HalfTy(GV.getValueType(), dyn_cast<MDNode>(*mmd));
+                  symbolt symbol = symbol_creator::create_HalfTy(
+                    GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
                   symbol_table.add(symbol);
                 }
                 // 32-bit floating point type
-                case llvm::Type::TypeID::FloatTyID : {
+                case llvm::Type::TypeID::FloatTyID :
+                {
                   errs() << "\nFloat type";
-                  symbolt symbol = symbol_creator::create_FloatTy(GV.getValueType(), dyn_cast<MDNode>(*mmd));
+                  symbolt symbol = symbol_creator::create_FloatTy(
+                    GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
                   symbol_table.add(symbol);
                   break;
                 }
                 // 64-bit floating point type
-                case llvm::Type::TypeID::DoubleTyID : {
+                case llvm::Type::TypeID::DoubleTyID :
+                {
                   symbolt symbol = symbol_creator::create_DoubleTy(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3757,7 +4634,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   break;
                 }
                 // 80-bit floating point type (X87)
-                case llvm::Type::TypeID::X86_FP80TyID : {
+                case llvm::Type::TypeID::X86_FP80TyID :
+                {
                   symbolt symbol = symbol_creator::create_X86_FP80Ty(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3767,7 +4645,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   break;
                 }
                 // 128-bit floating point type (112-bit mantissa)
-                case llvm::Type::TypeID::FP128TyID : {
+                case llvm::Type::TypeID::FP128TyID :
+                {
                   symbolt symbol = symbol_creator::create_FP128Ty(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3777,7 +4656,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   break;
                 }
                 // 128-bit floating point type (two 64-bits, PowerPC)
-                case llvm::Type::TypeID::PPC_FP128TyID : {
+                case llvm::Type::TypeID::PPC_FP128TyID :
+                {
                   symbolt symbol = symbol_creator::create_PPC_FP128Ty(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3786,7 +4666,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   errs() << "\nPPC_FP128 type";
                   break;
                 }
-                case llvm::Type::TypeID::IntegerTyID : {
+                case llvm::Type::TypeID::IntegerTyID :
+                {
                   symbolt symbol = symbol_creator::create_IntegerTy(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3795,7 +4676,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   errs() << "\nInteger type";
                   break;
                 }
-                case llvm::Type::TypeID::StructTyID : {
+                case llvm::Type::TypeID::StructTyID :
+                {
                   const MDNode *dit = dyn_cast<MDNode>(*mmd);
                   symbolt symbol = symbol_creator::create_StructTy(
                     GV.getValueType(),
@@ -3805,7 +4687,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   errs() << "\nStruct type";
                   break;
                 }
-                case llvm::Type::TypeID::ArrayTyID : {
+                case llvm::Type::TypeID::ArrayTyID :
+                {
                   symbolt symbol = symbol_creator::create_ArrayTy(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3814,7 +4697,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   errs() << "\nArray type";
                   break;
                 }
-                case llvm::Type::TypeID::PointerTyID : {
+                case llvm::Type::TypeID::PointerTyID :
+                {
                   symbolt symbol = symbol_creator::create_PointerTy(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3823,7 +4707,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   errs() << "\nPointer type";
                   break;
                 }
-                case llvm::Type::TypeID::VectorTyID : {
+                case llvm::Type::TypeID::VectorTyID :
+                {
                   symbolt symbol = symbol_creator::create_VectorTy(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3832,7 +4717,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   errs() << "\nVector type";
                   break;
                 }
-                case llvm::Type::TypeID::X86_MMXTyID : {
+                case llvm::Type::TypeID::X86_MMXTyID :
+                {
                   symbolt symbol = symbol_creator::create_X86_MMXTy(
                     GV.getValueType(),
                     dyn_cast<MDNode>(*mmd));
@@ -3879,302 +4765,366 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
 goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
   symbol_tablet *symbol_table,
   std::map <const Instruction*, goto_programt::targett>
-  &instruction_target_map) {
+  &instruction_target_map)
+{
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
   I.dump();
   const Instruction *Inst = &I;
   goto_programt gp;
-  switch (I.getOpcode()) {
+  switch(I.getOpcode())
+  {
     // Terminators
-    case Instruction::Ret : {
+    case Instruction::Ret :
+    {
       goto_programt ret_gp = trans_Ret(Inst, *symbol_table);
         gp.destructive_append(ret_gp);
         break;
       }
-    case Instruction::Br : {
+    case Instruction::Br :
+    {
       goto_programt br_gp = trans_Br(Inst, symbol_table,
         instruction_target_map);
         gp.destructive_append(br_gp);
         break;
       }
-    case Instruction::Switch : {
+    case Instruction::Switch :
+    {
         gp = trans_Switch(Inst);
         break;
       }
-    case Instruction::IndirectBr : {
+    case Instruction::IndirectBr :
+    {
         gp = trans_IndirectBr(Inst);
         break;
       }
-    case Instruction::Invoke : {
+    case Instruction::Invoke :
+    {
         gp = trans_Invoke(Inst);
         break;
       }
-    case Instruction::Resume : {
+    case Instruction::Resume :
+    {
         gp = trans_Resume(Inst);
         break;
       }
-    case Instruction::Unreachable : {
+    case Instruction::Unreachable :
+    {
         gp = trans_Unreachable(Inst);
         break;
       }
-    case Instruction::CleanupRet : {
+    case Instruction::CleanupRet :
+    {
         gp = trans_CleanupRet(Inst);
         break;
       }
-    case Instruction::CatchRet : {
+    case Instruction::CatchRet :
+    {
         gp = trans_CatchRet(Inst);
         break;
       }
-    case Instruction::CatchPad : {
+    case Instruction::CatchPad :
+    {
         gp = trans_CatchPad(Inst);
         break;
       }
-    case Instruction::CatchSwitch : {
+    case Instruction::CatchSwitch :
+    {
         gp = trans_CatchSwitch(Inst);
         break;
       }
 
     // Standard binary operators...
-    case Instruction::Add : {
+    case Instruction::Add :
+    {
         goto_programt add_ins = trans_Add(Inst, *symbol_table);
         gp.destructive_append(add_ins);
         break;
       }
-    case Instruction::FAdd : {
+    case Instruction::FAdd :
+    {
         goto_programt fadd_inst = trans_FAdd(Inst, *symbol_table);
         gp.destructive_append(fadd_inst);
         break;
       }
-    case Instruction::Sub : {
+    case Instruction::Sub :
+    {
         goto_programt sub_ins = trans_Sub(Inst, *symbol_table);
         gp.destructive_append(sub_ins);
         break;
       }
-    case Instruction::FSub : {
+    case Instruction::FSub :
+    {
         goto_programt fsub_inst = trans_FSub(Inst, *symbol_table);
         gp.destructive_append(fsub_inst);
         break;
       }
-    case Instruction::Mul : {
+    case Instruction::Mul :
+    {
         goto_programt mul_ins = trans_Mul(Inst, *symbol_table);
         gp.destructive_append(mul_ins);
         break;
       }
-    case Instruction::FMul : {
+    case Instruction::FMul :
+    {
         goto_programt fmul_inst = trans_FMul(Inst, *symbol_table);
         gp.destructive_append(fmul_inst);
         break;
       }
-    case Instruction::UDiv : {
+    case Instruction::UDiv :
+    {
         goto_programt udiv_ins = trans_UDiv(Inst, *symbol_table);
         gp.destructive_append(udiv_ins);
         break;
       }
-    case Instruction::SDiv : {
+    case Instruction::SDiv :
+    {
         goto_programt sdiv_ins = trans_SDiv(Inst, *symbol_table);
         gp.destructive_append(sdiv_ins);
         break;
       }
-    case Instruction::FDiv : {
+    case Instruction::FDiv :
+    {
         goto_programt fdiv_inst = trans_FDiv(Inst, *symbol_table);
         gp.destructive_append(fdiv_inst);
         break;
       }
-    case Instruction::URem : {
+    case Instruction::URem :
+    {
         goto_programt urem_ins = trans_URem(Inst, *symbol_table);
         gp.destructive_append(urem_ins);
         break;
       }
-    case Instruction::SRem : {
+    case Instruction::SRem :
+    {
         goto_programt srem_ins = trans_URem(Inst, *symbol_table);
         gp.destructive_append(srem_ins);
         break;
       }
-    case Instruction::FRem : {
+    case Instruction::FRem :
+    {
         goto_programt frem_inst = trans_FRem(Inst, *symbol_table);
         gp.destructive_append(frem_inst);
         break;
       }
 
     // Logical operators...
-    case Instruction::And : {
+    case Instruction::And :
+    {
         goto_programt and_inst = trans_And(Inst, *symbol_table);
         gp.destructive_append(and_inst);
         break;
       }
-    case Instruction::Or : {
+    case Instruction::Or :
+    {
         goto_programt or_inst = trans_Or(Inst, *symbol_table);
         gp.destructive_append(or_inst);
         break;
       }
-    case Instruction::Xor : {
+    case Instruction::Xor :
+    {
         goto_programt xor_inst = trans_Xor(Inst, *symbol_table);
         gp.destructive_append(xor_inst);
         break;
       }
 
     // Memory instructions...
-    case Instruction::Alloca : {
+    case Instruction::Alloca :
+    {
         trans_Alloca(Inst, *symbol_table);
         break;
       }
-    case Instruction::Load : {
+    case Instruction::Load :
+    {
         gp = trans_Load(Inst);
         break;
       }
-    case Instruction::Store : {
+    case Instruction::Store :
+    {
         goto_programt load_gp = trans_Store(Inst, *symbol_table);
         gp.destructive_append(load_gp);
         break;
       }
-    case Instruction::AtomicCmpXchg : {
+    case Instruction::AtomicCmpXchg :
+    {
         gp = trans_AtomicCmpXchg(Inst);
         break;
       }
-    case Instruction::AtomicRMW : {
+    case Instruction::AtomicRMW :
+    {
         gp = trans_AtomicRMW(Inst);
         break;
       }
-    case Instruction::Fence : {
+    case Instruction::Fence :
+    {
         gp = trans_Fence(Inst);
         break;
       }
-    case Instruction::GetElementPtr : {
+    case Instruction::GetElementPtr :
+    {
         gp = trans_GetElementPtr(Inst);
         break;
       }
 
     // Convert instructions...
-    case Instruction::Trunc : {
+    case Instruction::Trunc :
+    {
         goto_programt trunc_gp = trans_Trunc(Inst, *symbol_table);
         gp.destructive_append(trunc_gp);
         break;
       }
-    case Instruction::ZExt : {
+    case Instruction::ZExt :
+    {
         goto_programt zext_gp = trans_ZExt(Inst, *symbol_table);
         gp.destructive_append(zext_gp);
         break;
       }
-    case Instruction::SExt : {
+    case Instruction::SExt :
+    {
         goto_programt sext_gp = trans_SExt(Inst, *symbol_table);
         gp.destructive_append(sext_gp);
         break;
       }
-    case Instruction::FPTrunc : {
+    case Instruction::FPTrunc :
+    {
         goto_programt fptrunc_gp = trans_FPTrunc(Inst, *symbol_table);
         gp.destructive_append(fptrunc_gp);
         break;
       }
-    case Instruction::FPExt : {
+    case Instruction::FPExt :
+    {
         goto_programt fpext_gp = trans_FPExt(Inst, *symbol_table);
         gp.destructive_append(fpext_gp);
         break;
       }
-    case Instruction::FPToUI : {
+    case Instruction::FPToUI :
+    {
         goto_programt fptoui_gp = trans_FPToUI(Inst, *symbol_table);
         gp.destructive_append(fptoui_gp);
         break;
       }
-    case Instruction::FPToSI : {
+    case Instruction::FPToSI :
+    {
         goto_programt fptosi_gp = trans_FPToSI(Inst, *symbol_table);
         gp.destructive_append(fptosi_gp);
         break;
       }
-    case Instruction::UIToFP : {
+    case Instruction::UIToFP :
+    {
         goto_programt uitofp_gp = trans_UIToFP(Inst, *symbol_table);
         gp.destructive_append(uitofp_gp);
         break;
       }
-    case Instruction::SIToFP : {
+    case Instruction::SIToFP :
+    {
         goto_programt sitofp_gp = trans_SIToFP(Inst, *symbol_table);
         gp.destructive_append(sitofp_gp);
         break;
       }
-    case Instruction::IntToPtr : {
+    case Instruction::IntToPtr :
+    {
         gp = trans_IntToPtr(Inst);
         break;
       }
-    case Instruction::PtrToInt : {
+    case Instruction::PtrToInt :
+    {
         gp = trans_PtrToInt(Inst);
         break;
       }
-    case Instruction::BitCast : {
+    case Instruction::BitCast :
+    {
         gp = trans_BitCast(Inst);
         break;
       }
-    case Instruction::AddrSpaceCast : {
+    case Instruction::AddrSpaceCast :
+    {
         gp = trans_AddrSpaceCast(Inst);
         break;
       }
 
     // Other instructions...
-    case Instruction::ICmp : {
+    case Instruction::ICmp :
+    {
         goto_programt Icmp_inst = trans_ICmp(Inst, symbol_table);
         gp.destructive_append(Icmp_inst);
         break;
       }
-    case Instruction::FCmp : {
+    case Instruction::FCmp :
+    {
         goto_programt Fcmp_inst = trans_FCmp(Inst);
         gp.destructive_append(Fcmp_inst);
         break;
       }
-    case Instruction::PHI : {
+    case Instruction::PHI :
+    {
         gp = trans_PHI(Inst);
         break;
       }
-    case Instruction::Select : {
+    case Instruction::Select :
+    {
         gp = trans_Select(Inst);
         break;
       }
-    case Instruction::Call : {
+    case Instruction::Call :
+    {
         goto_programt Call_Inst = trans_Call(Inst, symbol_table);
         gp.destructive_append(Call_Inst);
         break;
       }
-    case Instruction::Shl : {
+    case Instruction::Shl :
+    {
         goto_programt shl_Inst = trans_Shl(Inst, *symbol_table);
         gp.destructive_append(shl_Inst);
         break;
       }
-    case Instruction::LShr : {
+    case Instruction::LShr :
+    {
         goto_programt lshr_Inst = trans_LShr(Inst, *symbol_table);
         gp.destructive_append(lshr_Inst);
         break;
       }
-    case Instruction::AShr : {
+    case Instruction::AShr :
+    {
         goto_programt ashr_Inst = trans_AShr(Inst, *symbol_table);
         gp.destructive_append(ashr_Inst);
         break;
       }
-    case Instruction::VAArg : {
+    case Instruction::VAArg :
+    {
         gp = trans_VAArg(Inst);
         break;
       }
-    case Instruction::ExtractElement : {
+    case Instruction::ExtractElement :
+    {
         gp = trans_ExtractElement(Inst);
         break;
       }
-    case Instruction::InsertElement : {
+    case Instruction::InsertElement :
+    {
         gp = trans_InsertElement(Inst);
         break;
       }
-    case Instruction::ShuffleVector : {
+    case Instruction::ShuffleVector :
+    {
         gp = trans_ShuffleVector(Inst);
         break;
       }
-    case Instruction::ExtractValue : {
+    case Instruction::ExtractValue :
+    {
         gp = trans_ExtractValue(Inst);
         break;
       }
-    case Instruction::InsertValue : {
+    case Instruction::InsertValue :
+    {
         gp = trans_InsertValue(Inst);
         break;
       }
-    case Instruction::LandingPad : {
+    case Instruction::LandingPad :
+    {
         gp = trans_LandingPad(Inst);
         break;
       }
-    case Instruction::CleanupPad : {
+    case Instruction::CleanupPad :
+    {
         gp = trans_CleanupPad(Inst);
         break;
       }
@@ -4208,13 +5158,15 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
   symbol_tablet *symbol_table,
   std::map <const Instruction*, goto_programt::targett>
-  &instruction_target_map) {
+  &instruction_target_map)
+{
   // TODO(Rasika): use code_blockt
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
   // register_language(new_ansi_c_language);
-  for (BasicBlock::const_iterator i = b.begin(),
-    ie = b.end(); i != ie; ++i) {
+  for(BasicBlock::const_iterator i = b.begin(),
+    ie = b.end(); i != ie; ++i)
+  {
       // const Instruction &inst = *i;
       // i -> dump();
       goto_programt goto_instr = trans_instruction(*i, symbol_table,
@@ -4245,7 +5197,8 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Function(const Function &F,
-  symbol_tablet *symbol_table) {
+  symbol_tablet *symbol_table)
+{
   // TODO(Rasika): check if definition
   //  is available or not, in built functions...
   goto_programt gp;
@@ -4256,7 +5209,8 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   std::map <const Instruction*, goto_programt::targett> instruction_target_map;
   errs() << "\tin trans_Function\n";
   Function::const_iterator b = F.begin(), be = F.end();
-  for (; b != be; ++b) {
+  for(; b != be; ++b)
+  {
     const BasicBlock &B = *b;
     goto_programt goto_block = trans_Block(B, symbol_table,
       instruction_target_map);
@@ -4274,7 +5228,8 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   errs() << "\n\n *********************************************\n";
   gp.update();
   // namespacet ns(*symbol_table);
-  for (auto mi = scope_name_map.begin(), me = scope_name_map.end(); mi!=me; mi++) {
+  for(auto mi = scope_name_map.begin(), me = scope_name_map.end(); mi!=me; mi++)
+  {
     errs() << mi->second << " ";
     mi->first->dump();
   }
@@ -4303,18 +5258,24 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
 void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
   std::map <const BasicBlock*, goto_programt::targett> block_target_map,
   std::map <const Instruction*, goto_programt::targett>
-  instruction_target_map) {
-  for (auto i = instruction_target_map.begin(),
-    ie = instruction_target_map.end(); i != ie; i++) {
+  instruction_target_map)
+{
+  for(auto i = instruction_target_map.begin(),
+    ie = instruction_target_map.end(); i != ie; i++)
+  {
     // (*i).first->dump();
-    if (dyn_cast<BranchInst>((*i).first)->getNumSuccessors() == 2) {
+    if(dyn_cast<BranchInst>((*i).first)->getNumSuccessors() == 2)
+    {
       goto_programt::targett then_part;
       exprt guard;
-      if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
+      if(dyn_cast<BranchInst>((*i).first)->isConditional())
+      {
         guard = trans_Inverse_Cmp(
           dyn_cast<Instruction>(
             dyn_cast<BranchInst>((*i).first)->getCondition()), symbol_table);
-      } else {
+      }
+      else
+      {
         guard = true_exprt();
       }
       std::map <const BasicBlock*, goto_programt::targett>::iterator then_pair
@@ -4323,14 +5284,19 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
           dyn_cast<BranchInst>((*i).first)->getSuccessor(1)));
       then_part = (*then_pair).second;
       (*i).second->make_goto(then_part, guard);
-    } else {
+    }
+    else
+    {
       goto_programt::targett then_part;
       exprt guard;
-      if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
+      if(dyn_cast<BranchInst>((*i).first)->isConditional())
+      {
         guard = trans_Cmp(
           dyn_cast<Instruction>(
             dyn_cast<BranchInst>((*i).first)->getCondition()), symbol_table);
-      } else {
+      }
+      else
+      {
         guard = true_exprt();
       }
       std::map <const BasicBlock*, goto_programt::targett>::iterator then_pair
@@ -4357,7 +5323,8 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
              e.g. trans_Gloabals, trans_Block, etc.
 
 \*******************************************************************/
-goto_functionst llvm2goto_translator::trans_Program() {
+goto_functionst llvm2goto_translator::trans_Program()
+{
   // TODO(Rasika): check for presence of function body
   // Module &M = *M;
   // errs() << "in trans_Program\n";
@@ -4382,28 +5349,32 @@ goto_functionst llvm2goto_translator::trans_Program() {
 
   // symbol_table.show(std::cout);
   goto_programt gp;
-  for (Function &F : *M) {
+  for(Function &F : *M)
+  {
     Type *functt = (dyn_cast<Type>(F.getFunctionType()));
     symbolt fn = symbol_creator::create_FunctionTy(functt);
     fn.name = dstringt(F.getName().str());
     fn.base_name = fn.name;
     symbol_table.add(fn);
   }
-  for (Function &F : *M) {
+  for(Function &F : *M)
+  {
     // SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
     // F.getAllMetadata(MDs);
-    // if(F.hasMetadata()) {
+    // if(F.hasMetadata()){
     //   MDs[0].second->dump();
     //   (*dyn_cast<DISubprogram>(MDs[0].second)).getType()->dump();
-    //   dyn_cast<DISubroutineType>((*dyn_cast<DISubprogram>(MDs[0].second)).getType())->getTypeArray()->dump();
+    //
+    // dyn_cast<DISubroutineType>((*dyn_cast<DISubprogram>(MDs[0].second)).getType())->getTypeArray()->dump();
     // }
     Type *functt = (dyn_cast<Type>(F.getFunctionType()));
     symbolt fn = symbol_creator::create_FunctionTy(functt);
     fn.name = dstringt(F.getName().str());
     fn.base_name = fn.name;
     symbol_table.add(fn);
-    for (Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
-      arg_b != arg_e; arg_b++) {
+    for(Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
+      arg_b != arg_e; arg_b++)
+    {
       symbolt arg;
       arg.name = F.getName().str() + "::" + arg_b->getName().str();
       arg.base_name = F.getName().str();
@@ -4427,7 +5398,8 @@ goto_functionst llvm2goto_translator::trans_Program() {
   // std::cout << "\033[1;31m set_entry_point done \033[0m";
   cmdlinet cmdline;
   compilet compile(cmdline);
-  compile.write_object_file(M->getSourceFileName() + ".goto", symbol_table, goto_functions);
+  compile.write_object_file(M->getSourceFileName()
+    + ".goto", symbol_table, goto_functions);
 
   namespacet ns(symbol_table);
 
@@ -4438,7 +5410,7 @@ goto_functionst llvm2goto_translator::trans_Program() {
   // forall_symbols(ns.get_symbol_table().it, ns.get_symbol_table().symbols)
     // errs() << it->second;
 
-  // if(&ns.get_symbol_table() != NULL) {
+  // if(&ns.get_symbol_table() != NULL){
   //   errs() << "\n" << "Symbols:" <<  "\n";
   // }
   ns.get_symbol_table().show(std::cout);
@@ -4446,9 +5418,10 @@ goto_functionst llvm2goto_translator::trans_Program() {
   errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
   errs() << "\ncalling goto_functions.output\n";
   goto_functions.output(ns, std::cout);
-  /*for (goto_functionst::function_mapt::const_iterator \
+  /*for(goto_functionst::function_mapt::const_iterator \
     it = (goto_functions).function_map.begin(); \
-    it != (goto_functions).function_map.end(); it++) {
+    it != (goto_functions).function_map.end(); it++)
+    {
       errs() << (*it).first.c_str() << "\n";
       it->second.body.output(std::cout);
   }*/

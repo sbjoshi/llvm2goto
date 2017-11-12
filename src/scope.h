@@ -1,5 +1,5 @@
 /* Copyright
-
+Author : Rasika
 
 */
 #include <iostream>
@@ -16,7 +16,8 @@
 using namespace llvm;
 #ifndef SRC_SCOPE_H_
 #define SRC_SCOPE_H_
-class scope_node {
+class scope_node
+{
  public:
   DIScope *scope;
   scope_node *parent;
@@ -29,7 +30,8 @@ class scope_node {
   ~scope_node();
 };
 
-class scope_tree {
+class scope_tree
+{
  public:
   scope_tree();
   ~scope_tree();

@@ -1,5 +1,5 @@
 /* Copyright
-
+Author : Rasika
 
 */
 #if 1
@@ -18,8 +18,10 @@
 
 using namespace llvm;
 
-int main(int argc, char **argv) {
-  if (argc < 2) {
+int main(int argc, char **argv)
+{
+  if(argc < 2)
+  {
   errs() << "Usage: " << argv[0] << " <llvm IR file>\n";
   return 1;
   }
@@ -28,13 +30,15 @@ int main(int argc, char **argv) {
   LLVMContext Context;
   std::unique_ptr<Module> Mod(parseIRFile(argv[1], Err, Context));
   Module *M = Mod.get();
-  if (!Mod) {
+  if(!Mod)
+  {
     errs() << "\nThere is something wrong with the IR file.\n";
   Err.print(argv[0], errs());
   return 1;
   }
   NamedMDNode *NMD = M->getNamedMetadata("llvm.dbg.cu");
-  if (cast<DICompileUnit>(NMD->getOperand(0))->isOptimized()) {
+  if(cast<DICompileUnit>(NMD->getOperand(0))->isOptimized())
+  {
     errs() << "Please turn off all the optimization flags.\n";
     return 1;
   }
@@ -51,25 +55,36 @@ int main(int argc, char **argv) {
 #include "goto-cc/compile.h"
 #include "linking/static_lifetime_init.h"
 #include "langapi/mode.h"
-#include <iostream>
+/*#include <iostream>*/
 #include "ansi-c/ansi_c_entry_point.h"
 #include "ansi-c/ansi_c_language.h"
 
-goto_programt block_to_prog(code_blockt cb) {
+goto_programt block_to_prog(code_blockt cb)
+{
   goto_programt gp;
-  for (unsigned int b = 0; b < cb.operands().size(); b++) {
+  for(unsigned int b = 0; b < cb.operands().size(); b++)
+  {
     goto_programt::targett ins = gp.add_instruction();
     codet c = to_code(cb.operands()[b]);
-    if(ID_assign == c.get_statement()) {
+    if(ID_assign == c.get_statement())
+    {
       ins->make_assignment();
-      ins->code = code_assignt(c.operands()[0],c.operands()[1]);
-    } else if(ID_output == c.get_statement()) {
+      ins->code = code_assignt(c.operands()[0], c.operands()[1]);
+    }
+    else if(ID_output == c.get_statement())
+    {
       ins->make_other(c);
-    } else if(ID_label == c.get_statement()) {
+    }
+    else if(ID_label == c.get_statement())
+    {
       ins->make_skip();
-    } else if(ID_function_call == c.get_statement()) {
+    }
+    else if(ID_function_call == c.get_statement())
+    {
       ins->make_function_call(c);
-    } else {
+    }
+    else
+    {
       ins->code = c;
     }
   }
@@ -78,7 +93,8 @@ goto_programt block_to_prog(code_blockt cb) {
   return gp;
 }
 
-int main() {
+int main()
+{
   symbol_tablet symbol_table;
 
   symbolt x;
@@ -90,7 +106,7 @@ int main() {
   x.name = x_name;
   x.base_name = x_bname;
   x.type = signedbv_typet(32);
-  x.value = from_integer(0,x.type);
+  x.value = from_integer(0, x.type);
   symbol_table.add(x);
 
   symbolt main;
@@ -117,7 +133,6 @@ int main() {
 
   goto_functionst goto_functions;
 
-  
   goto_programt v;
   code_blockt block;
   goto_programt::targett decl_x = v.add_instruction();
@@ -125,7 +140,8 @@ int main() {
   decl_x->code=code_declt(x.symbol_expr());
   block.add(decl_x->code);
   goto_programt::targett assert_inst = v.add_instruction();
-  assert_inst->make_assertion(equal_exprt(x.symbol_expr(),from_integer(0,x.type)));
+  assert_inst->make_assertion(equal_exprt(x.symbol_expr(),
+    from_integer(0, x.type)));
   block.add(assert_inst->code);
   goto_programt::targett ret_inst = v.add_instruction();
   code_returnt cret;
@@ -139,22 +155,26 @@ int main() {
   symbol_table.lookup("main").value.swap(block);
 
   goto_functions.function_map.insert(
-      std::pair<const dstringt, goto_functionst::goto_functiont >(dstringt("main"),
+      std::pair<const dstringt, goto_functionst::goto_functiont >(
+      dstringt("main"),
         goto_functionst::goto_functiont()));
   (*goto_functions.function_map.find(dstringt("main"))).second.body.swap(v);
   message_clientt mct;
   ansi_c_entry_point(symbol_table, "main", mct.get_message_handler());
   goto_functions.function_map.insert(
-    std::pair<const dstringt, goto_functionst::goto_functiont >(INITIALIZE_FUNCTION,
+    std::pair<const dstringt, goto_functionst::goto_functiont >(
+    INITIALIZE_FUNCTION,
     goto_functionst::goto_functiont()));
-  code_blockt initialize_function_block = to_code_block(to_code(symbol_table.lookup(INITIALIZE_FUNCTION).value));
+  code_blockt initialize_function_block = to_code_block(to_code(
+    symbol_table.lookup(INITIALIZE_FUNCTION).value));
   goto_programt v1 = block_to_prog(initialize_function_block);
   (*goto_functions.function_map.find(INITIALIZE_FUNCTION)).second.body.swap(v1);
 
   goto_functions.function_map.insert(
     std::pair<const dstringt, goto_functionst::goto_functiont >("_start",
     goto_functionst::goto_functiont()));
-  code_blockt _start_block = to_code_block(to_code(symbol_table.lookup("_start").value));
+  code_blockt _start_block = to_code_block(
+  to_code(symbol_table.lookup("_start").value));
   goto_programt v2 = block_to_prog(_start_block);
   goto_functions.function_map.insert(
     std::pair<const dstringt, goto_functionst::goto_functiont >("_start",
