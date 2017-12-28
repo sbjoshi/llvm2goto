@@ -33,7 +33,8 @@ class llvm2goto_translatort
         std::map <const Instruction*, goto_programt::targett>
         &instruction_target_map) = 0;
     virtual goto_programt trans_Switch(const Instruction *I,
-        std::map <const BasicBlock*, goto_programt::targett> &dest_block_branch_map_switch,
+        std::map <const BasicBlock*, goto_programt::targett>
+            &dest_block_branch_map_switch,
         symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_IndirectBr(const Instruction *I) = 0;
     virtual goto_programt trans_Invoke(const Instruction *I) = 0;
@@ -133,13 +134,15 @@ class llvm2goto_translatort
     virtual goto_programt trans_instruction(const Instruction &I,
         symbol_tablet *symbol_table,
         std::map <const Instruction*, goto_programt::targett>
-        &instruction_target_map,
-        std::map <const BasicBlock*, goto_programt::targett> &dest_block_branch_map_switch) = 0;
+            &instruction_target_map,
+        std::map <const BasicBlock*, goto_programt::targett>
+            &dest_block_branch_map_switch) = 0;
     virtual goto_programt trans_Block(const BasicBlock &b,
         symbol_tablet *symbol_table,
         std::map <const Instruction*, goto_programt::targett>
-        &instruction_target_map,
-        std::map <const BasicBlock*, goto_programt::targett> &dest_block_branch_map_switch) = 0;
+            &instruction_target_map,
+        std::map <const BasicBlock*, goto_programt::targett>
+            &dest_block_branch_map_switch) = 0;
     virtual goto_programt trans_Function(const Function &F,
         symbol_tablet *symbol_table) = 0;
     virtual void set_branches(symbol_tablet *symbol_table,

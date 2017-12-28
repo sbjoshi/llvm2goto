@@ -195,12 +195,13 @@ goto_programt llvm2goto_translator::trans_Br(const Instruction *I,
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
-  std::map <const BasicBlock*, goto_programt::targett> &dest_block_branch_map_switch,
+  std::map <const BasicBlock*, goto_programt::targett>
+    &dest_block_branch_map_switch,
   symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  dyn_cast<SwitchInst>(I)->getCondition()->dump();
-  dyn_cast<SwitchInst>(I)->getDefaultDest()->dump();
+  // dyn_cast<SwitchInst>(I)->getCondition()->dump();
+  // dyn_cast<SwitchInst>(I)->getDefaultDest()->dump();
   Value *ub = dyn_cast<SwitchInst>(I)->getCondition();
   symbolt var;
   exprt var_expr;
@@ -222,15 +223,19 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
     }
   }
   var_expr = var.symbol_expr();
-  errs() << var.name.c_str() << "\n";
+  // errs() << var.name.c_str() << "\n";
 
 
-  for(auto i=dyn_cast<SwitchInst>(I)->case_begin(); i!=dyn_cast<SwitchInst>(I)->case_end(); i++){
-    errs() << "case \n";
-    errs() << i.getCaseValue()->getZExtValue() << "\n";
-    i.getCaseSuccessor()->dump();
+  for(auto i=dyn_cast<SwitchInst>(I)->case_begin();
+    i!=dyn_cast<SwitchInst>(I)->case_end(); i++)
+  {
+    // errs() << "case \n";
+    // errs() << i.getCaseValue()->getZExtValue() << "\n";
+    // i.getCaseSuccessor()->dump();
     goto_programt::targett br_ins = gp.add_instruction();
-    dest_block_branch_map_switch.insert(std::pair<const BasicBlock*, goto_programt::targett>(i.getCaseSuccessor(), br_ins));
+    dest_block_branch_map_switch.insert(
+      std::pair<const BasicBlock*, goto_programt::targett>(
+        i.getCaseSuccessor(), br_ins));
     br_ins->make_goto();
     br_ins->guard = equal_exprt(var_expr,
       from_integer(i.getCaseValue()->getZExtValue(),
@@ -4810,8 +4815,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod)
 goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
   symbol_tablet *symbol_table,
   std::map <const Instruction*, goto_programt::targett>
-  &instruction_target_map,
-  std::map <const BasicBlock*, goto_programt::targett> &dest_block_branch_map_switch)
+    &instruction_target_map,
+  std::map <const BasicBlock*, goto_programt::targett>
+    &dest_block_branch_map_switch)
 {
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
   I.dump();
@@ -4835,7 +4841,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
       }
     case Instruction::Switch :
     {
-        goto_programt sw_gp = trans_Switch(Inst, dest_block_branch_map_switch, *symbol_table);
+        goto_programt sw_gp = trans_Switch(Inst, dest_block_branch_map_switch,
+          *symbol_table);
         gp.destructive_append(sw_gp);
         break;
       }
@@ -5205,8 +5212,9 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
 goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
   symbol_tablet *symbol_table,
   std::map <const Instruction*, goto_programt::targett>
-  &instruction_target_map,
-  std::map <const BasicBlock*, goto_programt::targett> &dest_block_branch_map_switch)
+    &instruction_target_map,
+  std::map <const BasicBlock*, goto_programt::targett>
+    &dest_block_branch_map_switch)
 {
   // TODO(Rasika): use code_blockt
   errs() << "\t\tin trans_Block\n";
@@ -5254,7 +5262,8 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   // std::map<DIScope*, std::string> scope_name_map;
   st.get_scope_name_map(*(M->begin()), &scope_name_map);
   std::map <const BasicBlock*, goto_programt::targett> block_target_map;
-  std::map <const BasicBlock*, goto_programt::targett> dest_block_branch_map_switch;
+  std::map <const BasicBlock*, goto_programt::targett>
+    dest_block_branch_map_switch;
   std::map <const Instruction*, goto_programt::targett> instruction_target_map;
   errs() << "\tin trans_Function\n";
   Function::const_iterator b = F.begin(), be = F.end();
@@ -5277,18 +5286,20 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   errs() << "\n\n *********************************************\n";
   gp.update();
   // namespacet ns(*symbol_table);
-  for(auto mi = scope_name_map.begin(), me = scope_name_map.end(); mi!=me; mi++)
+  /*for(auto mi = scope_name_map.begin(), me = scope_name_map.end(); mi!=me; mi++)
   {
     errs() << mi->second << " ";
     mi->first->dump();
-  }
-  for(auto i = dest_block_branch_map_switch.begin(); i!=dest_block_branch_map_switch.end(); i++){
+  }*/
+  for(auto i = dest_block_branch_map_switch.begin();
+    i!=dest_block_branch_map_switch.end(); i++)
+  {
     std::map <const BasicBlock*, goto_programt::targett>::iterator then_pair
       = block_target_map.find(
         dyn_cast<BasicBlock>(i->first));
       // then_part = (*then_pair).second;
       // (*i).second->make_goto(then_part, guard);
-      then_pair->first->dump();
+      // then_pair->first->dump();
       // errs() << "\nhi\n";
       // std::cout << i->second->guard << "\n";
       // i->second->code = then_pair->second;
@@ -5301,7 +5312,7 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   // register_language(new_ansi_c_language);
   // gp.output(std::cout);
   // std::cout << "\n...............................................\n";
-  // errs() << "\tin trans_Function\n";
+  errs() << "\tout of trans_Function " + F.getName().str() + "\n";
   return gp;
 }
 

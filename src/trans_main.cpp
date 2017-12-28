@@ -25,13 +25,18 @@ int main(int argc, char **argv)
   errs() << "Usage: " << argv[0] << " <llvm IR file>\n";
   return 1;
   }
-  for(int i=1; i<argc; i++) {
-    if(argv[i][0] == '-') {
+  for(int i=1; i<argc; i++)
+  {
+    if(argv[i][0] == '-')
+    {
       // cout << (argv[i][1] == 'o') << endl;
-      if(argv[i][1] == 'o') {
+      if(argv[i][1] == 'o')
+      {
           i++;
           errs() << argv[i] << "\n";
-      } else {
+      }
+      else
+      {
           errs() << "unknown option " << argv[i] << "\n";
           return 1;
       }

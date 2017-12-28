@@ -287,7 +287,7 @@ void scope_tree::construct_tree(const Function &F)
                 if(scope_scope_node_map.find(S)
                   == scope_scope_node_map.end())
                 {
-                  S->dump();
+                  // S->dump();
                   add_node(S);
                 }
                 break;
@@ -308,7 +308,7 @@ void scope_tree::construct_tree(const Function &F)
                 if(scope_scope_node_map.find(S)
                   == scope_scope_node_map.end())
                 {
-                  S->dump();
+                  // S->dump();
                   add_node(S);
                 }
             }
