@@ -123,15 +123,17 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   goto_programt::targett ret_inst = gp.add_instruction();
   code_returnt cret;
@@ -522,15 +524,17 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -674,15 +678,17 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -800,15 +806,17 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     minus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -946,15 +954,17 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
     minus_exprt(exprt1, exprt2));
   fsub_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   fsub_inst->source_location = location;
   fsub_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1072,15 +1082,17 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     mult_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1217,15 +1229,17 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
     mult_exprt(exprt1, exprt2));
   fmul_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   fmul_inst->source_location = location;
   fmul_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1322,15 +1336,17 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   udiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   udiv_inst->source_location = location;
   udiv_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1429,15 +1445,17 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   sdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   sdiv_inst->source_location = location;
   sdiv_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1573,15 +1591,17 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   fdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   fdiv_inst->source_location = location;
   fdiv_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1678,15 +1698,17 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   urem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   urem_inst->source_location = location;
   urem_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1785,15 +1807,17 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   srem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   srem_inst->source_location = location;
   srem_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -1929,15 +1953,17 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   frem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   frem_inst->source_location = location;
   frem_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -2040,15 +2066,17 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
     bitand_exprt(exprt1, exprt2));
   and_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   and_inst->source_location = location;
   and_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -2151,15 +2179,17 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
     bitor_exprt(exprt1, exprt2));
   or_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   or_inst->source_location = location;
   or_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -2263,15 +2293,17 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
     bitxor_exprt(exprt1, exprt2));
   xor_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   xor_inst->source_location = location;
   xor_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -2427,6 +2459,18 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   I->getAllMetadata(MDs);
   SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+  }
   store_inst->source_location = location;
   store_inst->type = goto_program_instruction_typet::ASSIGN;
   namespacet ns(symbol_table);
@@ -2561,15 +2605,17 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -2651,15 +2697,17 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -2741,15 +2789,17 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -2849,15 +2899,17 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -2958,15 +3010,17 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -3066,15 +3120,17 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -3174,15 +3230,17 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -3263,15 +3321,17 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -3352,15 +3412,17 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   // try {
   //   symbol_table.lookup(
@@ -3789,7 +3851,20 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
 //   uitofp_inst->function = irep_idt(I->getFunction()->getName().str());
 //   uitofp_inst->source_location = location;
 //   uitofp_inst->type = goto_program_instruction_typet::ASSIGN;
-
+  source_locationt location;
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+  }
+  Icmp_inst->source_location = location;
   Icmp_inst->make_assignment();
   Icmp_inst->code = code_assignt(
     symbol_table->lookup(var_name_map.find(
@@ -4230,15 +4305,17 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
     shl_exprt(exprt1, exprt2));
   shl_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   shl_inst->source_location = location;
   shl_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -4332,15 +4409,17 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
     lshr_exprt(exprt1, exprt2));
   lshr_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   lshr_inst->source_location = location;
   lshr_inst->type = goto_program_instruction_typet::ASSIGN;
@@ -4437,15 +4516,17 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
     ashr_exprt(exprt1, exprt2));
   ashr_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(&(I->getDebugLoc()) != NULL)
-  {
-    const DebugLoc loc = I->getDebugLoc();
-    location.set_file(loc
-          ->getScope()->getFile()->getFilename().str());
-    location.set_working_directory(loc
-          ->getScope()->getFile()->getDirectory().str());
-    location.set_line(loc->getLine());
-    location.set_column(loc->getColumn());
+  if(I->hasMetadata()){
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
   }
   ashr_inst->source_location = location;
   ashr_inst->type = goto_program_instruction_typet::ASSIGN;
