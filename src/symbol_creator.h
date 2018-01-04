@@ -5,6 +5,7 @@ Author : Rasika
 
 #include "util/symbol_table.h"
 #include <string.h>
+#include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 
@@ -35,7 +36,7 @@ class symbol_creator
   static typet create_type(Type *type);
   static symbolt create_VectorTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_VoidTy(Type *type, llvm::MDNode *mdn);
-  static symbolt create_FunctionTy(Type *type);
+  static symbolt create_FunctionTy(Type *type, const Function &F);
   static symbolt create_TokenTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_LabelTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_MetadataTy(Type *type, llvm::MDNode *mdn);
