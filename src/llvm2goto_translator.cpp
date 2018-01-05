@@ -3608,28 +3608,37 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     f2=1;
   }
   // assert(false);
-  if(f1==1 && f2==1){
+  if(f1==1 && f2==1)
+  {
     errs() << "done!";
-  } else if(I->getOperand(0)->getType()->isIntegerTy()){
-    if(dyn_cast<ConstantInt>(*ub))
+  } else if(I->getOperand(0)->getType()->isIntegerTy())
+  {
+    if(f1==0)
     {
-      flag = 1;
-    }
-    else
-    {
-      opnd1 = symbol_table->lookup(var_name_map.find(
-        ub->getName().str())->second).symbol_expr();
+      if(dyn_cast<ConstantInt>(*ub))
+      {
+        flag = 1;
+      }
+      else
+      {
+        opnd1 = symbol_table->lookup(var_name_map.find(
+          ub->getName().str())->second).symbol_expr();
+      }
     }
 
-    if(dyn_cast<ConstantInt>(*(ub + 1)))
-    {
-      flag = 0;
+    if(f2 == 0){
+      if(dyn_cast<ConstantInt>(*(ub + 1)))
+      {
+        flag = 0;
+      }
+      else
+      {
+        opnd2 = symbol_table->lookup(var_name_map.find(
+          (ub + 1)->getName().str())->second).symbol_expr();
+      }      
     }
-    else
-    {
-      opnd2 = symbol_table->lookup(var_name_map.find(
-        (ub + 1)->getName().str())->second).symbol_expr();
-    }
+
+
     
     if(opnd2.type().id() == ID_signedbv && flag == 1)
     {
@@ -3900,37 +3909,20 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
   //   std::allocator<char> > msg){
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
-    errs() << "1 ";
     symbolt symbol;
-    errs() << "2 ";
     symbol.base_name = I->getName().str();
-    errs() << "3 ";
-    I->getDebugLoc()->getScope()->dump();
-    errs() << "\n";
-    for(auto rasssu=scope_name_map.begin(); rasssu!=scope_name_map.end(); rasssu++){
-      errs() << rasssu->second << " --- ";
-      rasssu->first->dump();
-    }
 
     errs() << (scope_name_map.find(I->getDebugLoc()->getScope()) == scope_name_map.end()) << "\n";
     symbol.name = scope_name_map.find(I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
       + "::" + I->getName().str();
-    errs() << "4 ";
     var_name_map.insert(std::pair<std::string, std::string>(
       symbol.base_name.c_str(), symbol.name.c_str()));
-    errs() << "5 ";
     symbol.type = bool_typet();
-    errs() << "6 ";
     symbol_table->add(symbol);
-    errs() << "7 ";
     goto_programt::targett decl_cmp = gp.add_instruction();
-    errs() << "8 ";
     decl_cmp->make_decl();
-    errs() << "9 ";
     decl_cmp->code=code_declt(symbol.symbol_expr());
-    errs() << "10 ";
     decl_cmp->function = irep_idt(I->getFunction()->getName().str());
-    errs() << "11 \n";
     // decl_cmp->source_location = location;
   }
   // assert(false);
@@ -5254,11 +5246,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
       }
     case Instruction::Store :
     {
-      errs() << "111111111111 ";
         goto_programt load_gp = trans_Store(Inst, *symbol_table);
-        errs() << "111111111111 ";
         gp.destructive_append(load_gp);
-        errs() << "111111111111 ";
         break;
       }
     case Instruction::AtomicCmpXchg :
