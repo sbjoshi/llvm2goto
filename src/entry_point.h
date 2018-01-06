@@ -4,10 +4,11 @@ Author : Rasika
 */
 
 #include "ansi-c/ansi_c_entry_point.h"
+#include "cbmc/cbmc_parse_options.h"
 #include <linking/static_lifetime_init.h>
 
 void set_function_symbol_value(
-  goto_functionst::function_mapt function_map,
+  goto_functionst::function_mapt &function_map,
   symbol_tablet &symbol_table)
 {
   for(typename goto_functionst::function_mapt::iterator
@@ -66,9 +67,18 @@ void set_entry_point(goto_functionst &goto_functions,
   symbol_tablet &symbol_table)
 {
   set_function_symbol_value(goto_functions.function_map, symbol_table);
-  message_clientt mct;
-  message_handlert &message_handler = mct.get_message_handler();
-  ansi_c_entry_point(symbol_table, "main", message_handler);
+  // message_clientt mct;
+  // message_handlert &message_handler = mct.get_message_handler();
+  /*)
+{
+#endif
+*/
+  int argc;
+  const char **argv;
+  cbmc_parse_optionst parse_options(argc, argv);
+  parse_options.get_message_handler();
+  // bmct bmc;
+  ansi_c_entry_point(symbol_table, "main", parse_options.get_message_handler());
   goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >("_start",
         goto_functionst::goto_functiont()));

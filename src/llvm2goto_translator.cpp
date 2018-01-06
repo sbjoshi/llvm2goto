@@ -3075,6 +3075,8 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     decl_add->code=code_declt(symbol.symbol_expr());
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
+    // std::cout << (symbol.symbol_expr()).pretty();
+    // assert(false);
   }
   symbolt result = symbol_table.lookup(var_name_map.find(
     I->getName().str())->second);
@@ -3669,7 +3671,47 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       opnd2 = from_integer(val, type);
     }
   } else {
-    assert(false && "other than int type");
+
+    // I->getType()->dump();
+    if(I->getOperand(0)->getType()->isFloatTy()){
+      if(f1==0){
+        if(dyn_cast<ConstantFP>(*ub)) {
+          float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_float(val);
+          opnd1 = to_constant_expr(ieee_fl.to_expr());
+        }
+      }
+      if(f2==0){
+        if(dyn_cast<ConstantFP>(*(ub+1))) {
+          float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_float(val);
+          opnd2 = to_constant_expr(ieee_fl.to_expr());
+        }
+      }
+    } else if(I->getOperand(0)->getType()->isDoubleTy())
+    {
+      if(f1==0){
+        if(dyn_cast<ConstantFP>(*ub)) {
+          double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_double(val);
+          opnd1 = ieee_fl.to_expr();
+        }
+      }
+      if(f2==0){
+        if(dyn_cast<ConstantFP>(*(ub+1))) {
+          double val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_double(val);
+          opnd2 = ieee_fl.to_expr();
+        }
+      }
+    } else
+    {
+      assert(false && "This datatype has not been handled");
+    }
   }
   // assert(false);
 
@@ -5664,6 +5706,8 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
 \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program()
 {
+
+
   // TODO(Rasika): check for presence of function body
   // Module &M = *M;
   // errs() << "in trans_Program\n";
@@ -5751,15 +5795,25 @@ goto_functionst llvm2goto_translator::trans_Program()
     second.type = to_code_type(fn.type);
 
   }
-  for(Function &F : *M)
-  {
-    symbol_table.remove(F.getName().str() + "#return_value");
-  }
+  // for(Function &F : *M)
+  // {
+  //   symbol_table.remove(F.getName().str() + "#return_value");
+  // }
   // std::cout << "\033[1;31m calling set_entry_point \033[0m";
+  try{
   set_entry_point(goto_functions, symbol_table);
   // std::cout << "\033[1;31m set_entry_point done \033[0m";
+  errs() << "1 ";
   cmdlinet cmdline;
-  compilet compile(cmdline);
+  // cmdlinet &_cmdline, ui_message_handlert &mh, bool Werror
+  
+  // int argc;
+  // const char **argv;
+  // cbmc_parse_optionst parse_options(argc, argv);
+  // ansi_c_entry_point(symbol_table, "main", parse_options.get_message_handler());
+  ui_message_handlert umht;
+
+  compilet compile(cmdline, umht, false);
   compile.write_object_file(M->getSourceFileName()
     + ".goto", symbol_table, goto_functions);
 
@@ -5771,7 +5825,11 @@ goto_functionst llvm2goto_translator::trans_Program()
   ns.get_symbol_table().show(std::cout);
   errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
   errs() << "\ncalling goto_functions.output\n";
-  goto_functions.output(ns, std::cout);
+    goto_functions.output(ns, std::cout);
+  } catch(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > e){
+    errs() << e << "\n";
+
+  }
   /*for(goto_functionst::function_mapt::const_iterator \
     it = (goto_functions).function_map.begin(); \
     it != (goto_functions).function_map.end(); it++)

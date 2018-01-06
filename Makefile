@@ -28,7 +28,23 @@ OBJ +=$(CBMC_SRC_PATH)/ansi-c/ansi-c$(LIBEXT) \
       $(CBMC_SRC_PATH)/solvers/solvers$(LIBEXT) \
       $(CBMC_SRC_PATH)/util/util$(LIBEXT) \
       $(CBMC_SRC_PATH)/miniz/miniz$(OBJEXT) \
-      $(CBMC_SRC_PATH)/json/json$(LIBEXT)
+      $(CBMC_SRC_PATH)/cbmc/all_properties$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/cbmc_languages$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/fault_localization$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/bmc_cover$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/show_vcc$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/bmc$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/cbmc_parse_options$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/symex_bmc$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/bv_cbmc$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/cbmc_solvers$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/symex_coverage$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/cbmc_dimacs$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/counterexample_beautification$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/cbmc/xml_interface$(OBJEXT) \
+      $(CBMC_SRC_PATH)/json/json$(LIBEXT) \
+      $(CBMC_SRC_PATH)/java_bytecode/java_bytecode$(LIBEXT) \
+      
 
 INCLUDES= -I $(CBMC_SRC_PATH)
 
