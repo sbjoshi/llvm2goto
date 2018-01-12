@@ -5795,22 +5795,8 @@ goto_functionst llvm2goto_translator::trans_Program()
     second.type = to_code_type(fn.type);
 
   }
-  // for(Function &F : *M)
-  // {
-  //   symbol_table.remove(F.getName().str() + "#return_value");
-  // }
-  // std::cout << "\033[1;31m calling set_entry_point \033[0m";
-  try{
   set_entry_point(goto_functions, symbol_table);
-  // std::cout << "\033[1;31m set_entry_point done \033[0m";
-  errs() << "1 ";
   cmdlinet cmdline;
-  // cmdlinet &_cmdline, ui_message_handlert &mh, bool Werror
-  
-  // int argc;
-  // const char **argv;
-  // cbmc_parse_optionst parse_options(argc, argv);
-  // ansi_c_entry_point(symbol_table, "main", parse_options.get_message_handler());
   ui_message_handlert umht;
 
   compilet compile(cmdline, umht, false);
@@ -5820,26 +5806,11 @@ goto_functionst llvm2goto_translator::trans_Program()
   namespacet ns(symbol_table);
 
   register_language(new_ansi_c_language);
-  // goto_functions.ns = ns;
   errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
   ns.get_symbol_table().show(std::cout);
   errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
   errs() << "\ncalling goto_functions.output\n";
     goto_functions.output(ns, std::cout);
-  } catch(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > e){
-    errs() << e << "\n";
-
-  }
-  /*for(goto_functionst::function_mapt::const_iterator \
-    it = (goto_functions).function_map.begin(); \
-    it != (goto_functions).function_map.end(); it++)
-    {
-      errs() << (*it).first.c_str() << "\n";
-      it->second.body.output(std::cout);
-  }*/
-  // cmdlinet cmdline;
-  // compilet compile(cmdline);
-  // compile.write_object_file("mew.goto", symbol_table, goto_functions);
   errs() << "in trans_Program\n";
   return goto_functions;
 }

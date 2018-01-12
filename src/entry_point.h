@@ -80,9 +80,9 @@ void set_entry_point(goto_functionst &goto_functions,
   // bmct bmc;
   ansi_c_entry_point(symbol_table, "main", parse_options.get_message_handler());
   goto_functions.function_map.insert(
-      std::pair<const dstringt, goto_functionst::goto_functiont >("_start",
+      std::pair<const dstringt, goto_functionst::goto_functiont >("__CPROVER__start",
         goto_functionst::goto_functiont()));
-  add_function_definitions("_start", goto_functions, symbol_table);
+  add_function_definitions("__CPROVER__start", goto_functions, symbol_table);
   goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >(
         INITIALIZE_FUNCTION, goto_functionst::goto_functiont()));
