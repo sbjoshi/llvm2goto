@@ -4308,10 +4308,16 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
     const Function *function = dyn_cast<Function>(
       called_val->stripPointerCasts());
-    if(function->getName().str() == "assume")
+    if(function->getName().str() == "assume" || function->getName().str() == "assert")
     {
-      errs() << "assume";
-      goto_programt::targett assume_inst = gp.add_instruction(ASSUME);
+      // errs() << "assume";
+      goto_programt::targett ass_inst;
+      if(function->getName().str() == "assume"){
+        ass_inst = gp.add_instruction(ASSUME);
+      } else
+      {
+        ass_inst = gp.add_instruction(ASSERT);
+      }
     //     typet dest_type = unsignedbv_typet(1);
     // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
       // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
@@ -4323,27 +4329,59 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()){
       //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
       // }
-      assume_inst->guard = guard;
+      ass_inst->guard = guard;
+      source_locationt location;
+      if(I->hasMetadata()){
+        if(&(I->getDebugLoc()) != NULL)
+        {
+          const DebugLoc loc = I->getDebugLoc();
+          location.set_file(loc
+                ->getScope()->getFile()->getFilename().str());
+          location.set_working_directory(loc
+                ->getScope()->getFile()->getDirectory().str());
+          location.set_line(loc->getLine());
+          location.set_column(loc->getColumn());
+          exprt e = trans_Cmp(dyn_cast<Instruction>(dyn_cast<Instruction>(I->op_begin())->op_begin()), symbol_table);
+          location.set_comment(from_expr(namespacet(*symbol_table), (symbol_table->symbols.begin()->second.name), e));
+        }
+      }
+      ass_inst->source_location = location;
     }
-    if(function->getName().str() == "assert")
-    {
-      errs() << "assert";
-      goto_programt::targett assert_inst = gp.add_instruction(ASSERT);
-    //     typet dest_type = unsignedbv_typet(1);
-    // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
-      // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
-      exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
-        dyn_cast<Instruction>(
-          *I->value_op_begin())->value_op_begin()->getName().str())->second).
-      symbol_expr(),
-      bool_typet());
-      // exprt guard;
-      // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin())
-      // {
-      //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
-      // }
-      assert_inst->guard = guard;
-    }
+    // if(function->getName().str() == "assert")
+    // {
+    //   errs() << "assert";
+    //   goto_programt::targett assert_inst = gp.add_instruction(ASSERT);
+    // //     typet dest_type = unsignedbv_typet(1);
+    // // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
+    //   // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
+    //   exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
+    //     dyn_cast<Instruction>(
+    //       *I->value_op_begin())->value_op_begin()->getName().str())->second).
+    //   symbol_expr(),
+    //   bool_typet());
+    //   // exprt guard;
+    //   // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin())
+    //   // {
+    //   //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
+    //   // }
+    //   assert_inst->guard = guard;
+
+    //   source_locationt location;
+    //   if(I->hasMetadata()){
+    //     if(&(I->getDebugLoc()) != NULL)
+    //     {
+    //       const DebugLoc loc = I->getDebugLoc();
+    //       location.set_file(loc
+    //             ->getScope()->getFile()->getFilename().str());
+    //       location.set_working_directory(loc
+    //             ->getScope()->getFile()->getDirectory().str());
+    //       location.set_line(loc->getLine());
+    //       location.set_column(loc->getColumn());
+    //       location.set_comment(irep_idt("hi"));
+    //     }
+    //   }
+    //   assert_inst->source_location = location;
+    // }
   }
   else
   {
@@ -5706,6 +5744,7 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
 \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program()
 {
+  register_language(new_ansi_c_language);
 
 
   // TODO(Rasika): check for presence of function body
@@ -5805,7 +5844,6 @@ goto_functionst llvm2goto_translator::trans_Program()
 
   namespacet ns(symbol_table);
 
-  register_language(new_ansi_c_language);
   errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
   ns.get_symbol_table().show(std::cout);
   errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
