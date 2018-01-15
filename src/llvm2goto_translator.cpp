@@ -2588,6 +2588,40 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   const Instruction *I)
 {
   goto_programt gp;
+  I->dump();
+  errs() << "\n";
+  errs() <<"getSourceElementType : ";
+  dyn_cast<GetElementPtrInst>(I)->getSourceElementType ()->dump();
+  errs() <<"getResultElementType : ";
+  dyn_cast<GetElementPtrInst>(I)->getResultElementType ()->dump();
+  errs() <<"getAddressSpace : ";
+  errs() << dyn_cast<GetElementPtrInst>(I)->getAddressSpace () << "\n";
+  errs() <<"idx_begin idx_end :\n\n";
+  for(auto i=dyn_cast<GetElementPtrInst>(I)->idx_begin();
+    i!=dyn_cast<GetElementPtrInst>(I)->idx_end(); i++){
+  errs() << "................";
+    dyn_cast<Value>(i)->dump();
+  }
+  errs() <<"\ngetPointerOperand : ";
+  dyn_cast<GetElementPtrInst>(I)->getPointerOperand ()->dump();
+  errs() <<"getPointerOperandType : ";
+  dyn_cast<GetElementPtrInst>(I)->getPointerOperandType()->dump();
+  errs() <<"getPointerAddressSpace : ";
+  errs() << dyn_cast<GetElementPtrInst>(I)->getPointerAddressSpace() << "\n";
+  errs() <<"getNumIndices : ";
+  errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices () << "\n";
+  errs() << "Metadat :\n\n";
+  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+  I->getAllMetadata(MDs);
+  if(I->hasMetadata()){
+      MDs[0].second->dump();
+      // (*dyn_cast<DISubprogram>(MDs[0].second)).getType()->dump();
+      // MDs[1].second->dump();
+      // (*dyn_cast<DISubprogram>(MDs[1].second)).getType()->dump();
+    
+    // dyn_cast<DISubroutineType>((*dyn_cast<DISubprogram>(MDs[0].second)).getType())->getTypeArray()->dump();
+  }
+  errs() << "\n\n";
   assert(false && "GetElementPtr is yet to be mapped \n");
   return gp;
 }
@@ -4318,17 +4352,10 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       {
         ass_inst = gp.add_instruction(ASSERT);
       }
-    //     typet dest_type = unsignedbv_typet(1);
-    // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
-      // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
       exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
         dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->
         getName().str())->second).symbol_expr(),
         bool_typet());
-      // exprt guard;
-      // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin()){
-      //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
-      // }
       ass_inst->guard = guard;
       source_locationt location;
       if(I->hasMetadata()){
