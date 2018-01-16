@@ -18,9 +18,7 @@ Author : Rasika
 #include "scope.h"
 
 #include "llvm/IR/IntrinsicInst.h"
-// #include "llvm/Support/raw_ostream.h"
 #include "langapi/mode.h"
-// #include "ansi-c/c_typecheck_expr.h"
 #include "solvers/cvc/cvc_conv.h"
 #include "ansi-c/ansi_c_language.h"
 #include "util/cmdline.h"
@@ -31,7 +29,6 @@ Author : Rasika
 using namespace llvm;
 
 // TODO(Rasika): handle signed comparison.
-// TODO(Rasika): change getScope to getNonLexicalBlockFileScope.
 
 llvm2goto_translator::llvm2goto_translator(Module *M)
 {
@@ -119,9 +116,6 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
             const DebugLoc loc = dyn_cast<Instruction>(ub)->getDebugLoc();
             std::string name = scope_name_map.find(loc->getScope())->second;
             op1 = symbol_table.lookup(name);
-            // errs() << "searched " << name << "\n";
-            // symbol_table.show(std::cout);
-            // assert(false);
           }
     }
     exprt1 = op1.symbol_expr();
@@ -168,7 +162,6 @@ goto_programt llvm2goto_translator::trans_Br(const Instruction *I,
   &instruction_target_map)
 {
   goto_programt gp;
-  // errs() << "Br is yet to be mapped \n";
   I->dump();
   if(dyn_cast<BranchInst>(I)->getNumSuccessors() == 2)
   {
@@ -207,8 +200,6 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
   symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  // dyn_cast<SwitchInst>(I)->getCondition()->dump();
-  // dyn_cast<SwitchInst>(I)->getDefaultDest()->dump();
   Value *ub = dyn_cast<SwitchInst>(I)->getCondition();
   symbolt var;
   exprt var_expr;
@@ -230,15 +221,11 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
     }
   }
   var_expr = var.symbol_expr();
-  // errs() << var.name.c_str() << "\n";
 
 
   for(auto i=dyn_cast<SwitchInst>(I)->case_begin();
     i!=dyn_cast<SwitchInst>(I)->case_end(); i++)
   {
-    // errs() << "case \n";
-    // errs() << i.getCaseValue()->getZExtValue() << "\n";
-    // i.getCaseSuccessor()->dump();
     goto_programt::targett br_ins = gp.add_instruction();
     dest_block_branch_map_switch.insert(
       std::pair<const BasicBlock*, goto_programt::targett>(
@@ -659,7 +646,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
   //   std::allocator<char> > msg)
-  {
+  // {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -700,12 +687,6 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
-
-
-  // namespacet ns(symbol_table);
-  // simplify_exprt se(ns);
-  // assert(ns.follow((add_inst->code).op0().type()) == floatbv_typet());
-  // se.simplify_floatbv_op(add_inst->code);
   return gp;
 }
 
@@ -798,7 +779,6 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
     symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
@@ -940,12 +920,6 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    // std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1077,7 +1051,6 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   {
     symbolt symbol;
     symbol.base_name = I->getName().str();
-    // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
     symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
@@ -1219,12 +1192,6 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1328,12 +1295,6 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1439,12 +1400,6 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1588,12 +1543,6 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1614,8 +1563,6 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
   fdiv_inst->make_assignment();
   fdiv_inst->code = code_assignt(result.symbol_expr(),
     div_exprt(exprt1, exprt2));
-  // fdiv_inst->code.id() = ID_floatbv_div;
-
   fdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
   if(I->hasMetadata())
@@ -1698,12 +1645,6 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1809,12 +1750,6 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1958,12 +1893,6 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2070,12 +1999,6 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2116,7 +2039,6 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   }
   and_inst->source_location = location;
   and_inst->type = goto_program_instruction_typet::ASSIGN;
-  // assert(false && "And is yet to be mapped \n");
   return gp;
 }
 
@@ -2186,12 +2108,6 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2231,7 +2147,6 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   }
   or_inst->source_location = location;
   or_inst->type = goto_program_instruction_typet::ASSIGN;
-  // assert(false && "And is yet to be mapped \n");
   return gp;
 }
 
@@ -2301,12 +2216,6 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   // Symbol corresponding to the value in which result of llvm instruction
   // is stored, might have been created in goto symbol table earlier. If so,
   // it is used otherwise new symbol is created. And added to the symbol table.
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2347,7 +2256,6 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   }
   xor_inst->source_location = location;
   xor_inst->type = goto_program_instruction_typet::ASSIGN;
-  // assert(false && "And is yet to be mapped \n");
   return gp;
 }
 
@@ -2368,7 +2276,6 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
   symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  // errs() << "Alloca is yet to be mapped \n";
   symbolt symbol;
   symbol.type = symbol_creator::create_type(
     dyn_cast<AllocaInst>(I)->getAllocatedType());
@@ -2377,9 +2284,6 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
   symbol_table.add(symbol);
   var_name_map.insert(std::pair<std::string, std::string>(
     I->getName().str(), symbol.name.c_str()));
-  // goto_programt::targett decl_alloc = gp.add_instruction();
-  //   decl_alloc->make_decl();
-  //   decl_alloc->code=code_declt(symbol.symbol_expr());
   return gp;
 }
 
@@ -2400,13 +2304,6 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I)
 {
   goto_programt gp;
   errs() << "Load is yet to be mapped \n";
-  /*errs() << " getIterator :";
-  (*dyn_cast<LoadInst>(I)->getIterator()).dump();
-  errs() << " getNumOperands :" << dyn_cast<LoadInst>(I)->getNumOperands();
-  errs() << " getOperand :";
-  dyn_cast<LoadInst>(I)->getOperand(0)->dump();
-  errs() << " getType :";
-  dyn_cast<LoadInst>(I)->getType()->dump();*/
   return gp;
 }
 
@@ -2697,12 +2594,6 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2749,7 +2640,6 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
 {
   assert(!dyn_cast<ZExtInst>(I)->isLosslessCast()
     && "This type conversion is lossy.");
-  // symbol_table.show(std::cout);
   goto_programt gp;
   typet dest_type = unsignedbv_typet(
     dyn_cast<ZExtInst>(I)->getDestTy()->getIntegerBitWidth());
@@ -2791,12 +2681,6 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2805,7 +2689,6 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
       symbol.base_name.c_str(), symbol.name.c_str()));
-    // symbol.type = exprt1.type();
     symbol.type = dest_type;
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
@@ -2885,12 +2768,6 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2997,12 +2874,6 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3110,12 +2981,6 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3131,8 +2996,6 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     decl_add->code=code_declt(symbol.symbol_expr());
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     decl_add->source_location = location;
-    // std::cout << (symbol.symbol_expr()).pretty();
-    // assert(false);
   }
   symbolt result = symbol_table.lookup(var_name_map.find(
     I->getName().str())->second);
@@ -3224,12 +3087,6 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3336,12 +3193,6 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3429,12 +3280,6 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3522,12 +3367,6 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
       location.set_column(loc->getColumn());
     }
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3653,12 +3492,10 @@ goto_programt llvm2goto_translator::trans_AddrSpaceCast(
 exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   symbol_tablet *symbol_table)
 {
-  // assert(false);
   exprt condition;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
   int flag = 2, f1=0, f2=0;
-  // assert(false);
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
     li->getOperand(0)->dump();
@@ -3673,7 +3510,6 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       li->getOperand(0)->getName().str())->second).symbol_expr();
     f2=1;
   }
-  // assert(false);
   if(f1==1 && f2==1)
   {
     errs() << "done!";
@@ -3710,28 +3546,24 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
       typet type = opnd2.type();
-      // dyn_cast<ConstantInt>(*(ub))->getType()->dump();
       opnd1 = from_integer(val, type);
     }
     if(opnd1.type().id() == ID_signedbv && flag == 0)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
       typet type = opnd1.type();
-      // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
       opnd2 = from_integer(val, type);
     }
     if(opnd2.type().id() == ID_unsignedbv && flag == 1)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
       typet type = opnd2.type();
-      // dyn_cast<ConstantInt>(*(ub))->getType()->dump();
       opnd1 = from_integer(val, type);
     }
     if(opnd1.type().id() == ID_unsignedbv && flag == 0)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
       typet type = opnd1.type();
-      // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
       opnd2 = from_integer(val, type);
     }
   }
@@ -3798,15 +3630,13 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_OEQ :
     case CmpInst::Predicate::FCMP_UEQ :
     {
-      // errs() << "\n FCMP_EQ\n";
       condition = equal_exprt(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::ICMP_NE :
-    // case CmpInst::Predicate::FCMP_ONE :
-    // case CmpInst::Predicate::FCMP_UNE :
+    case CmpInst::Predicate::FCMP_ONE :
+    case CmpInst::Predicate::FCMP_UNE :
     {
-      // errs() << "\n ICMP_NE\n";ID_ieee_float_notequal
       condition = notequal_exprt(opnd1, opnd2);
       break;
     }
@@ -3815,7 +3645,6 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_OGT :
     case CmpInst::Predicate::FCMP_UGT :
     {
-      // errs() << "\n ICMP_GT\n";
       condition = binary_relation_exprt(opnd1, ID_gt, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3825,7 +3654,6 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_OGE :
     case CmpInst::Predicate::FCMP_UGE :
     {
-      errs() << "\n ICMP_GE\n";
       condition = binary_relation_exprt(opnd1, ID_ge, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3835,7 +3663,6 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_OLT :
     case CmpInst::Predicate::FCMP_ULT :
     {
-      // errs() << "\n FCMP_LT\n";
       condition = binary_relation_exprt(opnd1, ID_lt, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3843,7 +3670,6 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::ICMP_ULE :
     case CmpInst::Predicate::ICMP_SLE :
     {
-      errs() << "\n ICMP_LE\n";
       condition = binary_relation_exprt(opnd1, ID_le, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3851,20 +3677,16 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_OLE :
     case CmpInst::Predicate::FCMP_ULE :
     {
-      errs() << "\n FCMP_LE\n";
       condition = binary_relation_exprt(opnd1, ID_le, opnd2);
       // condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::BAD_ICMP_PREDICATE :
     {
-      errs() << "\n BAD_ICMP_PREDICATE\n";
       break;
     }
     default : errs() << "\nNON ICMP\n";
   }
-  // assert(false);
-  // errs() << "ICmp is yet to be mapped \n";
   return condition;
 }
 
@@ -3884,9 +3706,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
 exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
   symbol_tablet *symbol_table)
 {
-  // assert(false && "in trans_Inverse_Cmp");
   exprt condition;
-  I->dump();
+  // I->dump();
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
   int flag = 2;
@@ -3941,19 +3762,16 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     case CmpInst::Predicate::ICMP_EQ :
     {
       condition = equal_exprt(opnd1, opnd2);
-      errs() << "\n ICMP_EQ\n";
       break;
     }
     case CmpInst::Predicate::ICMP_NE :
     {
       condition = notequal_exprt(opnd1, opnd2);
-      errs() << "\n ICMP_NE\n";
       break;
     }
     case CmpInst::Predicate::ICMP_UGT :
     case CmpInst::Predicate::ICMP_SGT :
     {
-      errs() << "\n ICMP_GT\n";
       condition = exprt(ID_gt);
       condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3961,7 +3779,6 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     case CmpInst::Predicate::ICMP_UGE :
     {
     case CmpInst::Predicate::ICMP_SGE :
-      errs() << "\n ICMP_GE\n";
       condition = exprt(ID_ge);
       condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3969,7 +3786,6 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     case CmpInst::Predicate::ICMP_ULT :
     case CmpInst::Predicate::ICMP_SLT :
     {
-      errs() << "\n ICMP_LT\n";
       condition = exprt(ID_lt);
       condition.copy_to_operands(opnd1, opnd2);
       break;
@@ -3977,20 +3793,16 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     case CmpInst::Predicate::ICMP_ULE :
     case CmpInst::Predicate::ICMP_SLE :
     {
-      errs() << "\n ICMP_LE\n";
       condition = exprt(ID_le);
       condition.copy_to_operands(opnd1, opnd2);
       break;
     }
     case CmpInst::Predicate::BAD_ICMP_PREDICATE :
     {
-      errs() << "\n BAD_ICMP_PREDICATE\n";
       break;
     }
     default : errs() << "\nNON ICMP\n";
   }
-
-  // errs() << "ICmp is yet to be mapped \n";
   return condition;
 }
 
@@ -4011,7 +3823,6 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
   symbol_tablet *symbol_table)
 {
   goto_programt gp;
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4074,19 +3885,7 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
 goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
   symbol_tablet *symbol_table)
 {
-  /*goto_programt gp;
-  goto_programt::targett Icmp_inst = gp.add_instruction();
-  Icmp_inst->make_skip();
-  // errs() << "FCmp is yet to be mapped \n";
-  return gp;*/
-
   goto_programt gp;
-  // try {
-  //   symbol_table->lookup
-  // (I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4101,13 +3900,11 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
     decl_cmp->make_decl();
     decl_cmp->code=code_declt(symbol.symbol_expr());
     decl_cmp->function = irep_idt(I->getFunction()->getName().str());
-    // decl_cmp->source_location = location;
+    // TODO(Rasika) : set the location
   }
   goto_programt::targett Fcmp_inst = gp.add_instruction();
 
   typet dest_type = unsignedbv_typet(1);
-  // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
-  // uitofp_inst->code = code_assignt(result.symbol_expr(), tce);
   source_locationt location;
   if(I->hasMetadata())
   {
@@ -4128,7 +3925,6 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
     symbol_table->lookup(var_name_map.find(
       I->getName().str())->second).symbol_expr(),
     trans_Cmp(I, symbol_table));
-  // errs() << "FCmp is yet to be mapped \n";
   return gp;
 }
 
@@ -4230,7 +4026,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     {
       if(dyn_cast<DIVariable>(mdn)->getName() == arg->getName())
       {
-        // assert(false && "found parameters");
         return gp;
       }
     }
@@ -4362,7 +4157,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     if(function->getName().str() == "assume"
       || function->getName().str() == "assert")
     {
-      // errs() << "assume";
       goto_programt::targett ass_inst;
       if(function->getName().str() == "assume")
       {
@@ -4405,7 +4199,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     if(function->begin() != function->end())
     {
       code_function_callt call;
-      // I->dump();
       std::string func_name = function->getName().str();
       symbolt symbol = namespacet(*symbol_table).lookup(dstringt(func_name));
       call.function() = symbol.symbol_expr();
@@ -4523,12 +4316,6 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4632,12 +4419,6 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4738,12 +4519,6 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
     }
     exprt2 = op2.symbol_expr();
   }
-  // try {
-  //   symbol_table.lookup(
-  // I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg)
-  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -5123,13 +4898,6 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod)
       }
     }
   }
-  // errs() << "\nhello";
-  // global_variable.is_thread_local=false;
-  // goto_functionst goto_functions;
-  // symbol_table.show(std::cout);
-  // namespacet ns(symbol_table);
-  // ns.get_symbol_table().show(std::cout);
-  // errs() << "\nbye";
   return symbol_table;
 }
 
@@ -5520,12 +5288,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
     default:
         errs() << "Invalid instruction type...\n ";
   }
-  // errs() << "\t\t\tin trans_instruction";
+  errs() << "\t\t\tin trans_instruction";
   gp.update();
-  // namespacet ns(*symbol_table);
-
-  // register_language(new_ansi_c_language);
-  // gp.output(std::cout);
   return gp;
 }
 
@@ -5550,25 +5314,17 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
   std::map <const BasicBlock*, goto_programt::targett>
     &dest_block_branch_map_switch)
 {
-  // TODO(Rasika): use code_blockt
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
-  // register_language(new_ansi_c_language);
   for(BasicBlock::const_iterator i = b.begin(),
     ie = b.end(); i != ie; ++i)
   {
-      // const Instruction &inst = *i;
-      // i -> dump();
       goto_programt goto_instr = trans_instruction(*i, symbol_table,
         instruction_target_map, dest_block_branch_map_switch);
       gp.destructive_append(goto_instr);
       gp.update();
       errs() << "";
-      // namespacet ns(*symbol_table);
     }
-
-    // gp.output(std::cout);
-    // errs() << "\t\tin trans_Block\n";
     return gp;
 }
 
@@ -5657,7 +5413,6 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
   for(auto i = instruction_target_map.begin(),
     ie = instruction_target_map.end(); i != ie; i++)
   {
-    // (*i).first->dump();
     if(dyn_cast<BranchInst>((*i).first)->getNumSuccessors() == 2)
     {
       goto_programt::targett then_part;
@@ -5754,11 +5509,6 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
   goto_programt gp;
   for(Function &F : *M)
   {
-    symbolt ret_var;
-      ret_var.type = symbol_creator::create_type(F.getReturnType());
-      ret_var.name = F.getName().str() + "#return_value";
-      ret_var.base_name = F.getName().str() + "#return_value";
-      symbol_table.add(ret_var);
     for(Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
       arg_b != arg_e; arg_b++)
     {
@@ -5805,12 +5555,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
   }
 
   namespacet ns(symbol_table);
-
-  // errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
   // ns.get_symbol_table().show(std::cout);
-  // errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
-  // errs() << "\ncalling goto_functions.output\n";
+  errs() << "\n";
   goto_functions.output(ns, std::cout);
+  errs() << "\n";
   errs() << "in trans_Program\n";
   return goto_functions;
 }
