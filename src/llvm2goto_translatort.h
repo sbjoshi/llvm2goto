@@ -82,7 +82,8 @@ class llvm2goto_translatort
     virtual goto_programt trans_AtomicCmpXchg(const Instruction *I) = 0;
     virtual goto_programt trans_AtomicRMW(const Instruction *I) = 0;
     virtual goto_programt trans_Fence(const Instruction *I) = 0;
-    virtual goto_programt trans_GetElementPtr(const Instruction *I) = 0;
+    virtual goto_programt trans_GetElementPtr(const Instruction *I,
+        const symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Trunc(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_ZExt(const Instruction *I,
