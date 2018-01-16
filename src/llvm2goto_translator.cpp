@@ -127,7 +127,8 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -241,10 +242,10 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
     goto_programt::targett br_ins = gp.add_instruction();
     dest_block_branch_map_switch.insert(
       std::pair<const BasicBlock*, goto_programt::targett>(
-        i.getCaseSuccessor(), br_ins));
+        i->getCaseSuccessor(), br_ins));
     br_ins->make_goto();
     br_ins->guard = equal_exprt(var_expr,
-      from_integer(i.getCaseValue()->getZExtValue(),
+      from_integer(i->getCaseValue()->getZExtValue(),
         symbol_creator::create_type(ub->getType())));
   }
   goto_programt::targett default_branch = gp.add_instruction();
@@ -528,7 +529,8 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -656,7 +658,8 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -682,7 +685,8 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
     plus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -816,7 +820,8 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     minus_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -939,7 +944,8 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-    // std::allocator<char> > msg){
+    // std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -964,7 +970,8 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
     minus_exprt(exprt1, exprt2));
   fsub_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1092,7 +1099,8 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     mult_exprt(exprt1, exprt2));
   add_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1215,7 +1223,8 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1239,7 +1248,8 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
     mult_exprt(exprt1, exprt2));
   fmul_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1322,7 +1332,8 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1346,7 +1357,8 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   udiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1431,7 +1443,8 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1455,7 +1468,8 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     div_exprt(exprt1, exprt2));
   sdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1578,7 +1592,8 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1603,7 +1618,8 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
 
   fdiv_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1686,7 +1702,8 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1710,7 +1727,8 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   urem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1795,7 +1813,8 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1819,7 +1838,8 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   srem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -1942,7 +1962,8 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -1965,7 +1986,8 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
     mod_exprt(exprt1, exprt2));
   frem_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2052,7 +2074,8 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2078,7 +2101,8 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
     bitand_exprt(exprt1, exprt2));
   and_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2166,7 +2190,8 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2191,7 +2216,8 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
     bitor_exprt(exprt1, exprt2));
   or_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2279,7 +2305,8 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2305,7 +2332,8 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
     bitxor_exprt(exprt1, exprt2));
   xor_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2399,22 +2427,20 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  errs() << "1 ";
   symbolt symbol = symbol_table.lookup(var_name_map.find(
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
   exprt value_to_store;
-  for(auto arg = I->getFunction()->arg_begin(); arg != I->getFunction()->arg_end(); arg++){
-    if(dyn_cast<StoreInst>(I)->getOperand(0)->getName() == arg->getName()){
+  for(auto arg = I->getFunction()->arg_begin();
+    arg != I->getFunction()->arg_end(); arg++)
+  {
+    if(dyn_cast<StoreInst>(I)->getOperand(0)->getName() == arg->getName())
+    {
       // assert(false && "found parameters");
       return gp;
     }
-    
   }
-  errs() << "2 ";
   if(dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0)))
   {
-    errs() << "3 ";
-
     if(dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0)))
     {
       uint64_t val = dyn_cast<ConstantInt>(
@@ -2459,20 +2485,14 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   }
   else
   {
-    errs() << "4 ";
-    for(auto rasssu = var_name_map.begin(); rasssu!=var_name_map.end(); rasssu++){
-      errs() << rasssu->first << " " << rasssu->second << "\n";
-    }
     if(dyn_cast<StoreInst>(I)->getOperand(0)->hasName())
     {
       errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
-      // symbol_table.show(std::cout);
-      errs() << "searrching " << dyn_cast<StoreInst>(I)->getOperand(0)->getName() << "\n";
+      errs() << "searrching " <<
+        dyn_cast<StoreInst>(I)->getOperand(0)->getName() << "\n";
       value_to_store = symbol_table.lookup(var_name_map.find(
         dyn_cast<StoreInst>(I)->getOperand(0)->getName().
         str())->second).symbol_expr();
-      // symbol_table.show(std::cout);
-      // assert(false);
     }
     else if(dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0)))
     {
@@ -2482,16 +2502,13 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       value_to_store = symbol_table.lookup(name).symbol_expr();
     }
   }
-  errs() << "5 ";
   goto_programt::targett store_inst = gp.add_instruction();
   store_inst->make_assignment();
   store_inst->code = code_assignt(symbol.symbol_expr(), value_to_store);
   store_inst->function = irep_idt(I->getFunction()->getName().str());
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  SmallVector<std::pair<unsigned, MDNode *>, 4>::iterator md = MDs.begin();
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2505,8 +2522,6 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   }
   store_inst->source_location = location;
   store_inst->type = goto_program_instruction_typet::ASSIGN;
-  namespacet ns(symbol_table);
-  errs() << "6 ";
   return gp;
 }
 
@@ -2591,35 +2606,32 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   I->dump();
   errs() << "\n";
   errs() <<"getSourceElementType : ";
-  dyn_cast<GetElementPtrInst>(I)->getSourceElementType ()->dump();
+  dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
   errs() <<"getResultElementType : ";
-  dyn_cast<GetElementPtrInst>(I)->getResultElementType ()->dump();
+  dyn_cast<GetElementPtrInst>(I)->getResultElementType()->dump();
   errs() <<"getAddressSpace : ";
-  errs() << dyn_cast<GetElementPtrInst>(I)->getAddressSpace () << "\n";
+  errs() << dyn_cast<GetElementPtrInst>(I)->getAddressSpace() << "\n";
   errs() <<"idx_begin idx_end :\n\n";
   for(auto i=dyn_cast<GetElementPtrInst>(I)->idx_begin();
-    i!=dyn_cast<GetElementPtrInst>(I)->idx_end(); i++){
+    i!=dyn_cast<GetElementPtrInst>(I)->idx_end(); i++)
+  {
   errs() << "................";
     dyn_cast<Value>(i)->dump();
   }
   errs() <<"\ngetPointerOperand : ";
-  dyn_cast<GetElementPtrInst>(I)->getPointerOperand ()->dump();
+  dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->dump();
   errs() <<"getPointerOperandType : ";
   dyn_cast<GetElementPtrInst>(I)->getPointerOperandType()->dump();
   errs() <<"getPointerAddressSpace : ";
   errs() << dyn_cast<GetElementPtrInst>(I)->getPointerAddressSpace() << "\n";
   errs() <<"getNumIndices : ";
-  errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices () << "\n";
+  errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices() << "\n";
   errs() << "Metadat :\n\n";
   SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
   I->getAllMetadata(MDs);
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
       MDs[0].second->dump();
-      // (*dyn_cast<DISubprogram>(MDs[0].second)).getType()->dump();
-      // MDs[1].second->dump();
-      // (*dyn_cast<DISubprogram>(MDs[1].second)).getType()->dump();
-    
-    // dyn_cast<DISubroutineType>((*dyn_cast<DISubprogram>(MDs[0].second)).getType())->getTypeArray()->dump();
   }
   errs() << "\n\n";
   assert(false && "GetElementPtr is yet to be mapped \n");
@@ -2672,7 +2684,8 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2688,7 +2701,8 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2764,7 +2778,8 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2780,7 +2795,8 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2856,7 +2872,8 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2872,7 +2889,8 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -2966,7 +2984,8 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -2982,7 +3001,8 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3077,7 +3097,8 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -3093,7 +3114,8 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3189,7 +3211,8 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -3205,7 +3228,8 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3299,7 +3323,8 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -3315,7 +3340,8 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3390,7 +3416,8 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -3406,7 +3433,8 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3481,7 +3509,8 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
     exprt1 = op1.symbol_expr();
   }
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -3497,7 +3526,8 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -3647,7 +3677,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   if(f1==1 && f2==1)
   {
     errs() << "done!";
-  } else if(I->getOperand(0)->getType()->isIntegerTy())
+  }
+  else if(I->getOperand(0)->getType()->isIntegerTy())
   {
     if(f1==0)
     {
@@ -3662,7 +3693,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       }
     }
 
-    if(f2 == 0){
+    if(f2 == 0)
+    {
       if(dyn_cast<ConstantInt>(*(ub + 1)))
       {
         flag = 0;
@@ -3671,11 +3703,9 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       {
         opnd2 = symbol_table->lookup(var_name_map.find(
           (ub + 1)->getName().str())->second).symbol_expr();
-      }      
+      }
     }
 
-
-    
     if(opnd2.type().id() == ID_signedbv && flag == 1)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
@@ -3704,63 +3734,66 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       // dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
       opnd2 = from_integer(val, type);
     }
-  } else {
-
-    // I->getType()->dump();
-    if(I->getOperand(0)->getType()->isFloatTy()){
-      if(f1==0){
-        if(dyn_cast<ConstantFP>(*ub)) {
-          float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
+  }
+  else
+  {
+    if(I->getOperand(0)->getType()->isFloatTy())
+    {
+      if(f1==0)
+      {
+        if(dyn_cast<ConstantFP>(*ub))
+        {
+          float val = dyn_cast<ConstantFP>(*ub)
+            ->getValueAPF().convertToFloat();
           ieee_floatt ieee_fl = ieee_floatt();
           ieee_fl.from_float(val);
           opnd1 = to_constant_expr(ieee_fl.to_expr());
         }
       }
-      if(f2==0){
-        if(dyn_cast<ConstantFP>(*(ub+1))) {
-          float val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToFloat();
+      if(f2==0)
+      {
+        if(dyn_cast<ConstantFP>(*(ub+1)))
+        {
+          float val = dyn_cast<ConstantFP>(*(ub+1))
+            ->getValueAPF().convertToFloat();
           ieee_floatt ieee_fl = ieee_floatt();
           ieee_fl.from_float(val);
           opnd2 = to_constant_expr(ieee_fl.to_expr());
         }
       }
-    } else if(I->getOperand(0)->getType()->isDoubleTy())
+    }
+    else if(I->getOperand(0)->getType()->isDoubleTy())
     {
-      if(f1==0){
-        if(dyn_cast<ConstantFP>(*ub)) {
-          double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
+      if(f1==0)
+      {
+        if(dyn_cast<ConstantFP>(*ub))
+        {
+          double val = dyn_cast<ConstantFP>(*ub)
+            ->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
           ieee_fl.from_double(val);
           opnd1 = ieee_fl.to_expr();
         }
       }
-      if(f2==0){
-        if(dyn_cast<ConstantFP>(*(ub+1))) {
-          double val = dyn_cast<ConstantFP>(*(ub+1))->getValueAPF().convertToDouble();
+      if(f2==0)
+      {
+        if(dyn_cast<ConstantFP>(*(ub+1)))
+        {
+          double val = dyn_cast<ConstantFP>(*(ub+1))
+            ->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
           ieee_fl.from_double(val);
           opnd2 = ieee_fl.to_expr();
         }
       }
-    } else
+    }
+    else
     {
       assert(false && "This datatype has not been handled");
     }
   }
-  // assert(false);
-
-  // dyn_cast<CmpInst>(I)->getPredicate();
-
   switch(dyn_cast<CmpInst>(I)->getPredicate())
   {
-    //    FCMP_FALSE = 0
-    //  FCMP_ORD = 7
-    // FCMP_UNO = 8
-    //  FCMP_TRUE = 15
-    // FIRST_FCMP_PREDICATE = FCMP_FALSE
-    //  LAST_FCMP_PREDICATE = FCMP_TRUE
-    //  BAD_FCMP_PREDICATE = FCMP_TRUE + 1
-    // BAD_ICMP_PREDICATE = ICMP_SLE + 1 
     case CmpInst::Predicate::ICMP_EQ :
     case CmpInst::Predicate::FCMP_OEQ :
     case CmpInst::Predicate::FCMP_UEQ :
@@ -3957,7 +3990,7 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
     default : errs() << "\nNON ICMP\n";
   }
 
-  errs() << "ICmp is yet to be mapped \n";
+  // errs() << "ICmp is yet to be mapped \n";
   return condition;
 }
 
@@ -3978,18 +4011,16 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
   symbol_tablet *symbol_table)
 {
   goto_programt gp;
-  // try {
-  //   symbol_table->lookup
-  // (I->getFunction()->getName().str() + "::" + I->getName().str());
-  // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
     symbol.base_name = I->getName().str();
 
-    errs() << (scope_name_map.find(I->getDebugLoc()->getScope()) == scope_name_map.end()) << "\n";
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
+    errs() << (scope_name_map.find(I->getDebugLoc()->getScope())
+      == scope_name_map.end()) << "\n";
+    symbol.name = scope_name_map.find(
+      I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
       symbol.base_name.c_str(), symbol.name.c_str()));
@@ -4001,19 +4032,12 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
     decl_cmp->function = irep_idt(I->getFunction()->getName().str());
     // decl_cmp->source_location = location;
   }
-  // assert(false);
   goto_programt::targett Icmp_inst = gp.add_instruction();
 
   typet dest_type = unsignedbv_typet(1);
-  // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
-  // uitofp_inst->code = code_assignt(result.symbol_expr(), tce);
-// goto_programt::targett uitofp_inst = gp.add_instruction();
-//   uitofp_inst->make_assignment();
-//   uitofp_inst->function = irep_idt(I->getFunction()->getName().str());
-//   uitofp_inst->source_location = location;
-//   uitofp_inst->type = goto_program_instruction_typet::ASSIGN;
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -4031,7 +4055,6 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
     symbol_table->lookup(var_name_map.find(
       I->getName().str())->second).symbol_expr(),
     trans_Cmp(I, symbol_table));
-  // errs() << "ICmp is yet to be mapped \n";
   return gp;
 }
 
@@ -4062,7 +4085,8 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
   //   symbol_table->lookup
   // (I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4085,7 +4109,8 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
   // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
   // uitofp_inst->code = code_assignt(result.symbol_expr(), tce);
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -4193,7 +4218,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
   symbol_tablet *symbol_table)
 {
   goto_programt gp;
-  // errs() << "Call is yet to be mapped \n";
   if(const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I))
   {
     Type *type = &(*dyn_cast<Type>(dyn_cast<PointerType>(dyn_cast<Type>(
@@ -4201,31 +4225,24 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     MDNode *mdn = dyn_cast<MDNode>(dbgDeclareInst->getVariable());
     std::string name_to_remove = get_arg_name(I);
     auto m = var_name_map.find(name_to_remove);
-    for(auto arg = I->getFunction()->arg_begin(); arg != I->getFunction()->arg_end(); arg++){
-      if(dyn_cast<DIVariable>(mdn)->getName() == arg->getName()){
+    for(auto arg = I->getFunction()->arg_begin();
+      arg != I->getFunction()->arg_end(); arg++)
+    {
+      if(dyn_cast<DIVariable>(mdn)->getName() == arg->getName())
+      {
         // assert(false && "found parameters");
         return gp;
       }
     }
     errs() << "removing " << m->second << "\n";
     std::string full_name_to_remove = m->second;
-    errs() << "1 ";
     var_name_map.erase(m);
-    errs() << "2 ";
     symbol_table->remove(full_name_to_remove);
-    errs() << "3 ";//I->getDebugLoc()->getScope()
-    // I->getDebugLoc()->getScope()->
-    //       getNonLexicalBlockFileScope()->dump();
-    errs() << "\n";
-    // for(auto rasssu=scope_name_map.begin(); rasssu!=scope_name_map.end(); rasssu++){
-    //   errs() << rasssu->second << " ";
-    //   rasssu->first->dump();
-    // }
-    errs() << "\n adding " << (scope_name_map.find(I->getDebugLoc()->getScope()->
+    errs() << "\n adding " << (scope_name_map.find(
+      I->getDebugLoc()->getScope()->
           getNonLexicalBlockFileScope())->second
       + "::" + dyn_cast<DIVariable>(mdn)->getName().str() + "\n");
     symbolt symbol;
-    errs() << "4 ";
     switch(dyn_cast<PointerType>(dyn_cast<Type>(dbgDeclareInst->getAddress()
       ->getType()))->getPointerElementType()->getTypeID())
     {
@@ -4234,6 +4251,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       {
         errs() << "\nHalf type";
         symbol = symbol_creator::create_HalfTy(type, mdn);
+        break;
       }
       // 32-bit floating point type
       case llvm::Type::TypeID::FloatTyID :
@@ -4313,7 +4331,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         default:
         errs() << "\ninvalid type for global variable";
     }
-    errs() << "5 ";
     symbol.name = scope_name_map.find(dyn_cast<DILocalScope>(
       I->getDebugLoc()->getScope())->getNonLexicalBlockFileScope())->second
     + "::" + dyn_cast<DIVariable>(mdn)->getName().str();
@@ -4342,13 +4359,16 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
     const Function *function = dyn_cast<Function>(
       called_val->stripPointerCasts());
-    if(function->getName().str() == "assume" || function->getName().str() == "assert")
+    if(function->getName().str() == "assume"
+      || function->getName().str() == "assert")
     {
       // errs() << "assume";
       goto_programt::targett ass_inst;
-      if(function->getName().str() == "assume"){
+      if(function->getName().str() == "assume")
+      {
         ass_inst = gp.add_instruction(ASSUME);
-      } else
+      }
+      else
       {
         ass_inst = gp.add_instruction(ASSERT);
       }
@@ -4358,7 +4378,8 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         bool_typet());
       ass_inst->guard = guard;
       source_locationt location;
-      if(I->hasMetadata()){
+      if(I->hasMetadata())
+      {
         if(&(I->getDebugLoc()) != NULL)
         {
           const DebugLoc loc = I->getDebugLoc();
@@ -4368,47 +4389,15 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
                 ->getScope()->getFile()->getDirectory().str());
           location.set_line(loc->getLine());
           location.set_column(loc->getColumn());
-          exprt e = trans_Cmp(dyn_cast<Instruction>(dyn_cast<Instruction>(I->op_begin())->op_begin()), symbol_table);
-          location.set_comment(from_expr(namespacet(*symbol_table), (symbol_table->symbols.begin()->second.name), e));
+          exprt e = trans_Cmp(dyn_cast<Instruction>(
+            dyn_cast<Instruction>(I->op_begin())->op_begin()), symbol_table);
+          location.set_comment(
+            from_expr(namespacet(*symbol_table),
+              (symbol_table->symbols.begin()->second.name), e));
         }
       }
       ass_inst->source_location = location;
     }
-    // if(function->getName().str() == "assert")
-    // {
-    //   errs() << "assert";
-    //   goto_programt::targett assert_inst = gp.add_instruction(ASSERT);
-    // //     typet dest_type = unsignedbv_typet(1);
-    // // typecast_exprt tce(trans_Cmp(I, symbol_table), dest_type);
-    //   // Value *opnd = dyn_cast<CallInst>(I)->getArgOperand(0);
-    //   exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
-    //     dyn_cast<Instruction>(
-    //       *I->value_op_begin())->value_op_begin()->getName().str())->second).
-    //   symbol_expr(),
-    //   bool_typet());
-    //   // exprt guard;
-    //   // if(Value *cmp = *dyn_cast<Instruction>(opnd)->value_op_begin())
-    //   // {
-    //   //   guard = trans_Cmp(dyn_cast<Instruction>(cmp), symbol_table);
-    //   // }
-    //   assert_inst->guard = guard;
-
-    //   source_locationt location;
-    //   if(I->hasMetadata()){
-    //     if(&(I->getDebugLoc()) != NULL)
-    //     {
-    //       const DebugLoc loc = I->getDebugLoc();
-    //       location.set_file(loc
-    //             ->getScope()->getFile()->getFilename().str());
-    //       location.set_working_directory(loc
-    //             ->getScope()->getFile()->getDirectory().str());
-    //       location.set_line(loc->getLine());
-    //       location.set_column(loc->getColumn());
-    //       location.set_comment(irep_idt("hi"));
-    //     }
-    //   }
-    //   assert_inst->source_location = location;
-    // }
   }
   else
   {
@@ -4423,25 +4412,17 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       if(to_code_type(symbol.type).return_type()!=empty_typet())
       {
         symbolt ret;
-        // errs() << I->getName() << "========\n\n\n";
         ret.base_name = I->getName().str();
         ret.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
           + "::" + I->getName().str();
         var_name_map.insert(std::pair<std::string, std::string>(
           ret.base_name.c_str(), ret.name.c_str()));
-        // errs() << ret.base_name.c_str() << " , " << ret.name.c_str();
-        // assert(false);
         ret.type = symbol_creator::create_type(function->getReturnType());
         symbol_table->add(ret);
-        // goto_programt::targett ret_decl = gp.add_instruction();
         goto_programt::targett decl_ret = gp.add_instruction();
-        // TODO(Rasika) : function arguments sathi kahitari kara.
-        // TODO(Rasika) : lookup local and global variables.
         decl_ret->make_decl();
         decl_ret->code=code_declt(ret.symbol_expr());
         call.lhs()= ret.symbol_expr();
-        // errs() << &(symbol_table->lookup(func_name + "#" + "return_value"));
-        // assert(false && "see this");
       }
       llvm::User::const_value_op_iterator ub = I->value_op_begin();
       for(code_typet::parameterst::const_iterator
@@ -4449,9 +4430,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         p_it!=to_code_type(symbol.type).parameters().end();
         p_it++)
       {
-        // ub->dump();
-        // assert(false);
-        // (*p_it).set_identifier();
         exprt expr;
         if(dyn_cast<ConstantInt>(*ub))
         {
@@ -4478,16 +4456,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       goto_programt::targett call_inst = gp.add_instruction();
       call_inst->make_function_call(call);
-     //  goto_programt::targett ass_inst = gp.add_instruction();
-     //  ass_inst->make_assignment();
-     //  ass_inst->code = code_assignt(symbol_table->lookup(
-     //    scope_name_map.find(I->getDebugLoc()->getScope())->second
-     //    + "::" + I->getName().str()).symbol_expr(),
-     //    symbol_table->lookup(function->getName().str() + "#return_value").symbol_expr());
-     // goto_programt::targett dead_inst = gp.add_instruction();
-     //  dead_inst->make_dead();
-     //  dead_inst->code=code_deadt(
-     //    symbol_table->lookup(function->getName().str() + "#return_value").symbol_expr());
     }
   }
   return gp;
@@ -4559,7 +4527,8 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4583,7 +4552,8 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
     shl_exprt(exprt1, exprt2));
   shl_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -4666,7 +4636,8 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4687,7 +4658,8 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
     lshr_exprt(exprt1, exprt2));
   lshr_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -4770,7 +4742,8 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
   //   symbol_table.lookup(
   // I->getFunction()->getName().str() + "::" + I->getName().str());
   // } catch(std::__cxx11::basic_string<char, std::char_traits<char>,
-  //   std::allocator<char> > msg){
+  //   std::allocator<char> > msg)
+  {
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
     symbolt symbol;
@@ -4794,7 +4767,8 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
     ashr_exprt(exprt1, exprt2));
   ashr_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
-  if(I->hasMetadata()){
+  if(I->hasMetadata())
+  {
     if(&(I->getDebugLoc()) != NULL)
     {
       const DebugLoc loc = I->getDebugLoc();
@@ -5020,6 +4994,7 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod)
                     GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
                   symbol_table.add(symbol);
+                  break;
                 }
                 // 32-bit floating point type
                 case llvm::Type::TypeID::FloatTyID :
@@ -5619,23 +5594,14 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   goto_programt gp;
   scope_tree st;
   scope_name_map.clear();
-  // std::map<DIScope*, std::string> scope_name_map;
   st.get_scope_name_map(F, &scope_name_map);
-  errs() << F.getName() << "\n\n";
-  /*if(F.getName() != "llvm.dbg.declare")  {for(auto rasssu=scope_name_map.begin(); rasssu!=scope_name_map.end(); rasssu++){
-          errs() << rasssu->second << " ";
-          rasssu->first->dump();
-        }}*/
-  errs() << "\n#" << scope_name_map.size() << "#\n";
-  // return gp;
   std::map <const BasicBlock*, goto_programt::targett> block_target_map;
   std::map <const BasicBlock*, goto_programt::targett>
     dest_block_branch_map_switch;
   std::map <const Instruction*, goto_programt::targett> instruction_target_map;
   errs() << "\tin trans_Function\n";
-  symbolt symbol = namespacet(*symbol_table).lookup(dstringt(F.getName().str()));
-  // auto arg_para = F.arg_begin();
-  // gp.update();
+  symbolt symbol = namespacet(*symbol_table).lookup(
+    dstringt(F.getName().str()));
   Function::const_iterator b = F.begin(), be = F.end();
   for(; b != be; ++b)
   {
@@ -5644,7 +5610,6 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
       instruction_target_map, dest_block_branch_map_switch);
     register_language(new_ansi_c_language);
     goto_programt::targett target = goto_block.instructions.begin();
-    // goto_block.output(std::cout);
     gp.destructive_append(goto_block);
     gp.update();
     block_target_map.insert(
@@ -5655,33 +5620,16 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   set_branches(symbol_table, block_target_map, instruction_target_map);
   errs() << "\n\n *********************************************\n";
   gp.update();
-  // namespacet ns(*symbol_table);
-  /*for(auto mi = scope_name_map.begin(), me = scope_name_map.end(); mi!=me; mi++)
-  {
-    errs() << mi->second << " ";
-    mi->first->dump();
-  }*/
   for(auto i = dest_block_branch_map_switch.begin();
     i!=dest_block_branch_map_switch.end(); i++)
   {
     std::map <const BasicBlock*, goto_programt::targett>::iterator then_pair
       = block_target_map.find(
         dyn_cast<BasicBlock>(i->first));
-      // then_part = (*then_pair).second;
-      // (*i).second->make_goto(then_part, guard);
-      // then_pair->first->dump();
-      // errs() << "\nhi\n";
-      // std::cout << i->second->guard << "\n";
-      // i->second->code = then_pair->second;
       auto guard = i->second->guard;
       i->second->make_goto(then_pair->second, guard);
   }
-  // errs() << "hi..........";
-  // assert(false);
   gp.update();
-  // register_language(new_ansi_c_language);
-  // gp.output(std::cout);
-  // std::cout << "\n...............................................\n";
   errs() << "\tout of trans_Function " + F.getName().str() + "\n";
   return gp;
 }
@@ -5769,65 +5717,47 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
              e.g. trans_Gloabals, trans_Block, etc.
 
 \*******************************************************************/
-goto_functionst llvm2goto_translator::trans_Program()
+goto_functionst llvm2goto_translator::trans_Program(std::string filename)
 {
   register_language(new_ansi_c_language);
 
 
   // TODO(Rasika): check for presence of function body
-  // Module &M = *M;
-  // errs() << "in trans_Program\n";
+  errs() << "in trans_Program\n";
   goto_functionst goto_functions;
-  // goto_functionst::goto_functiont goto_function;
   symbol_tablet symbol_table = trans_Globals(M);
+  {
+    symbolt initialize_function;
+    initialize_function.clear();
+    initialize_function.is_static_lifetime=true;
+    initialize_function.is_thread_local=false;
+    const irep_idt initialize_function_bname = INITIALIZE_FUNCTION;
+    const irep_idt initialize_function_name = INITIALIZE_FUNCTION;
+    initialize_function.mode = ID_C;
+    initialize_function.name = initialize_function_name;
+    initialize_function.base_name = initialize_function_bname;
+    code_typet ct = code_typet();
+    ct.return_type() = unsignedbv_typet(32);
+    initialize_function.value = exprt();
+    initialize_function.type = ct;
+    symbol_table.add(initialize_function);
 
-  symbolt initialize_function;
-  initialize_function.clear();
-  initialize_function.is_static_lifetime=true;
-  initialize_function.is_thread_local=false;
-  const irep_idt initialize_function_bname = INITIALIZE_FUNCTION;
-  const irep_idt initialize_function_name = INITIALIZE_FUNCTION;
-  initialize_function.mode = ID_C;
-  initialize_function.name = initialize_function_name;
-  initialize_function.base_name = initialize_function_bname;
-  code_typet ct = code_typet();
-  ct.return_type() = unsignedbv_typet(32);
-  initialize_function.value = exprt();
-  initialize_function.type = ct;
-  symbol_table.add(initialize_function);
+    symbolt cprover_rounding_mode;
+    cprover_rounding_mode.name = "__CPROVER_rounding_mode";
+    cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
+    cprover_rounding_mode.type = signedbv_typet(32);
+    cprover_rounding_mode.mode = ID_C;
+    cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
+    symbol_table.add(cprover_rounding_mode);
+  }
 
-  symbolt cprover_rounding_mode;
-  cprover_rounding_mode.name = "__CPROVER_rounding_mode";
-  cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
-  cprover_rounding_mode.type = signedbv_typet(32);
-  cprover_rounding_mode.mode = ID_C;
-  cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
-  symbol_table.add(cprover_rounding_mode);
-  
   goto_programt gp;
-  // for(Function &F : *M)
-  // {
-  //   Type *functt = (dyn_cast<Type>(F.getFunctionType()));
-  //   symbolt fn = symbol_creator::create_FunctionTy(functt, F);
-  //   fn.name = dstringt(F.getName().str());
-  //   fn.base_name = fn.name;
-  //   symbol_table.add(fn);
-  // }
   for(Function &F : *M)
   {
-    // SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-    // F.getAllMetadata(MDs);
-    // if(F.hasMetadata()){
-    //   MDs[0].second->dump();
-    //   (*dyn_cast<DISubprogram>(MDs[0].second)).getType()->dump();
-    //
-    // dyn_cast<DISubroutineType>((*dyn_cast<DISubprogram>(MDs[0].second)).getType())->getTypeArray()->dump();
-    // }
     symbolt ret_var;
       ret_var.type = symbol_creator::create_type(F.getReturnType());
       ret_var.name = F.getName().str() + "#return_value";
       ret_var.base_name = F.getName().str() + "#return_value";
-      // ret_var.is_lvalue = true;
       symbol_table.add(ret_var);
     for(Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
       arg_b != arg_e; arg_b++)
@@ -5838,8 +5768,9 @@ goto_functionst llvm2goto_translator::trans_Program()
       arg.base_name = arg_b->getName().str();
       arg.is_lvalue = true;
       symbol_table.add(arg);
-      var_name_map.insert(std::pair<std::string, std::string>(arg.base_name.c_str(), arg.name.c_str()));
-      // arg_b->getType()->dump();
+      var_name_map.insert(
+        std::pair<std::string, std::string>(arg.base_name.c_str(),
+          arg.name.c_str()));
     }
     Type *functt = (dyn_cast<Type>(F.getFunctionType()));
     symbolt fn = symbol_creator::create_FunctionTy(functt, F);
@@ -5847,35 +5778,39 @@ goto_functionst llvm2goto_translator::trans_Program()
     fn.base_name = fn.name;
     fn.is_lvalue = true;
     symbol_table.add(fn);
-    // assert(false);
     goto_functions.function_map.insert(
       std::pair<const dstringt, goto_functionst::goto_functiont >(
         dstringt(F.getName()),
         goto_functionst::goto_functiont()));
     goto_programt func_gp = trans_Function(F, &symbol_table);
-    // func_gp.ns = namespacet(symbol_table);
     gp.destructive_append(func_gp);
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.body.swap(gp);
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.type = to_code_type(fn.type);
-
   }
   set_entry_point(goto_functions, symbol_table);
   cmdlinet cmdline;
   ui_message_handlert umht;
 
   compilet compile(cmdline, umht, false);
-  compile.write_object_file(M->getSourceFileName()
-    + ".goto", symbol_table, goto_functions);
+  if(filename == "")
+  {
+    compile.write_object_file(M->getSourceFileName()
+      + ".goto", symbol_table, goto_functions);
+  }
+  else
+  {
+    compile.write_object_file(filename, symbol_table, goto_functions);
+  }
 
   namespacet ns(symbol_table);
 
-  errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
-  ns.get_symbol_table().show(std::cout);
-  errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
-  errs() << "\ncalling goto_functions.output\n";
-    goto_functions.output(ns, std::cout);
+  // errs() << &ns << "\n" << &ns.get_symbol_table() << "\nhello";
+  // ns.get_symbol_table().show(std::cout);
+  // errs() << "\nsize :" << (goto_functions).function_map.size() << "\n";
+  // errs() << "\ncalling goto_functions.output\n";
+  goto_functions.output(ns, std::cout);
   errs() << "in trans_Program\n";
   return goto_functions;
 }

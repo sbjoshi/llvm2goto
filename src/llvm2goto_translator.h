@@ -135,7 +135,7 @@ class llvm2goto_translator:public llvm2goto_translatort
 
   std::string get_arg_name(const Instruction*);
 
-  goto_functionst trans_Program();
+  goto_functionst trans_Program(std::string filename);
   // scope to name of the scope.
   std::map<DIScope*, std::string> scope_name_map;
   // var name to full name.

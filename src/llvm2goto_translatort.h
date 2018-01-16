@@ -149,6 +149,6 @@ class llvm2goto_translatort
   std::map <const BasicBlock*, goto_programt::targett> block_target_map,
   std::map <const Instruction*, goto_programt::targett> instruction_target_map)
     = 0;
-    virtual goto_functionst trans_Program() = 0;
+    virtual goto_functionst trans_Program(std::string filename) = 0;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATORT_H_"
