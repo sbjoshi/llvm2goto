@@ -2497,24 +2497,16 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I)
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_GetElementPtr(
-  const Instruction *I, const symbol_tablet &symbol_table)
+  const Instruction *I, symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  I->dump();
-  errs() << "\n";
-  errs() <<"getSourceElementType : ";
-  dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
-  errs() <<"getResultElementType : ";
-  dyn_cast<GetElementPtrInst>(I)->getResultElementType()->dump();
-  errs() <<"getAddressSpace : ";
-  errs() << dyn_cast<GetElementPtrInst>(I)->getAddressSpace() << "\n";
-  errs() <<"idx_begin idx_end :\n\n";
-  errs() <<"\ngetPointerOperand : ";
-  dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->dump();
-  std::string name_of_composite_var = dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName();
-  std::string comp_var_full_name = var_name_map.find(name_of_composite_var)->second;
+  std::string name_of_composite_var
+    = dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName();
+  std::string comp_var_full_name = var_name_map.find(
+    name_of_composite_var)->second;
   symbolt comp = symbol_table.lookup(comp_var_full_name);
-  errs() << var_name_map.find(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName())->second << "\n";
+  // errs() << var_name_map.find(dyn_cast<GetElementPtrInst>(I)
+  // ->getPointerOperand()->getName())->second << "\n";
   int index = 0;
   for(auto i=dyn_cast<GetElementPtrInst>(I)->idx_begin();
     i!=dyn_cast<GetElementPtrInst>(I)->idx_end(); i++)
@@ -2523,48 +2515,36 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   //   dyn_cast<Value>(i)->dump();
     index = dyn_cast<ConstantInt>(i)->getZExtValue();
   }
-  errs() << (to_struct_union_type(comp.type).components())[index].get_name().c_str();
-  member_exprt member(
-    symbol_table.lookup(var_name_map.find(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName())->second).symbol_expr(),
-    (to_struct_union_type(comp.type).components())[index].get_name());
-  // exprt member = (to_struct_union_type(comp.type).components())[index];//.get_name().c_str() << "...............................................................\n";
-  errs() <<"getPointerOperandType : ";
-  dyn_cast<GetElementPtrInst>(I)->getPointerOperandType()->dump();
-  errs() <<"getPointerAddressSpace : ";
-  errs() << dyn_cast<GetElementPtrInst>(I)->getPointerAddressSpace() << "\n";
-  errs() <<"getNumIndices : ";
-  errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices() << "\n";
-  errs() << "Metadat :\n\n";
-  SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
-  I->getAllMetadata(MDs);
-  if(I->hasMetadata())
+  errs() << (
+    to_struct_union_type(comp.type).components())[index].get_name().c_str();
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
-      MDs[0].second->dump();
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
+    symbol.type = (to_struct_union_type(comp.type).components())[index].type();
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code=code_declt(symbol.symbol_expr());
+    decl_add->function = irep_idt(I->getFunction()->getName().str());
+    // decl_add->source_location = location;
   }
-  errs() << "\n\n";
-  // exprt val = from_integer(1, signedbv_typet(32));
-  // with_exprt access_expr(comp.symbol_expr(), member, val);
-  // // goto_programt::targett access_member = gp.add_instruction();
-  // access_member->code = code_expressiont(access_expr);
-  // access_member->make_other(access_member->code);
-  // goto_programt::targett decl_add = gp.add_instruction();
-  // decl_add->make_decl();
-  // decl_add->code=code_declt(symbol_table.lookup("main::i").symbol_expr());
-  // decl_add->function = irep_idt(I->getFunction()->getName().str());
-
-  goto_programt::targett trunc_inst = gp.add_instruction();
-  trunc_inst->make_assignment();
-  // typecast_exprt tce(exprt1, dest_type);
-  trunc_inst->code = code_assignt(member, from_integer(100, unsignedbv_typet(32)));
-  trunc_inst->function = irep_idt(I->getFunction()->getName().str());
-  // trunc_inst->source_location = location;
-  trunc_inst->type = goto_program_instruction_typet::ASSIGN;
-
-  gp.update();
-  // // errs() << from_expr(access_expr) << "\n";
-  register_language(new_ansi_c_language);
-  gp.output(std::cout);
-  assert(false && "GetElementPtr is yet to be mapped \n");
+  member_exprt member(
+    symbol_table.lookup(var_name_map.find(
+      dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
+      ->getName())->second).symbol_expr(),
+    (to_struct_union_type(comp.type).components())[index].get_name());
+  goto_programt::targett assgn_inst = gp.add_instruction();
+  assgn_inst->make_assignment();
+  std::string full_name = var_name_map.find(I->getName().str())->second;
+  assgn_inst->code = code_assignt(symbol_table.lookup(full_name).symbol_expr(),
+    member);
+  assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+  assgn_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
 }
 
@@ -5152,7 +5132,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
     {
         // goto_programt load_gp = trans_Store(Inst, *symbol_table);
         // break;
-        goto_programt getElementPtr_gp = trans_GetElementPtr(Inst, *symbol_table);
+        goto_programt getElementPtr_gp = trans_GetElementPtr(Inst,
+          *symbol_table);
         gp.destructive_append(getElementPtr_gp);
         break;
       }

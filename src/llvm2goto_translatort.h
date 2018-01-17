@@ -83,7 +83,7 @@ class llvm2goto_translatort
     virtual goto_programt trans_AtomicRMW(const Instruction *I) = 0;
     virtual goto_programt trans_Fence(const Instruction *I) = 0;
     virtual goto_programt trans_GetElementPtr(const Instruction *I,
-        const symbol_tablet &symbol_table) = 0;
+        symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Trunc(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_ZExt(const Instruction *I,
@@ -112,7 +112,8 @@ class llvm2goto_translatort
         symbol_tablet *symbol_table) = 0;
     virtual goto_programt trans_ICmp(const Instruction *I,
         symbol_tablet *symbol_table) = 0;
-    virtual goto_programt trans_FCmp(const Instruction *I, symbol_tablet *symbol_table) = 0;
+    virtual goto_programt trans_FCmp(const Instruction *I,
+        symbol_tablet *symbol_table) = 0;
     virtual goto_programt trans_PHI(const Instruction *I) = 0;
     virtual goto_programt trans_Select(const Instruction *I) = 0;
     virtual goto_programt trans_Call(const Instruction *I,
