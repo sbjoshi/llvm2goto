@@ -2523,7 +2523,11 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   //   dyn_cast<Value>(i)->dump();
     index = dyn_cast<ConstantInt>(i)->getZExtValue();
   }
-  exprt member = (to_struct_union_type(comp.type).components())[index];//.get_name().c_str() << "...............................................................\n";
+  errs() << (to_struct_union_type(comp.type).components())[index].get_name().c_str();
+  member_exprt member(
+    symbol_table.lookup(var_name_map.find(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName())->second).symbol_expr(),
+    (to_struct_union_type(comp.type).components())[index].get_name());
+  // exprt member = (to_struct_union_type(comp.type).components())[index];//.get_name().c_str() << "...............................................................\n";
   errs() <<"getPointerOperandType : ";
   dyn_cast<GetElementPtrInst>(I)->getPointerOperandType()->dump();
   errs() <<"getPointerAddressSpace : ";
@@ -2538,12 +2542,11 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       MDs[0].second->dump();
   }
   errs() << "\n\n";
-  exprt val = from_integer(1, signedbv_typet(32));
-  with_exprt access_expr(comp.symbol_expr(), member, val);
-  // goto_programt::targett access_member = gp.add_instruction();
+  // exprt val = from_integer(1, signedbv_typet(32));
+  // with_exprt access_expr(comp.symbol_expr(), member, val);
+  // // goto_programt::targett access_member = gp.add_instruction();
   // access_member->code = code_expressiont(access_expr);
   // access_member->make_other(access_member->code);
-  gp.update();
   // goto_programt::targett decl_add = gp.add_instruction();
   // decl_add->make_decl();
   // decl_add->code=code_declt(symbol_table.lookup("main::i").symbol_expr());
@@ -2552,12 +2555,13 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   goto_programt::targett trunc_inst = gp.add_instruction();
   trunc_inst->make_assignment();
   // typecast_exprt tce(exprt1, dest_type);
-  trunc_inst->code = code_assignt(symbol_table.lookup("main::roll_no1").symbol_expr(), access_expr);
+  trunc_inst->code = code_assignt(member, from_integer(100, unsignedbv_typet(32)));
   trunc_inst->function = irep_idt(I->getFunction()->getName().str());
   // trunc_inst->source_location = location;
   trunc_inst->type = goto_program_instruction_typet::ASSIGN;
 
-  // errs() << from_expr(access_expr) << "\n";
+  gp.update();
+  // // errs() << from_expr(access_expr) << "\n";
   register_language(new_ansi_c_language);
   gp.output(std::cout);
   assert(false && "GetElementPtr is yet to be mapped \n");
