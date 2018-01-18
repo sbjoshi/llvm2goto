@@ -2324,8 +2324,20 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  symbolt symbol = symbol_table.lookup(var_name_map.find(
+  // I->dump();
+  // dyn_cast<StoreInst>(I)->getOperand(0)->dump();
+  symbolt symbol;
+  symbol = symbol_table.lookup(var_name_map.find(
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
+  exprt expr;
+  if(dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1))){
+    symbol = symbol_table.lookup(var_name_map.find(
+    dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
+    expr = dereference_exprt(symbol.symbol_expr(), symbol.type);
+    // assert(false);
+  } else {
+    expr = symbol.symbol_expr();
+  }
   exprt value_to_store;
   for(auto arg = I->getFunction()->arg_begin();
     arg != I->getFunction()->arg_end(); arg++)
@@ -2342,7 +2354,13 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     {
       uint64_t val = dyn_cast<ConstantInt>(
       dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
-      value_to_store = from_integer(val, symbol.type);
+      if(dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1))){
+        errs() << "\n..........." << symbol.type.id().c_str() << " .. " << symbol.type.subtype().id().c_str() << "\n";
+        value_to_store = from_integer(val, symbol.type.subtype());
+        // assert(false);
+      } else {
+          value_to_store = from_integer(val, symbol.type);
+      }
     }
     else if(dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0)))
     {
@@ -2401,7 +2419,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   }
   goto_programt::targett store_inst = gp.add_instruction();
   store_inst->make_assignment();
-  store_inst->code = code_assignt(symbol.symbol_expr(), value_to_store);
+  store_inst->code = code_assignt(expr, value_to_store);
   store_inst->function = irep_idt(I->getFunction()->getName().str());
   source_locationt location;
   if(I->hasMetadata())
@@ -2419,6 +2437,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   }
   store_inst->source_location = location;
   store_inst->type = goto_program_instruction_typet::ASSIGN;
+  // assert(false);
   return gp;
 }
 
@@ -2499,6 +2518,7 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I)
 goto_programt llvm2goto_translator::trans_GetElementPtr(
   const Instruction *I, symbol_tablet &symbol_table)
 {
+  // TODO(Rasika) : create pointer type for destination.
   goto_programt gp;
   std::string name_of_composite_var
     = dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName();
@@ -2525,7 +2545,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
       symbol.base_name.c_str(), symbol.name.c_str()));
-    symbol.type = (to_struct_union_type(comp.type).components())[index].type();
+    symbol.type = pointer_typet((to_struct_union_type(comp.type).components())[index].type(), 32);
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
@@ -2533,6 +2553,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     decl_add->function = irep_idt(I->getFunction()->getName().str());
     // decl_add->source_location = location;
   }
+    // expr =  address_of_exprt(symbol.symbol_expr(), pointer_typet(symbol.type, 32));
   member_exprt member(
     symbol_table.lookup(var_name_map.find(
       dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
@@ -2542,7 +2563,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   assgn_inst->make_assignment();
   std::string full_name = var_name_map.find(I->getName().str())->second;
   assgn_inst->code = code_assignt(symbol_table.lookup(full_name).symbol_expr(),
-    member);
+    address_of_exprt(member));
   assgn_inst->function = irep_idt(I->getFunction()->getName().str());
   assgn_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
@@ -3644,6 +3665,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_UEQ :
     {
       condition = equal_exprt(opnd1, opnd2);
+      errs() << from_expr(condition) << "...";
+      assert(false);
       break;
     }
     case CmpInst::Predicate::ICMP_NE :
