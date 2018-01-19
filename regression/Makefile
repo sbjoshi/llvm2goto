@@ -1,4 +1,4 @@
-export LLVM_BIN_PATH = /home/rasika/Downloads/llvm_clang/build/bin/clang
+export LLVM_BIN_PATH = /home/ubuntu/clang-5.0.1.src/build/bin/clang
 
 compile : c
 	export LLVM_BIN_PATH
