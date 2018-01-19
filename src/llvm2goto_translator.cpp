@@ -3533,8 +3533,18 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
     li->getOperand(0)->dump();
-    opnd1 = symbol_table->lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second).symbol_expr();
+    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    {
+      errs() << "###########################3\n";
+      symbolt op1 = symbol_table->lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+      opnd1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    }
+    else {
+      opnd1 = symbol_table->lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second).symbol_expr();
+    }
+    errs() << opnd1.type().id().c_str() << "\n";
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
@@ -3548,7 +3558,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   {
     errs() << "done!";
   }
-  else if(I->getOperand(0)->getType()->isIntegerTy())
+  else if(I->getOperand(0)->getType()->isIntegerTy()
+    || I->getOperand(1)->getType()->isIntegerTy())
   {
     if(f1==0)
     {
@@ -3565,8 +3576,10 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
 
     if(f2 == 0)
     {
+      errs() << "1 ";
       if(dyn_cast<ConstantInt>(*(ub + 1)))
       {
+        errs() << "2 ";
         flag = 0;
       }
       else
@@ -3576,28 +3589,49 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       }
     }
 
-    if(opnd2.type().id() == ID_signedbv && flag == 1)
+    typet op_type;
+    if(opnd2.type().id() == ID_signedbv){
+      op_type = opnd2.type();
+    }
+    if(opnd1.type().id() == ID_signedbv){
+      op_type = opnd1.type();
+    }
+    if(opnd2.type().id() == ID_unsignedbv){
+      op_type = opnd2.type();
+    }
+    if(opnd1.type().id() == ID_unsignedbv){
+      op_type = opnd1.type();
+    }
+    if(opnd2.type().id() == ID_pointer){
+      op_type = opnd2.type().subtype();
+    }
+    if(opnd1.type().id() == ID_pointer){
+      op_type = opnd1.type().subtype();
+    }
+    if(op_type.id() == ID_signedbv && flag == 1)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
-      typet type = opnd2.type();
+      typet type = op_type;
       opnd1 = from_integer(val, type);
     }
-    if(opnd1.type().id() == ID_signedbv && flag == 0)
+    if(op_type.id() == ID_signedbv && flag == 0)
     {
+      errs() << "3 ";
       uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
-      typet type = opnd1.type();
+      typet type = op_type;
       opnd2 = from_integer(val, type);
     }
-    if(opnd2.type().id() == ID_unsignedbv && flag == 1)
+    if(op_type.id() == ID_unsignedbv && flag == 1)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
-      typet type = opnd2.type();
+      typet type = op_type;
       opnd1 = from_integer(val, type);
     }
-    if(opnd1.type().id() == ID_unsignedbv && flag == 0)
+    if(op_type.id() == ID_unsignedbv && flag == 0)
     {
+      errs() << "4 ";
       uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
-      typet type = opnd1.type();
+      typet type = op_type;
       opnd2 = from_integer(val, type);
     }
   }
@@ -3665,8 +3699,10 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     case CmpInst::Predicate::FCMP_UEQ :
     {
       condition = equal_exprt(opnd1, opnd2);
-      errs() << from_expr(condition) << "...";
-      assert(false);
+      errs() << "\n... " << from_expr(condition) << "...";
+      // if(dyn_cast<GetElementPtrInst>(dyn_cast<Instruction>(I->getOperand(1))->getOperand(0))){
+        // assert(false);
+      // }
       break;
     }
     case CmpInst::Predicate::ICMP_NE :

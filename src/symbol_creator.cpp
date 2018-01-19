@@ -16,7 +16,7 @@ Author : Rasika
 // TODO(Rasika) : The unique identifier.
 // TODO(Rasika) : Name of module the symbol belongs to.
 // TODO(Rasika) : Base (non-scoped) name.
-// TODO(Rasika) : Language-specifname.
+// TODO(Rasika) : Language-specificname.
 // TODO(Rasika) : 128-bit floating point type (112-bit mantissa) FP128Ty
 // TODO(Rasika) : 128-bit floating point type (two 64-bits, PowerPC) PPC_FP128Ty
 /*******************************************************************\
