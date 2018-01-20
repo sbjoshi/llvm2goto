@@ -4903,16 +4903,24 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   {
     if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
     {
-    li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second);
+      li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      {
+        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      }
+      else
+      {
+        exprt1 = op1.symbol_expr();
+      }
     }
     else
     {
       op1 = symbol_table.lookup(var_name_map.find(
         ub->getName().str())->second);
+      exprt1 = op1.symbol_expr();
     }
-    exprt1 = op1.symbol_expr();
   }
   if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
   {
@@ -4927,13 +4935,21 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
+      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      {
+        exprt2 = dereference_exprt(op1.symbol_expr(), op2.type);
+      }
+      else
+      {
+        exprt2 = op2.symbol_expr();
+      }
     }
     else
     {
       op2 = symbol_table.lookup(var_name_map.find(
         (ub + 1)->getName().str())->second);
+      exprt2 = op2.symbol_expr();
     }
-    exprt2 = op2.symbol_expr();
   }
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
@@ -5006,16 +5022,24 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
   {
     if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
     {
-    li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second);
+      li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      {
+        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      }
+      else
+      {
+        exprt1 = op1.symbol_expr();
+      }
     }
     else
     {
       op1 = symbol_table.lookup(var_name_map.find(
         ub->getName().str())->second);
+      exprt1 = op1.symbol_expr();
     }
-    exprt1 = op1.symbol_expr();
   }
   if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
   {
@@ -5030,13 +5054,21 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
+      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      {
+        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      }
+      else
+      {
+        exprt2 = op2.symbol_expr();
+      }
     }
     else
     {
       op2 = symbol_table.lookup(var_name_map.find(
         (ub + 1)->getName().str())->second);
+      exprt2 = op2.symbol_expr();
     }
-    exprt2 = op2.symbol_expr();
   }
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
@@ -5106,16 +5138,24 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
   {
     if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
     {
-    li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second);
+      li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      {
+        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      }
+      else
+      {
+        exprt1 = op1.symbol_expr();
+      }
     }
     else
     {
       op1 = symbol_table.lookup(var_name_map.find(
         ub->getName().str())->second);
+      exprt1 = op1.symbol_expr();
     }
-    exprt1 = op1.symbol_expr();
   }
   if(const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub+1)))
   {
@@ -5130,13 +5170,21 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
+      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      {
+        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      }
+      else
+      {
+        exprt2 = op2.symbol_expr();
+      }
     }
     else
     {
       op2 = symbol_table.lookup(var_name_map.find(
         (ub + 1)->getName().str())->second);
+      exprt2 = op2.symbol_expr();
     }
-    exprt2 = op2.symbol_expr();
   }
   if(var_name_map.find(I->getName().str()) == var_name_map.end())
   {
