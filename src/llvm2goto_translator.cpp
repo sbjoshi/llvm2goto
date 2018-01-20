@@ -4208,52 +4208,173 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
   // I->dump();
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
-  int flag = 2;
-  if(dyn_cast<ConstantInt>(*ub))
-  {
-    flag = 1;
-  }
-  else if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+  int flag = 2, f1=0, f2=0;
+  if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
     li->getOperand(0)->dump();
-    opnd1 = symbol_table->lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second).symbol_expr();
+    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    {
+      symbolt op1 = symbol_table->lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second);
+      opnd1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    }
+    else
+    {
+      opnd1 = symbol_table->lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second).symbol_expr();
+    }
+    f1=1;
   }
-  else
-  {
-    opnd1 = symbol_table->lookup(var_name_map.find(
-      ub->getName().str())->second).symbol_expr();
-  }
-
-  if(dyn_cast<ConstantInt>(*(ub + 1)))
-  {
-    flag = 0;
-  }
-  else if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+  if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
   {
     li->getOperand(0)->dump();
     opnd2 = symbol_table->lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second).symbol_expr();
+    f2=1;
+  }
+  if(f1==1 && f2==1)
+  {
+    errs() << "done!";
+  }
+  else if(I->getOperand(0)->getType()->isIntegerTy()
+    || I->getOperand(1)->getType()->isIntegerTy())
+  {
+    if(f1==0)
+    {
+      if(dyn_cast<ConstantInt>(*ub))
+      {
+        flag = 1;
+      }
+      else
+      {
+        opnd1 = symbol_table->lookup(var_name_map.find(
+          ub->getName().str())->second).symbol_expr();
+      }
+    }
+
+    if(f2 == 0)
+    {
+      errs() << "1 ";
+      if(dyn_cast<ConstantInt>(*(ub + 1)))
+      {
+        errs() << "2 ";
+        flag = 0;
+      }
+      else
+      {
+        opnd2 = symbol_table->lookup(var_name_map.find(
+          (ub + 1)->getName().str())->second).symbol_expr();
+      }
+    }
+
+    typet op_type;
+    if(opnd2.type().id() == ID_signedbv)
+    {
+      op_type = opnd2.type();
+    }
+    if(opnd1.type().id() == ID_signedbv)
+    {
+      op_type = opnd1.type();
+    }
+    if(opnd2.type().id() == ID_unsignedbv)
+    {
+      op_type = opnd2.type();
+    }
+    if(opnd1.type().id() == ID_unsignedbv)
+    {
+      op_type = opnd1.type();
+    }
+    if(opnd2.type().id() == ID_pointer)
+    {
+      op_type = opnd2.type().subtype();
+    }
+    if(opnd1.type().id() == ID_pointer)
+    {
+      op_type = opnd1.type().subtype();
+    }
+    if(op_type.id() == ID_signedbv && flag == 1)
+    {
+      uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
+      typet type = op_type;
+      opnd1 = from_integer(val, type);
+    }
+    if(op_type.id() == ID_signedbv && flag == 0)
+    {
+      errs() << "3 ";
+      uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
+      typet type = op_type;
+      opnd2 = from_integer(val, type);
+    }
+    if(op_type.id() == ID_unsignedbv && flag == 1)
+    {
+      uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
+      typet type = op_type;
+      opnd1 = from_integer(val, type);
+    }
+    if(op_type.id() == ID_unsignedbv && flag == 0)
+    {
+      errs() << "4 ";
+      uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+      typet type = op_type;
+      opnd2 = from_integer(val, type);
+    }
   }
   else
   {
-    opnd2 = symbol_table->lookup(var_name_map.find(
-      (ub + 1)->getName().str())->second).symbol_expr();
-  }
-
-  if(opnd2.type().id() == ID_signedbv && flag == 1)
-  {
-    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
-    typet type = opnd2.type();
-    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
-    opnd1 = from_integer(val, type);
-  }
-  if(opnd1.type().id() == ID_signedbv && flag == 0)
-  {
-    uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
-    typet type = opnd1.type();
-    dyn_cast<ConstantInt>(*(ub+1))->getType()->dump();
-    opnd2 = from_integer(val, type);
+    if(I->getOperand(0)->getType()->isFloatTy())
+    {
+      if(f1==0)
+      {
+        if(dyn_cast<ConstantFP>(*ub))
+        {
+          float val = dyn_cast<ConstantFP>(*ub)
+            ->getValueAPF().convertToFloat();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_float(val);
+          opnd1 = to_constant_expr(ieee_fl.to_expr());
+        }
+      }
+      if(f2==0)
+      {
+        if(dyn_cast<ConstantFP>(*(ub+1)))
+        {
+          float val = dyn_cast<ConstantFP>(*(ub+1))
+            ->getValueAPF().convertToFloat();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_float(val);
+          opnd2 = to_constant_expr(ieee_fl.to_expr());
+        }
+      }
+    }
+    else if(I->getOperand(0)->getType()->isDoubleTy())
+    {
+      if(f1==0)
+      {
+        if(dyn_cast<ConstantFP>(*ub))
+        {
+          double val = dyn_cast<ConstantFP>(*ub)
+            ->getValueAPF().convertToDouble();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_double(val);
+          opnd1 = ieee_fl.to_expr();
+        }
+      }
+      if(f2==0)
+      {
+        if(dyn_cast<ConstantFP>(*(ub+1)))
+        {
+          double val = dyn_cast<ConstantFP>(*(ub+1))
+            ->getValueAPF().convertToDouble();
+          ieee_floatt ieee_fl = ieee_floatt();
+          ieee_fl.from_double(val);
+          opnd2 = ieee_fl.to_expr();
+        }
+      }
+    }
+    else
+    {
+      assert(false && "This datatype has not been handled");
+    }
   }
   switch(dyn_cast<ICmpInst>(I)->getInversePredicate())
   {
@@ -5921,9 +6042,9 @@ void llvm2goto_translator::set_branches(symbol_tablet *symbol_table,
       exprt guard;
       if(dyn_cast<BranchInst>((*i).first)->isConditional())
       {
-        guard = trans_Inverse_Cmp(
-          dyn_cast<Instruction>(
-            dyn_cast<BranchInst>((*i).first)->getCondition()), symbol_table);
+        guard = not_exprt(trans_Cmp(
+                  dyn_cast<Instruction>(
+                    dyn_cast<BranchInst>((*i).first)->getCondition()), symbol_table));
       }
       else
       {
