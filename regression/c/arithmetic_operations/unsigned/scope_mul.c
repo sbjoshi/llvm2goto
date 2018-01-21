@@ -1,10 +1,10 @@
 int main() {
-	int a = 2, b = 5;
-	int c = a * b;
+	unsigned int a = 2, b = 5;
+	unsigned int c = a * b;
 	assert(c == 10);
 	{
-		int a = 3, b = 5;
-		int c = a * b;
+		unsigned int a = 3, b = 5;
+		unsigned int c = a * b;
 		assert(c == 15);
 	}
 	return 0;

@@ -1,11 +1,11 @@
 int main() {
-	int a = 2, b = 5;
-	int c = b % a;
-	assert(c == 1);
+	unsigned int a = 2, b = 5;
+	unsigned int c = a % b;
+	assert(c == 2);
 	{
-		int a = 3, b = 5;
-		int c = b % a;
-		assert(c == 2);
+		unsigned int a = 3, b = 5;
+		unsigned int c = a % b;
+		assert(c == 3);
 	}
 	return 0;
 }
