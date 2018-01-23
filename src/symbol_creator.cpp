@@ -9,6 +9,7 @@ Author : Rasika
 
 #include "util/arith_tools.h"
 #include "util/std_expr.h"
+#include "util/ieee_float.h"
 
 // Language mode is temporarily set to 'C'.
 // TODO(Rasika) : set the appropriate width of array size.
@@ -70,7 +71,10 @@ symbolt symbol_creator::create_FloatTy(Type *type, MDNode *mdn)
   {
     global_variable.is_static_lifetime = true;
   }
-  bitvector_typet bvt(ID_floatbv, 32);
+  // bitvector_typet bvt(ID_floatbv, 32);
+  floatbv_typet bvt=
+      ieee_float_spect::single_precision().to_type();
+    bvt.set(ID_C_c_type, ID_float);
   global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
@@ -100,7 +104,10 @@ symbolt symbol_creator::create_DoubleTy(Type *type, MDNode *mdn)
   {
     global_variable.is_static_lifetime = true;
   }
-  bitvector_typet bvt(ID_floatbv, 64);
+  // bitvector_typet bvt(ID_floatbv, 64);
+  floatbv_typet bvt=
+      ieee_float_spect::double_precision().to_type();
+    bvt.set(ID_C_c_type, ID_double);
   global_variable.type = to_floatbv_type(bvt);
   global_variable.location = locationt::get_location_global_variable(mdn);
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();

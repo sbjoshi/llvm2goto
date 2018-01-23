@@ -28,8 +28,8 @@ Author : Rasika
 
 using namespace llvm;
 
-// TODO(Rasika): handle signed comparison.
-// TODO(Rasika): GetElementPtrInst in shift and cast instructions.
+// TODO(Rasika): handle signed type in switch.
+// TODO(Rasika): handle global scope.
 
 llvm2goto_translator::llvm2goto_translator(Module *M)
 {
