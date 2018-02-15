@@ -479,6 +479,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   }
   if(f1==1 && f2==1)
   {
+  	op_type = op1.type;
     errs() << "done!";
   }
   else if(I->getOperand(0)->getType()->isIntegerTy()
@@ -599,10 +600,16 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
             ->getScope()->getFile()->getDirectory().str());
       location.set_line(loc->getLine());
       location.set_column(loc->getColumn());
+      exprt e;
+      std::string e1 = from_expr(namespacet(symbol_table),
+      	(symbol_table.symbols.begin()->second.name), e);
+      location.set_comment(" e1 ");
+      // std::cout << e1 << "\n";
     }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
+  
   return gp;
 }
 
@@ -793,6 +800,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
+  typet op_type;
   int flag = 2, f1=0, f2=0;
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
@@ -828,6 +836,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   }
   if(f1==1 && f2==1)
   {
+  	op_type = op1.type;
     errs() << "done!";
   }
   else if(I->getOperand(0)->getType()->isIntegerTy()
@@ -863,7 +872,6 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
       }
     }
 
-    typet op_type;
     if(op2.type.id() == ID_signedbv)
     {
       op_type = op2.type;
@@ -1139,6 +1147,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1, op2;
   exprt exprt1, exprt2;
+  typet op_type;
   int flag = 2, f1=0, f2=0;
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
@@ -1174,6 +1183,7 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   }
   if(f1==1 && f2==1)
   {
+  	op_type = op1.type;
     errs() << "done!";
   }
   else if(I->getOperand(0)->getType()->isIntegerTy()
@@ -1209,7 +1219,6 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
       }
     }
 
-    typet op_type;
     if(op2.type.id() == ID_signedbv)
     {
       op_type = op2.type;
@@ -4004,6 +4013,7 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   }
   if(f1==1 && f2==1)
   {
+  	// op_type = op1.type;
     errs() << "done!";
   }
   else if(I->getOperand(0)->getType()->isIntegerTy()
@@ -4259,6 +4269,7 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
   }
   if(f1==1 && f2==1)
   {
+  	// op_type = op1.type;
     errs() << "done!";
   }
   else if(I->getOperand(0)->getType()->isIntegerTy()
