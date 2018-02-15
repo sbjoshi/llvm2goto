@@ -422,6 +422,214 @@ goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I)
   return gp;
 }
 
+/*******************************************************************\
+
+   Function: llvm2goto_translator::trans_Arith
+
+    Inputs:
+     I - Pointer to the llvm instruction.
+
+    Outputs: Object of goto_programt containing goto instruction corresponding to
+             llvm::Instruction::Sub.
+
+    Purpose: Map llvm::Instruction::Sub to corresponding goto instruction.
+
+\*******************************************************************/
+exprt llvm2goto_translator::trans_Arith(const Instruction *I,
+  symbol_tablet &symbol_table)
+{
+	assert(false);
+  // Operands can be constant integer or a load instruction.
+  // goto_programt gp;
+
+  	exprt e;
+  	/*switch(dyn_cast<Instruction>(I->getOperand(0))->getOpcode())
+	  {
+	    // // Terminators
+		    // case Instruction::Ret :
+		    // case Instruction::Br :
+		    // case Instruction::Switch :
+		    // case Instruction::IndirectBr :
+		    // case Instruction::Invoke :
+		    // case Instruction::Resume :
+		    // case Instruction::Unreachable :
+		    // case Instruction::CleanupRet :
+		    // case Instruction::CatchRet :
+		    // case Instruction::CatchPad :
+		    // case Instruction::CatchSwitch :
+
+	    // Standard binary operators...
+		    case Instruction::Add :
+		    case Instruction::FAdd :
+		    case Instruction::Sub :
+		    case Instruction::FSub :
+		    case Instruction::Mul :
+		    case Instruction::FMul :
+		    case Instruction::UDiv :
+		    case Instruction::SDiv :
+		    case Instruction::FDiv :
+		    case Instruction::URem :
+		    case Instruction::SRem :
+		    case Instruction::FRem :
+
+	    // Logical operators...
+		    case Instruction::And :
+		    case Instruction::Or :
+		    case Instruction::Xor :
+
+	    // // Memory instructions...
+		    // case Instruction::Alloca :
+		    // case Instruction::Load :
+		    // case Instruction::Store :
+		    // case Instruction::AtomicCmpXchg :
+		    // case Instruction::AtomicRMW :
+		    // case Instruction::Fence :
+		    // case Instruction::GetElementPtr :
+
+	    // Convert instructions...
+		    case Instruction::Trunc :
+		    case Instruction::ZExt :
+		    case Instruction::SExt :
+		    case Instruction::FPTrunc :
+		    case Instruction::FPExt :
+		    case Instruction::FPToUI :
+		    case Instruction::FPToSI :
+		    case Instruction::UIToFP :
+		    case Instruction::SIToFP :
+		    // case Instruction::IntToPtr :
+		    // case Instruction::PtrToInt :
+		    // case Instruction::BitCast :
+		    // case Instruction::AddrSpaceCast :
+
+	    // // Other instructions...
+		    // case Instruction::ICmp :
+		    // case Instruction::FCmp :
+		    // case Instruction::PHI :
+		    // case Instruction::Select :
+		    // case Instruction::Call :
+		    // case Instruction::Shl :
+		    // case Instruction::LShr :
+		    // case Instruction::AShr :
+		    // case Instruction::VAArg :
+		    // case Instruction::ExtractElement :
+		    // case Instruction::InsertElement :
+		    // case Instruction::ShuffleVector :
+		    // case Instruction::ExtractValue :
+		    // case Instruction::InsertValue :
+		    // case Instruction::LandingPad :
+		    // case Instruction::CleanupPad :
+		    errs() << "should call trans_instruction exprt1\n";
+		    assert(false);
+
+	    default:
+	        errs() << "No need to get expr1...\n ";
+	  }*/
+	  switch(dyn_cast<Instruction>(I)->getOpcode())
+	  {
+	    // // Terminators
+		    // case Instruction::Ret :
+		    // case Instruction::Br :
+		    // case Instruction::Switch :
+		    // case Instruction::IndirectBr :
+		    // case Instruction::Invoke :
+		    // case Instruction::Resume :
+		    // case Instruction::Unreachable :
+		    // case Instruction::CleanupRet :
+		    // case Instruction::CatchRet :
+		    // case Instruction::CatchPad :
+		    // case Instruction::CatchSwitch :
+
+	    // Standard binary operators...
+		    case Instruction::Add :
+		    {
+		    	errs() << from_expr(namespacet(symbol_table), "main",
+		    		(trans_Add(I, symbol_table).instructions.begin())->code) << "\n";
+		    	if(
+		    		from_expr(trans_Arith(
+		    		 		    			dyn_cast<Instruction>(I->getOperand(1)),
+		    		 		    			symbol_table
+		    		 		    			)) != ""
+		    		)
+			    	assert(false);
+			    break;
+		    }
+		    case Instruction::FAdd :
+		    case Instruction::Sub :
+		    case Instruction::FSub :
+		    case Instruction::Mul :
+		    case Instruction::FMul :
+		    case Instruction::UDiv :
+		    case Instruction::SDiv :
+		    {
+		    	errs() << from_expr(namespacet(symbol_table), "main",
+		    		(trans_SDiv(I, symbol_table).instructions.begin())->code) << "\n";
+		    	assert(false);
+		    	if(from_expr(namespacet(symbol_table), "main",
+		    		(trans_SDiv(I, symbol_table).instructions.begin())->code) != "")
+			    break;
+		    }
+		    case Instruction::FDiv :
+		    case Instruction::URem :
+		    case Instruction::SRem :
+		    case Instruction::FRem :
+
+	    // Logical operators...
+		    case Instruction::And :
+		    case Instruction::Or :
+		    case Instruction::Xor :
+
+	    // // Memory instructions...
+		    // case Instruction::Alloca :
+		    // case Instruction::Load :
+		    // case Instruction::Store :
+		    // case Instruction::AtomicCmpXchg :
+		    // case Instruction::AtomicRMW :
+		    // case Instruction::Fence :
+		    // case Instruction::GetElementPtr :
+
+	    // Convert instructions...
+		    case Instruction::Trunc :
+		    case Instruction::ZExt :
+		    case Instruction::SExt :
+		    case Instruction::FPTrunc :
+		    case Instruction::FPExt :
+		    case Instruction::FPToUI :
+		    case Instruction::FPToSI :
+		    case Instruction::UIToFP :
+		    case Instruction::SIToFP :
+		    // case Instruction::IntToPtr :
+		    // case Instruction::PtrToInt :
+		    // case Instruction::BitCast :
+		    // case Instruction::AddrSpaceCast :
+
+	    // // Other instructions...
+		    // case Instruction::ICmp :
+		    // case Instruction::FCmp :
+		    // case Instruction::PHI :
+		    // case Instruction::Select :
+		    // case Instruction::Call :
+		    // case Instruction::Shl :
+		    // case Instruction::LShr :
+		    // case Instruction::AShr :
+		    // case Instruction::VAArg :
+		    // case Instruction::ExtractElement :
+		    // case Instruction::InsertElement :
+		    // case Instruction::ShuffleVector :
+		    // case Instruction::ExtractValue :
+		    // case Instruction::InsertValue :
+		    // case Instruction::LandingPad :
+		    // case Instruction::CleanupPad :
+		    errs() << "should call trans_instruction expr2\n";
+		    assert(false);
+
+	    default:
+	        errs() << "No need to get expr2...\n ";
+	  }
+	  return e;
+
+}
+
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Add
@@ -600,16 +808,206 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
             ->getScope()->getFile()->getDirectory().str());
       location.set_line(loc->getLine());
       location.set_column(loc->getColumn());
-      exprt e;
+      exprt e = trans_Arith(I, symbol_table);
       std::string e1 = from_expr(namespacet(symbol_table),
       	(symbol_table.symbols.begin()->second.name), e);
-      location.set_comment(" e1 ");
+      location.set_comment(e1);
       // std::cout << e1 << "\n";
     }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
-  
+  // errs() << "############################\n";
+  // std::cout << "-----------------------\n";
+  // gp.update();
+      {
+    	  // std::ostream &goto_programt::std::coutput_instruction
+        {
+          const namespacet ns = namespacet(symbol_table);
+          const irep_idt identifier = "main";
+          // std::ostream &std::cout,
+          const goto_programt::instructiont &instruction = *add_inst;
+          
+          std::cout << "        // " << instruction.location_number << " ";
+
+          if(!instruction.source_location.is_nil())
+            std::cout << instruction.source_location.as_string();
+          else
+            std::cout << "no location";
+
+          std::cout << "\n";
+
+          if(!instruction.labels.empty())
+          {
+            std::cout << "        // Labels:";
+            for(const auto &label : instruction.labels)
+              std::cout << " " << label;
+
+            // std::cout << '\n';
+          }
+
+          if(instruction.is_target())
+            std::cout << std::setw(6) << instruction.target_number << ": ";
+          else
+            std::cout << "        ";
+
+          switch(instruction.type)
+          {
+	          case NO_INSTRUCTION_TYPE:
+	            std::cout << "NO INSTRUCTION TYPE SET";
+	            break;
+
+	          case GOTO:
+	            if(!instruction.guard.is_true())
+	            {
+	              std::cout << "IF "
+	                  << from_expr(ns, identifier, instruction.guard)
+	                  << " THEN ";
+	            }
+
+	            std::cout << "GOTO ";
+
+	            for(goto_programt::instructiont::targetst::const_iterator
+	                gt_it=instruction.targets.begin();
+	                gt_it!=instruction.targets.end();
+	                gt_it++)
+	            {
+	              if(gt_it!=instruction.targets.begin())
+	                std::cout << ", ";
+	              std::cout << (*gt_it)->target_number;
+	            }
+
+	            // std::cout << '\n';
+	            break;
+
+	          case RETURN:
+	          case OTHER:
+	          case DECL:
+	          case DEAD:
+	          case FUNCTION_CALL:
+	          case ASSIGN:
+	            std::cout << from_expr(ns, identifier, instruction.code);
+	            break;
+
+	          case ASSUME:
+	          case ASSERT:
+	            if(instruction.is_assume())
+	              std::cout << "ASSUME ";
+	            else
+	              std::cout << "ASSERT ";
+
+	            {
+	              std::cout << from_expr(ns, identifier, instruction.guard);
+
+	            }
+
+	            // std::cout << '\n';
+	            break;
+
+	          case SKIP:
+	            std::cout << "SKIP";
+	            break;
+
+	          case END_FUNCTION:
+	            std::cout << "END_FUNCTION";
+	            break;
+
+	          case LOCATION:
+	            std::cout << "LOCATION";
+	            break;
+
+	          case THROW:
+	            std::cout << "THROW";
+
+	            {
+	              const irept::subt &exception_list=
+	                instruction.code.find(ID_exception_list).get_sub();
+
+	              for(const auto &ex : exception_list)
+	                std::cout << " " << ex.id();
+	            }
+
+	            if(instruction.code.operands().size()==1)
+	              std::cout << ": " << from_expr(ns, identifier, instruction.code.op0());
+
+	            // std::cout << '\n';
+	            break;
+
+	          case CATCH:
+	            if(!instruction.targets.empty())
+	            {
+	              std::cout << "CATCH-PUSH ";
+
+	              unsigned i=0;
+	              const irept::subt &exception_list=
+	                instruction.code.find(ID_exception_list).get_sub();
+	              assert(instruction.targets.size()==exception_list.size());
+	              for(goto_programt::instructiont::targetst::const_iterator
+	                  gt_it=instruction.targets.begin();
+	                  gt_it!=instruction.targets.end();
+	                  gt_it++,
+	                  i++)
+	              {
+	                if(gt_it!=instruction.targets.begin())
+	                  std::cout << ", ";
+	                std::cout << exception_list[i].id() << "->"
+	                    << (*gt_it)->target_number;
+	              }
+	            }
+	            else
+	              std::cout << "CATCH-POP";
+
+	            std::cout << '\n';
+	            break;
+
+	          case ATOMIC_BEGIN:
+	            std::cout << "ATOMIC_BEGIN";
+	            break;
+
+	          case ATOMIC_END:
+	            std::cout << "ATOMIC_END";
+	            break;
+
+	          case START_THREAD:
+	            std::cout << "START THREAD ";
+
+	            if(instruction.targets.size()==1)
+	              std::cout << instruction.targets.front()->target_number;
+
+	            // std::cout << '\n';
+	            break;
+
+	          case END_THREAD:
+            std::cout << "END THREAD";
+            break;
+
+	          default:
+	            throw "unknown statement";
+          }
+          const irep_idt &comment=instruction.source_location.get_comment();
+	        // std::cout << "~~~~~";
+	        if(comment!=""){
+	        	// std::cout << "~~~~~";
+	          std::cout << " // " << comment;
+	          // std::cout << "~~~~~";
+	        }
+	        else{
+	        	// std::cout << "~~~~~";
+	        	assert(false && "comment not set");
+	        	// std::cout << "~~~~~";
+	        }
+	        // std::cout << "~~~~~";
+
+          // return std::cout;
+        }
+        std::cout << "\n";
+
+
+      }
+  // errs() << "############################\n";
+  errs() << from_expr(namespacet(symbol_table),
+  	(symbol_table.symbols.begin()->second.name), add_inst->code);
+  // assert(false);
   return gp;
 }
 
@@ -779,7 +1177,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   return gp;
 }
 
- /*******************************************************************\
+/*******************************************************************\
 
    Function: llvm2goto_translator::trans_Sub
 
