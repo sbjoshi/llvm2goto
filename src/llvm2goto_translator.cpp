@@ -424,7 +424,7 @@ goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I)
 
 /*******************************************************************\
 
-   Function: llvm2goto_translator::trans_Arith
+   Function: llvm2goto_translator::get_Arith_exprt
 
     Inputs:
      I - Pointer to the llvm instruction.
@@ -435,198 +435,261 @@ goto_programt llvm2goto_translator::trans_CatchSwitch(const Instruction *I)
     Purpose: Map llvm::Instruction::Sub to corresponding goto instruction.
 
 \*******************************************************************/
-exprt llvm2goto_translator::trans_Arith(const Instruction *I,
+exprt llvm2goto_translator::get_Arith_exprt(const Instruction *I,
   symbol_tablet &symbol_table)
 {
-	assert(false);
+
+  // Operands can be constant integer or a load instruction.
+  // goto_programt gp;
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  symbolt op1, op2;
+  exprt exprt1, exprt2;
+  typet op_type;
+  int flag = 2, f1=0, f2=0;
+  if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
+  {
+    li->getOperand(0)->dump();
+    op1 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    {
+      exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    }
+    else
+    {
+      exprt1 = symbol_table.lookup(var_name_map.find(
+        li->getOperand(0)->getName().str())->second).symbol_expr();
+    }
+    f1=1;
+  }
+  if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
+  {
+    li->getOperand(0)->dump();
+    op2 = symbol_table.lookup(var_name_map.find(
+      li->getOperand(0)->getName().str())->second);
+    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    {
+      exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+    }
+    else
+    {
+      exprt2 = op2.symbol_expr();
+      errs() << "....   " << op2.type.id().c_str() << "\n";
+    }
+    f2=1;
+  }
+  if(f1==1 && f2==1)
+  {
+  	op_type = op1.type;
+    errs() << "done!";
+  }
+  else if(I->getOperand(0)->getType()->isIntegerTy()
+    || I->getOperand(1)->getType()->isIntegerTy())
+  {
+
+    if(f1==0)
+    {
+      if(dyn_cast<ConstantInt>(*ub))
+      {
+        flag = 1;
+      }
+      else
+      {
+        op1 = symbol_table.lookup(var_name_map.find(
+          ub->getName().str())->second);
+        exprt1 = op1.symbol_expr();
+      }
+    }
+
+    if(f2 == 0)
+    {
+      if(dyn_cast<ConstantInt>(*(ub + 1)))
+      {
+        flag = 0;
+      }
+      else
+      {
+        op2 = symbol_table.lookup(var_name_map.find(
+          (ub + 1)->getName().str())->second);
+        exprt2 = op2.symbol_expr();
+      }
+    }
+    // typet op_type;
+    if(op2.type.id() == ID_signedbv)
+    {
+      op_type = op2.type;
+    }
+    if(op1.type.id() == ID_signedbv)
+    {
+      op_type = op1.type;
+    }
+    if(op2.type.id() == ID_unsignedbv)
+    {
+      op_type = op2.type;
+    }
+    if(op1.type.id() == ID_unsignedbv)
+    {
+      op_type = op1.type;
+    }
+    if(op2.type.id() == ID_pointer)
+    {
+      op_type = op2.type.subtype();
+    }
+    if(op1.type.id() == ID_pointer)
+    {
+      op_type = op1.type.subtype();
+    }
+    if(op_type.id() == ID_signedbv && flag == 1)
+    {
+      uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
+      typet type = op_type;
+      exprt1 = from_integer(val, type);
+    }
+    if(op_type.id() == ID_signedbv && flag == 0)
+    {
+      uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getSExtValue();
+      typet type = op_type;
+      exprt2 = from_integer(val, type);
+    }
+    if(op_type.id() == ID_unsignedbv && flag == 1)
+    {
+      uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
+      typet type = op_type;
+      exprt1 = from_integer(val, type);
+    }
+    if(op_type.id() == ID_unsignedbv && flag == 0)
+    {
+      uint64_t val = dyn_cast<ConstantInt>(*(ub+1))->getZExtValue();
+      typet type = op_type;
+      exprt2 = from_integer(val, type);
+    }
+  }
+  // e.op1() = symbol_table.lookup("main::d").symbol_expr();
+  // return e;
+
+	// assert(false);
   // Operands can be constant integer or a load instruction.
   // goto_programt gp;
 
   	exprt e;
-  	/*switch(dyn_cast<Instruction>(I->getOperand(0))->getOpcode())
-	  {
-	    // // Terminators
-		    // case Instruction::Ret :
-		    // case Instruction::Br :
-		    // case Instruction::Switch :
-		    // case Instruction::IndirectBr :
-		    // case Instruction::Invoke :
-		    // case Instruction::Resume :
-		    // case Instruction::Unreachable :
-		    // case Instruction::CleanupRet :
-		    // case Instruction::CatchRet :
-		    // case Instruction::CatchPad :
-		    // case Instruction::CatchSwitch :
-
-	    // Standard binary operators...
-		    case Instruction::Add :
-		    case Instruction::FAdd :
-		    case Instruction::Sub :
-		    case Instruction::FSub :
-		    case Instruction::Mul :
-		    case Instruction::FMul :
-		    case Instruction::UDiv :
-		    case Instruction::SDiv :
-		    case Instruction::FDiv :
-		    case Instruction::URem :
-		    case Instruction::SRem :
-		    case Instruction::FRem :
-
-	    // Logical operators...
-		    case Instruction::And :
-		    case Instruction::Or :
-		    case Instruction::Xor :
-
-	    // // Memory instructions...
-		    // case Instruction::Alloca :
-		    // case Instruction::Load :
-		    // case Instruction::Store :
-		    // case Instruction::AtomicCmpXchg :
-		    // case Instruction::AtomicRMW :
-		    // case Instruction::Fence :
-		    // case Instruction::GetElementPtr :
-
-	    // Convert instructions...
-		    case Instruction::Trunc :
-		    case Instruction::ZExt :
-		    case Instruction::SExt :
-		    case Instruction::FPTrunc :
-		    case Instruction::FPExt :
-		    case Instruction::FPToUI :
-		    case Instruction::FPToSI :
-		    case Instruction::UIToFP :
-		    case Instruction::SIToFP :
-		    // case Instruction::IntToPtr :
-		    // case Instruction::PtrToInt :
-		    // case Instruction::BitCast :
-		    // case Instruction::AddrSpaceCast :
-
-	    // // Other instructions...
-		    // case Instruction::ICmp :
-		    // case Instruction::FCmp :
-		    // case Instruction::PHI :
-		    // case Instruction::Select :
-		    // case Instruction::Call :
-		    // case Instruction::Shl :
-		    // case Instruction::LShr :
-		    // case Instruction::AShr :
-		    // case Instruction::VAArg :
-		    // case Instruction::ExtractElement :
-		    // case Instruction::InsertElement :
-		    // case Instruction::ShuffleVector :
-		    // case Instruction::ExtractValue :
-		    // case Instruction::InsertValue :
-		    // case Instruction::LandingPad :
-		    // case Instruction::CleanupPad :
-		    errs() << "should call trans_instruction exprt1\n";
-		    assert(false);
-
-	    default:
-	        errs() << "No need to get expr1...\n ";
-	  }*/
 	  switch(dyn_cast<Instruction>(I)->getOpcode())
 	  {
-	    // // Terminators
-		    // case Instruction::Ret :
-		    // case Instruction::Br :
-		    // case Instruction::Switch :
-		    // case Instruction::IndirectBr :
-		    // case Instruction::Invoke :
-		    // case Instruction::Resume :
-		    // case Instruction::Unreachable :
-		    // case Instruction::CleanupRet :
-		    // case Instruction::CatchRet :
-		    // case Instruction::CatchPad :
-		    // case Instruction::CatchSwitch :
-
 	    // Standard binary operators...
 		    case Instruction::Add :
-		    {
-		    	errs() << from_expr(namespacet(symbol_table), "main",
-		    		(trans_Add(I, symbol_table).instructions.begin())->code) << "\n";
-		    	if(
-		    		from_expr(trans_Arith(
-		    		 		    			dyn_cast<Instruction>(I->getOperand(1)),
-		    		 		    			symbol_table
-		    		 		    			)) != ""
-		    		)
-			    	assert(false);
-			    break;
-		    }
-		    case Instruction::FAdd :
+				  e = plus_exprt(exprt1, exprt2);
+				  break;
+		    // case Instruction::FAdd :
 		    case Instruction::Sub :
-		    case Instruction::FSub :
+		    	e = minus_exprt(exprt1, exprt2);
+				  break;
+		    // case Instruction::FSub :
 		    case Instruction::Mul :
-		    case Instruction::FMul :
-		    case Instruction::UDiv :
-		    case Instruction::SDiv :
-		    {
-		    	errs() << from_expr(namespacet(symbol_table), "main",
-		    		(trans_SDiv(I, symbol_table).instructions.begin())->code) << "\n";
-		    	assert(false);
-		    	if(from_expr(namespacet(symbol_table), "main",
-		    		(trans_SDiv(I, symbol_table).instructions.begin())->code) != "")
-			    break;
-		    }
-		    case Instruction::FDiv :
-		    case Instruction::URem :
-		    case Instruction::SRem :
-		    case Instruction::FRem :
+			    e = mult_exprt(exprt1, exprt2);
+				  break;
+		    // case Instruction::FMul :
+		    // case Instruction::UDiv :
+		    // case Instruction::SDiv :
+		    // case Instruction::FDiv :
+		    // case Instruction::URem :
+		    // case Instruction::SRem :
+		    // case Instruction::FRem :
 
 	    // Logical operators...
-		    case Instruction::And :
-		    case Instruction::Or :
-		    case Instruction::Xor :
-
-	    // // Memory instructions...
-		    // case Instruction::Alloca :
-		    // case Instruction::Load :
-		    // case Instruction::Store :
-		    // case Instruction::AtomicCmpXchg :
-		    // case Instruction::AtomicRMW :
-		    // case Instruction::Fence :
-		    // case Instruction::GetElementPtr :
+		    // case Instruction::And :
+		    // case Instruction::Or :
+		    // case Instruction::Xor :
 
 	    // Convert instructions...
-		    case Instruction::Trunc :
-		    case Instruction::ZExt :
-		    case Instruction::SExt :
-		    case Instruction::FPTrunc :
-		    case Instruction::FPExt :
-		    case Instruction::FPToUI :
-		    case Instruction::FPToSI :
-		    case Instruction::UIToFP :
-		    case Instruction::SIToFP :
+		    // case Instruction::Trunc :
+		    // case Instruction::ZExt :
+		    // case Instruction::SExt :
+		    // case Instruction::FPTrunc :
+		    // case Instruction::FPExt :
+		    // case Instruction::FPToUI :
+		    // case Instruction::FPToSI :
+		    // case Instruction::UIToFP :
+		    // case Instruction::SIToFP :
 		    // case Instruction::IntToPtr :
 		    // case Instruction::PtrToInt :
 		    // case Instruction::BitCast :
 		    // case Instruction::AddrSpaceCast :
 
-	    // // Other instructions...
-		    // case Instruction::ICmp :
-		    // case Instruction::FCmp :
-		    // case Instruction::PHI :
-		    // case Instruction::Select :
-		    // case Instruction::Call :
-		    // case Instruction::Shl :
-		    // case Instruction::LShr :
-		    // case Instruction::AShr :
-		    // case Instruction::VAArg :
-		    // case Instruction::ExtractElement :
-		    // case Instruction::InsertElement :
-		    // case Instruction::ShuffleVector :
-		    // case Instruction::ExtractValue :
-		    // case Instruction::InsertValue :
-		    // case Instruction::LandingPad :
-		    // case Instruction::CleanupPad :
-		    errs() << "should call trans_instruction expr2\n";
-		    assert(false);
 
-	    default:
-	        errs() << "No need to get expr2...\n ";
+		    // errs() << "should call trans_instruction expr2\n";
+		    // assert(false);
+
+	    // default:
+	        // errs() << "No need to get expr2...\n ";
 	  }
 	  return e;
 
+}
+
+exprt llvm2goto_translator::get_exprt(const Instruction *I,
+	symbol_tablet &symbol_table)
+{
+	exprt e, exprt1, exprt2;
+	  switch(dyn_cast<Instruction>(I)->getOpcode())
+	  {
+	    // Standard binary operators...
+		    case Instruction::Add :
+		    case Instruction::Sub :
+		    case Instruction::Mul :
+			    e = get_Arith_exprt(I, symbol_table);
+			    exprt1 = get_exprt(dyn_cast<Instruction>(I->getOperand(0)),
+			    	symbol_table);
+			    exprt2 = get_exprt(dyn_cast<Instruction>(I->getOperand(1)),
+			    	symbol_table);
+			    if(exprt1 != exprt())
+			    {
+			    	errs() << "\n e.op0 : " << from_expr(e.op0()) << "\n";
+			    	errs() << "\n exprt1 : " << from_expr(exprt1) << "\n";
+			    	e.op0() = exprt1;
+			    }
+			    if(exprt2 != exprt())
+			    {
+			    	errs() << "\n e.op1 : " << from_expr(e.op1()) << "\n";
+			    	errs() << "\n exprt2 : " << from_expr(exprt2) << "\n";
+			    	e.op1() = exprt2;
+			    }
+				  // e = plus_exprt(exprt1, exprt2);
+				  break;
+		    // case Instruction::FMul :
+		    // case Instruction::UDiv :
+		    // case Instruction::SDiv :
+		    // case Instruction::FDiv :
+		    // case Instruction::URem :
+		    // case Instruction::SRem :
+		    // case Instruction::FRem :
+
+	    // Logical operators...
+		    // case Instruction::And :
+		    // case Instruction::Or :
+		    // case Instruction::Xor :
+
+	    // Convert instructions...
+		    // case Instruction::Trunc :
+		    // case Instruction::ZExt :
+		    // case Instruction::SExt :
+		    // case Instruction::FPTrunc :
+		    // case Instruction::FPExt :
+		    // case Instruction::FPToUI :
+		    // case Instruction::FPToSI :
+		    // case Instruction::UIToFP :
+		    // case Instruction::SIToFP :
+		    // case Instruction::IntToPtr :
+		    // case Instruction::PtrToInt :
+		    // case Instruction::BitCast :
+		    // case Instruction::AddrSpaceCast :
+
+
+		    // errs() << "should call trans_instruction expr2\n";
+		    // assert(false);
+
+	    // default:
+	        // errs() << "No need to get expr2...\n ";
+	  }
+	  return e;
 }
 
 
@@ -808,10 +871,10 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
             ->getScope()->getFile()->getDirectory().str());
       location.set_line(loc->getLine());
       location.set_column(loc->getColumn());
-      exprt e = trans_Arith(I, symbol_table);
-      std::string e1 = from_expr(namespacet(symbol_table),
+      exprt e = get_exprt(dyn_cast<Instruction>(I), symbol_table);
+      std::string comment = from_expr(namespacet(symbol_table),
       	(symbol_table.symbols.begin()->second.name), e);
-      location.set_comment(e1);
+      location.set_comment(comment);
       // std::cout << e1 << "\n";
     }
   }
@@ -991,11 +1054,11 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
 	          std::cout << " // " << comment;
 	          // std::cout << "~~~~~";
 	        }
-	        else{
-	        	// std::cout << "~~~~~";
-	        	assert(false && "comment not set");
-	        	// std::cout << "~~~~~";
-	        }
+	        // else{
+	        // 	// std::cout << "~~~~~";
+	        // 	assert(false && "comment not set");
+	        // 	// std::cout << "~~~~~";
+	        // }
 	        // std::cout << "~~~~~";
 
           // return std::cout;
@@ -1007,7 +1070,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   // errs() << "############################\n";
   errs() << from_expr(namespacet(symbol_table),
   	(symbol_table.symbols.begin()->second.name), add_inst->code);
-  // assert(false);
+  // assert(false && "hi");
   return gp;
 }
 
@@ -6659,10 +6722,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
     compile.write_object_file(filename, symbol_table, goto_functions);
   }
 
-  namespacet ns(symbol_table);
+  // namespacet ns(symbol_table);
   // ns.get_symbol_table().show(std::cout);
   errs() << "\n";
-  goto_functions.output(ns, std::cout);
+  // goto_functions.output(ns, std::cout);
   errs() << "\n";
   errs() << "in trans_Program\n";
   return goto_functions;

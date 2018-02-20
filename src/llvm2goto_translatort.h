@@ -44,7 +44,9 @@ class llvm2goto_translatort
     virtual goto_programt trans_CatchRet(const Instruction *I) = 0;
     virtual goto_programt trans_CatchPad(const Instruction *I) = 0;
     virtual goto_programt trans_CatchSwitch(const Instruction *I) = 0;
-    virtual exprt trans_Arith(const Instruction *I,
+    virtual exprt get_Arith_exprt(const Instruction *I,
+      symbol_tablet &symbol_table) = 0;
+    virtual exprt get_exprt(const Instruction *I,
       symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Add(const Instruction *I,
         symbol_tablet &symbol_table) = 0;

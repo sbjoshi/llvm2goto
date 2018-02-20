@@ -29,7 +29,9 @@ class llvm2goto_translator:public llvm2goto_translatort
   goto_programt trans_CatchRet(const Instruction *I);
   goto_programt trans_CatchPad(const Instruction *I);
   goto_programt trans_CatchSwitch(const Instruction *I);
-  exprt trans_Arith(const Instruction *I,
+  exprt get_Arith_exprt(const Instruction *I,
+  symbol_tablet &symbol_table);
+  exprt get_exprt(const Instruction *I,
   symbol_tablet &symbol_table);
   goto_programt trans_Add(const Instruction *I,
     symbol_tablet &symbol_table);
