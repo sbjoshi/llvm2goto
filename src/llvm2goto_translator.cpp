@@ -1767,6 +1767,11 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
             ->getScope()->getFile()->getDirectory().str());
       location.set_line(loc->getLine());
       location.set_column(loc->getColumn());
+      exprt e = get_exprt(dyn_cast<Instruction>(I), symbol_table);
+      std::string comment = from_expr(namespacet(symbol_table),
+      	(symbol_table.symbols.begin()->second.name), e);
+      location.set_comment(comment);
+      errs() << "\n \n comment : " << comment << "\n\n";
     }
   }
   add_inst->source_location = location;
