@@ -3686,7 +3686,7 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
       symbol.base_name.c_str(), symbol.name.c_str()));
-    symbol.type = exprt1.type();
+    symbol.type = dest_type;
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
@@ -5207,7 +5207,9 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       case llvm::Type::TypeID::IntegerTyID :
       {
         symbol = symbol_creator::create_IntegerTy(type, mdn);
+        symbol.show(std::cout);
         errs() << "\nInteger type";
+        // assert(false);
         break;
       }
       case llvm::Type::TypeID::StructTyID :

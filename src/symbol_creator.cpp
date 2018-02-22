@@ -269,7 +269,7 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn)
   {
     case dwarf::DW_ATE_signed :
     case dwarf::DW_ATE_signed_char :
-    case dwarf::DW_EH_PE_signed :
+    // case dwarf::DW_EH_PE_signed :
       variable.type = signedbv_typet(
         type->getIntegerBitWidth());
       break;
