@@ -3647,7 +3647,7 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
     {
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
-        I->getOperand(0)->getName().str())->second);
+        li->getOperand(0)->getName().str())->second);
       if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       {
         exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -6727,10 +6727,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
     compile.write_object_file(filename, symbol_table, goto_functions);
   }
 
-  // namespacet ns(symbol_table);
+  namespacet ns(symbol_table);
   // ns.get_symbol_table().show(std::cout);
   errs() << "\n";
-  // goto_functions.output(ns, std::cout);
+  goto_functions.output(ns, std::cout);
   errs() << "\n";
   errs() << "in trans_Program\n";
   return goto_functions;
