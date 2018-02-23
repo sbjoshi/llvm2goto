@@ -3274,6 +3274,11 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       value_to_store = symbol_table.lookup(name).symbol_expr();
     }
   }
+  if(expr.type() != value_to_store.type()){
+  	value_to_store = typecast_exprt(value_to_store, expr.type());
+  	errs() << expr.type().id().c_str() << "   " << value_to_store.type().id().c_str() << "\n";
+  	// assert(false);
+  }
   goto_programt::targett store_inst = gp.add_instruction();
   store_inst->make_assignment();
   store_inst->code = code_assignt(expr, value_to_store);

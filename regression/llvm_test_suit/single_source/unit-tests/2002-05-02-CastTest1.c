@@ -2,7 +2,7 @@
 
 int main()
 {
-  signed char c0  = 1;
+  signed char c0  = -1;
   unsigned char c1 = 255;
   int i = c0;
   assert(i == -1);
