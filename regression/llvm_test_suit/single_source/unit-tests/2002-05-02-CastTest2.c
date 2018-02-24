@@ -13,6 +13,7 @@ void test(short s1) {
 }
 
 int main() {
-  test(-769);
+  short s = -769;
+  test(s);
   return 0;
 }

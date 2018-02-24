@@ -5339,7 +5339,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
           + "::" + I->getName().str();
         var_name_map.insert(std::pair<std::string, std::string>(
           ret.base_name.c_str(), ret.name.c_str()));
-        ret.type = symbol_creator::create_type(function->getReturnType());
+        ret.type = to_code_type(symbol.type).return_type();
         symbol_table->add(ret);
         goto_programt::targett decl_ret = gp.add_instruction();
         decl_ret->make_decl();

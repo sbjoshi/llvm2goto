@@ -1185,10 +1185,6 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F)
 {
   // errs() << "\n FunctionType :";
   FunctionType *ft = dyn_cast<FunctionType>(type);
-  // errs() << "isVarArg :" << ft->isVarArg() << "\n return type :";
-  // ft->getReturnType()->dump();
-
-  // errs() << " parameter types :";
 
   symbolt funct;
   funct.clear();
@@ -1222,6 +1218,28 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F)
   ct.parameters() = para;
   ft->getReturnType();
   ct.return_type() = create_type(ft->getReturnType());
+  if (ft->getReturnType()->isIntegerTy() && F.hasMetadata())
+  {
+    errs() << "$$" << F.hasMetadata() << "\n";
+    SmallVector<std::pair<unsigned, MDNode *>, 1> arr;
+    F.getAllMetadata(arr);
+    // errs() << F.getMetadata(Metadata::MetadataKind::DISubprogramKind);
+    DISubprogram *md = dyn_cast<DISubprogram>(arr[0].second);
+    md->dump();
+    (*(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])).dump();
+    errs() << dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding() << "\n";
+    switch(dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding())
+    {
+      case dwarf::DW_ATE_signed :
+      case dwarf::DW_ATE_signed_char :
+      // case dwarf::DW_EH_PE_signed :
+        ft->getReturnType()->dump();
+        errs() << "signed type found!!!\n";
+        ct.return_type() = signedbv_typet(
+          ft->getReturnType()->getIntegerBitWidth());
+        break;
+    }
+  }
   // static_cast<unsignedbv_typet &>(rt);
   funct.type = ct;
 
