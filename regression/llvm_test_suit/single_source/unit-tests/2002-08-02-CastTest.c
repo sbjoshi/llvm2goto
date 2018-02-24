@@ -1,4 +1,4 @@
-#include <stdio.h>
+// #include <stdio.h>
 
 unsigned test(unsigned X) {
   return (unsigned char)X;
@@ -6,7 +6,7 @@ unsigned test(unsigned X) {
 
 int main() {
 	// printf("%d\n", test(123456));
-	assert(test(123456) == 64);
+	assert((int)(test(123456)) == 64);
         return 0;
 }
 

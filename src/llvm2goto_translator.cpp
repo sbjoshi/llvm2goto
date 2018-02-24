@@ -120,12 +120,6 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
     {
       op1 = symbol_table.lookup(var_name_map.find(
         ub->getName().str())->second);
-      if(&(dyn_cast<Instruction>(ub)->getDebugLoc()) != NULL)
-      {
-        const DebugLoc loc = dyn_cast<Instruction>(ub)->getDebugLoc();
-        std::string name = scope_name_map.find(loc->getScope())->second;
-        op1 = symbol_table.lookup(name);
-      }
       exprt1 = op1.symbol_expr();
     }
   }
@@ -871,10 +865,10 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
             ->getScope()->getFile()->getDirectory().str());
       location.set_line(loc->getLine());
       location.set_column(loc->getColumn());
-      exprt e = get_exprt(dyn_cast<Instruction>(I), symbol_table);
-      std::string comment = from_expr(namespacet(symbol_table),
-      	(symbol_table.symbols.begin()->second.name), e);
-      location.set_comment(comment);
+      // exprt e = get_exprt(dyn_cast<Instruction>(I), symbol_table);
+      // std::string comment = from_expr(namespacet(symbol_table),
+      // 	(symbol_table.symbols.begin()->second.name), e);
+      // location.set_comment(comment);
       // std::cout << e1 << "\n";
     }
   }
@@ -883,190 +877,190 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   // errs() << "############################\n";
   // std::cout << "-----------------------\n";
   // gp.update();
-      {
-    	  // std::ostream &goto_programt::std::coutput_instruction
-        {
-          const namespacet ns = namespacet(symbol_table);
-          const irep_idt identifier = "main";
-          // std::ostream &std::cout,
-          const goto_programt::instructiont &instruction = *add_inst;
+      // {
+    	 //  // std::ostream &goto_programt::std::coutput_instruction
+      //   {
+      //     const namespacet ns = namespacet(symbol_table);
+      //     const irep_idt identifier = "main";
+      //     // std::ostream &std::cout,
+      //     const goto_programt::instructiont &instruction = *add_inst;
           
-          std::cout << "        // " << instruction.location_number << " ";
+      //     std::cout << "        // " << instruction.location_number << " ";
 
-          if(!instruction.source_location.is_nil())
-            std::cout << instruction.source_location.as_string();
-          else
-            std::cout << "no location";
+      //     if(!instruction.source_location.is_nil())
+      //       std::cout << instruction.source_location.as_string();
+      //     else
+      //       std::cout << "no location";
 
-          std::cout << "\n";
+      //     std::cout << "\n";
 
-          if(!instruction.labels.empty())
-          {
-            std::cout << "        // Labels:";
-            for(const auto &label : instruction.labels)
-              std::cout << " " << label;
+      //     if(!instruction.labels.empty())
+      //     {
+      //       std::cout << "        // Labels:";
+      //       for(const auto &label : instruction.labels)
+      //         std::cout << " " << label;
 
-            // std::cout << '\n';
-          }
+      //       // std::cout << '\n';
+      //     }
 
-          if(instruction.is_target())
-            std::cout << std::setw(6) << instruction.target_number << ": ";
-          else
-            std::cout << "        ";
+      //     if(instruction.is_target())
+      //       std::cout << std::setw(6) << instruction.target_number << ": ";
+      //     else
+      //       std::cout << "        ";
 
-          switch(instruction.type)
-          {
-	          case NO_INSTRUCTION_TYPE:
-	            std::cout << "NO INSTRUCTION TYPE SET";
-	            break;
+      //     switch(instruction.type)
+      //     {
+	     //      case NO_INSTRUCTION_TYPE:
+	     //        std::cout << "NO INSTRUCTION TYPE SET";
+	     //        break;
 
-	          case GOTO:
-	            if(!instruction.guard.is_true())
-	            {
-	              std::cout << "IF "
-	                  << from_expr(ns, identifier, instruction.guard)
-	                  << " THEN ";
-	            }
+	     //      case GOTO:
+	     //        if(!instruction.guard.is_true())
+	     //        {
+	     //          std::cout << "IF "
+	     //              << from_expr(ns, identifier, instruction.guard)
+	     //              << " THEN ";
+	     //        }
 
-	            std::cout << "GOTO ";
+	     //        std::cout << "GOTO ";
 
-	            for(goto_programt::instructiont::targetst::const_iterator
-	                gt_it=instruction.targets.begin();
-	                gt_it!=instruction.targets.end();
-	                gt_it++)
-	            {
-	              if(gt_it!=instruction.targets.begin())
-	                std::cout << ", ";
-	              std::cout << (*gt_it)->target_number;
-	            }
+	     //        for(goto_programt::instructiont::targetst::const_iterator
+	     //            gt_it=instruction.targets.begin();
+	     //            gt_it!=instruction.targets.end();
+	     //            gt_it++)
+	     //        {
+	     //          if(gt_it!=instruction.targets.begin())
+	     //            std::cout << ", ";
+	     //          std::cout << (*gt_it)->target_number;
+	     //        }
 
-	            // std::cout << '\n';
-	            break;
+	     //        // std::cout << '\n';
+	     //        break;
 
-	          case RETURN:
-	          case OTHER:
-	          case DECL:
-	          case DEAD:
-	          case FUNCTION_CALL:
-	          case ASSIGN:
-	            std::cout << from_expr(ns, identifier, instruction.code);
-	            break;
+	     //      case RETURN:
+	     //      case OTHER:
+	     //      case DECL:
+	     //      case DEAD:
+	     //      case FUNCTION_CALL:
+	     //      case ASSIGN:
+	     //        std::cout << from_expr(ns, identifier, instruction.code);
+	     //        break;
 
-	          case ASSUME:
-	          case ASSERT:
-	            if(instruction.is_assume())
-	              std::cout << "ASSUME ";
-	            else
-	              std::cout << "ASSERT ";
+	     //      case ASSUME:
+	     //      case ASSERT:
+	     //        if(instruction.is_assume())
+	     //          std::cout << "ASSUME ";
+	     //        else
+	     //          std::cout << "ASSERT ";
 
-	            {
-	              std::cout << from_expr(ns, identifier, instruction.guard);
+	     //        {
+	     //          std::cout << from_expr(ns, identifier, instruction.guard);
 
-	            }
+	     //        }
 
-	            // std::cout << '\n';
-	            break;
+	     //        // std::cout << '\n';
+	     //        break;
 
-	          case SKIP:
-	            std::cout << "SKIP";
-	            break;
+	     //      case SKIP:
+	     //        std::cout << "SKIP";
+	     //        break;
 
-	          case END_FUNCTION:
-	            std::cout << "END_FUNCTION";
-	            break;
+	     //      case END_FUNCTION:
+	     //        std::cout << "END_FUNCTION";
+	     //        break;
 
-	          case LOCATION:
-	            std::cout << "LOCATION";
-	            break;
+	     //      case LOCATION:
+	     //        std::cout << "LOCATION";
+	     //        break;
 
-	          case THROW:
-	            std::cout << "THROW";
+	     //      case THROW:
+	     //        std::cout << "THROW";
 
-	            {
-	              const irept::subt &exception_list=
-	                instruction.code.find(ID_exception_list).get_sub();
+	     //        {
+	     //          const irept::subt &exception_list=
+	     //            instruction.code.find(ID_exception_list).get_sub();
 
-	              for(const auto &ex : exception_list)
-	                std::cout << " " << ex.id();
-	            }
+	     //          for(const auto &ex : exception_list)
+	     //            std::cout << " " << ex.id();
+	     //        }
 
-	            if(instruction.code.operands().size()==1)
-	              std::cout << ": " << from_expr(ns, identifier, instruction.code.op0());
+	     //        if(instruction.code.operands().size()==1)
+	     //          std::cout << ": " << from_expr(ns, identifier, instruction.code.op0());
 
-	            // std::cout << '\n';
-	            break;
+	     //        // std::cout << '\n';
+	     //        break;
 
-	          case CATCH:
-	            if(!instruction.targets.empty())
-	            {
-	              std::cout << "CATCH-PUSH ";
+	     //      case CATCH:
+	     //        if(!instruction.targets.empty())
+	     //        {
+	     //          std::cout << "CATCH-PUSH ";
 
-	              unsigned i=0;
-	              const irept::subt &exception_list=
-	                instruction.code.find(ID_exception_list).get_sub();
-	              assert(instruction.targets.size()==exception_list.size());
-	              for(goto_programt::instructiont::targetst::const_iterator
-	                  gt_it=instruction.targets.begin();
-	                  gt_it!=instruction.targets.end();
-	                  gt_it++,
-	                  i++)
-	              {
-	                if(gt_it!=instruction.targets.begin())
-	                  std::cout << ", ";
-	                std::cout << exception_list[i].id() << "->"
-	                    << (*gt_it)->target_number;
-	              }
-	            }
-	            else
-	              std::cout << "CATCH-POP";
+	     //          unsigned i=0;
+	     //          const irept::subt &exception_list=
+	     //            instruction.code.find(ID_exception_list).get_sub();
+	     //          assert(instruction.targets.size()==exception_list.size());
+	     //          for(goto_programt::instructiont::targetst::const_iterator
+	     //              gt_it=instruction.targets.begin();
+	     //              gt_it!=instruction.targets.end();
+	     //              gt_it++,
+	     //              i++)
+	     //          {
+	     //            if(gt_it!=instruction.targets.begin())
+	     //              std::cout << ", ";
+	     //            std::cout << exception_list[i].id() << "->"
+	     //                << (*gt_it)->target_number;
+	     //          }
+	     //        }
+	     //        else
+	     //          std::cout << "CATCH-POP";
 
-	            std::cout << '\n';
-	            break;
+	     //        std::cout << '\n';
+	     //        break;
 
-	          case ATOMIC_BEGIN:
-	            std::cout << "ATOMIC_BEGIN";
-	            break;
+	     //      case ATOMIC_BEGIN:
+	     //        std::cout << "ATOMIC_BEGIN";
+	     //        break;
 
-	          case ATOMIC_END:
-	            std::cout << "ATOMIC_END";
-	            break;
+	     //      case ATOMIC_END:
+	     //        std::cout << "ATOMIC_END";
+	     //        break;
 
-	          case START_THREAD:
-	            std::cout << "START THREAD ";
+	     //      case START_THREAD:
+	     //        std::cout << "START THREAD ";
 
-	            if(instruction.targets.size()==1)
-	              std::cout << instruction.targets.front()->target_number;
+	     //        if(instruction.targets.size()==1)
+	     //          std::cout << instruction.targets.front()->target_number;
 
-	            // std::cout << '\n';
-	            break;
+	     //        // std::cout << '\n';
+	     //        break;
 
-	          case END_THREAD:
-            std::cout << "END THREAD";
-            break;
+	     //      case END_THREAD:
+      //       std::cout << "END THREAD";
+      //       break;
 
-	          default:
-	            throw "unknown statement";
-          }
-          const irep_idt &comment=instruction.source_location.get_comment();
-	        // std::cout << "~~~~~";
-	        if(comment!=""){
-	        	// std::cout << "~~~~~";
-	          std::cout << " // " << comment;
-	          // std::cout << "~~~~~";
-	        }
-	        // else{
-	        // 	// std::cout << "~~~~~";
-	        // 	assert(false && "comment not set");
-	        // 	// std::cout << "~~~~~";
-	        // }
-	        // std::cout << "~~~~~";
+	     //      default:
+	     //        throw "unknown statement";
+      //     }
+      //     const irep_idt &comment=instruction.source_location.get_comment();
+	     //    // std::cout << "~~~~~";
+	     //    if(comment!=""){
+	     //    	// std::cout << "~~~~~";
+	     //      std::cout << " // " << comment;
+	     //      // std::cout << "~~~~~";
+	     //    }
+	     //    // else{
+	     //    // 	// std::cout << "~~~~~";
+	     //    // 	assert(false && "comment not set");
+	     //    // 	// std::cout << "~~~~~";
+	     //    // }
+	     //    // std::cout << "~~~~~";
 
-          // return std::cout;
-        }
-        std::cout << "\n";
+      //     // return std::cout;
+      //   }
+      //   std::cout << "\n";
 
 
-      }
+      // }
   // errs() << "############################\n";
   errs() << from_expr(namespacet(symbol_table),
   	(symbol_table.symbols.begin()->second.name), add_inst->code);
@@ -3276,8 +3270,6 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   }
   if(expr.type() != value_to_store.type()){
   	value_to_store = typecast_exprt(value_to_store, expr.type());
-  	errs() << expr.type().id().c_str() << "   " << value_to_store.type().id().c_str() << "\n";
-  	// assert(false);
   }
   goto_programt::targett store_inst = gp.add_instruction();
   store_inst->make_assignment();
@@ -3501,7 +3493,7 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
       + "::" + I->getName().str();
     var_name_map.insert(std::pair<std::string, std::string>(
       symbol.base_name.c_str(), symbol.name.c_str()));
-    symbol.type = exprt1.type();
+    symbol.type = dest_type;
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
@@ -6712,6 +6704,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
       std::pair<const dstringt, goto_functionst::goto_functiont >(
         dstringt(F.getName()),
         goto_functionst::goto_functiont()));
+  }
+  for(Function &F : *M)
+  {
+  	symbolt fn = symbol_table.lookup(F.getName().str());
     goto_programt func_gp = trans_Function(F, &symbol_table);
     gp.destructive_append(func_gp);
     (*goto_functions.function_map.find(dstringt(F.getName()))).
@@ -6719,7 +6715,9 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.type = to_code_type(fn.type);
   }
+  errs() << "1\n";
   set_entry_point(goto_functions, symbol_table);
+  errs() << "1\n";
   cmdlinet cmdline;
   ui_message_handlert umht;
 
@@ -6735,7 +6733,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
   }
 
   namespacet ns(symbol_table);
-  // ns.get_symbol_table().show(std::cout);
+  ns.get_symbol_table().show(std::cout);
   errs() << "\n";
   goto_functions.output(ns, std::cout);
   errs() << "\n";

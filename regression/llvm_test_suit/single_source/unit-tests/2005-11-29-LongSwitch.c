@@ -2,7 +2,7 @@
 
 // #include <stdio.h>
 
-int foo(long long v) {
+unsigned int foo(unsigned long long v) {
     switch (v) {
     case 0:
         return 1;
