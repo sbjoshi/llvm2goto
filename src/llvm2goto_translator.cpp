@@ -56,8 +56,13 @@ llvm2goto_translator::~llvm2goto_translator()
 goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
   const symbol_tablet &symbol_table)
 {
-  // assert(false);
   goto_programt gp;
+	if(I->getType()->isVoidTy())
+	{
+		goto_programt::targett ret_inst = gp.add_instruction();
+		ret_inst->make_skip();
+		return gp;
+	}
   Value *ub = dyn_cast<ReturnInst>(I)->getReturnValue();
   symbolt op1;
   exprt exprt1;
@@ -6721,9 +6726,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
     (*goto_functions.function_map.find(dstringt(F.getName()))).
     second.type = to_code_type(fn.type);
   }
-  errs() << "1\n";
   set_entry_point(goto_functions, symbol_table);
-  errs() << "1\n";
   cmdlinet cmdline;
   ui_message_handlert umht;
 

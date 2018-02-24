@@ -73,7 +73,7 @@ void set_entry_point(goto_functionst &goto_functions,
 {
 #endif
 */
-  int argc;
+  int argc = 0;
   const char **argv;
   cbmc_parse_optionst parse_options(argc, argv);
   parse_options.get_message_handler();
