@@ -264,8 +264,11 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn)
     variable.type = unsignedbv_typet(
     type->getIntegerBitWidth());
   }
-  switch(dyn_cast<DIBasicType>(
-    dyn_cast<DIVariable>(mdn)->getType())->getEncoding())
+  DIType *type1 = dyn_cast<DIType>(dyn_cast<DIVariable>(mdn)->getType());
+  while(dyn_cast<DIDerivedType>(type1)){
+    type1 = dyn_cast<DIType>(&(*(dyn_cast<DIDerivedType>(type1)->getBaseType())));
+  }
+  switch(dyn_cast<DIBasicType>(type1)->getEncoding())
   {
     case dwarf::DW_ATE_signed :
     case dwarf::DW_ATE_signed_char :

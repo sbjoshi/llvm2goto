@@ -4,7 +4,7 @@
 #endif
 #include <inttypes.h>
 
-extern int printf(const char *, ...);
+// extern int printf(const char *, ...);
 
 void testL(int64_t Arg) {
   // printf("%d\n", (int) (Arg / ((int64_t)1 << 4)));

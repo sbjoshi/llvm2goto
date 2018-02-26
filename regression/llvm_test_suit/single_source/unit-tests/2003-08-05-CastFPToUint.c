@@ -4,13 +4,13 @@
  * on Sparc V9, which only has FP-to-int32_t and FP-to-int64_t instructions.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+// #include <stdlib.h>
+// #include <stdio.h>
 
 static double getDC(), getDS(), getDI();
 
 int
-main(int argc, char** argv) {
+main() {
   double DC = getDC();
   double DS = getDS();
   double DI = getDI();

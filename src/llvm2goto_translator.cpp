@@ -632,66 +632,66 @@ exprt llvm2goto_translator::get_exprt(const Instruction *I,
 	symbol_tablet &symbol_table)
 {
 	exprt e, exprt1, exprt2;
-	  switch(dyn_cast<Instruction>(I)->getOpcode())
-	  {
-	    // Standard binary operators...
-		    case Instruction::Add :
-		    case Instruction::Sub :
-		    case Instruction::Mul :
-			    e = get_Arith_exprt(I, symbol_table);
-			    exprt1 = get_exprt(dyn_cast<Instruction>(I->getOperand(0)),
-			    	symbol_table);
-			    exprt2 = get_exprt(dyn_cast<Instruction>(I->getOperand(1)),
-			    	symbol_table);
-			    if(exprt1 != exprt())
-			    {
-			    	errs() << "\n e.op0 : " << from_expr(e.op0()) << "\n";
-			    	errs() << "\n exprt1 : " << from_expr(exprt1) << "\n";
-			    	e.op0() = exprt1;
-			    }
-			    if(exprt2 != exprt())
-			    {
-			    	errs() << "\n e.op1 : " << from_expr(e.op1()) << "\n";
-			    	errs() << "\n exprt2 : " << from_expr(exprt2) << "\n";
-			    	e.op1() = exprt2;
-			    }
-				  // e = plus_exprt(exprt1, exprt2);
-				  break;
-		    // case Instruction::FMul :
-		    // case Instruction::UDiv :
-		    // case Instruction::SDiv :
-		    // case Instruction::FDiv :
-		    // case Instruction::URem :
-		    // case Instruction::SRem :
-		    // case Instruction::FRem :
+  switch(dyn_cast<Instruction>(I)->getOpcode())
+  {
+    // Standard binary operators...
+	    case Instruction::Add :
+	    case Instruction::Sub :
+	    case Instruction::Mul :
+		    e = get_Arith_exprt(I, symbol_table);
+		    exprt1 = get_exprt(dyn_cast<Instruction>(I->getOperand(0)),
+		    	symbol_table);
+		    exprt2 = get_exprt(dyn_cast<Instruction>(I->getOperand(1)),
+		    	symbol_table);
+		    if(exprt1 != exprt())
+		    {
+		    	errs() << "\n e.op0 : " << from_expr(e.op0()) << "\n";
+		    	errs() << "\n exprt1 : " << from_expr(exprt1) << "\n";
+		    	e.op0() = exprt1;
+		    }
+		    if(exprt2 != exprt())
+		    {
+		    	errs() << "\n e.op1 : " << from_expr(e.op1()) << "\n";
+		    	errs() << "\n exprt2 : " << from_expr(exprt2) << "\n";
+		    	e.op1() = exprt2;
+		    }
+			  // e = plus_exprt(exprt1, exprt2);
+			  break;
+	    // case Instruction::FMul :
+	    // case Instruction::UDiv :
+	    // case Instruction::SDiv :
+	    // case Instruction::FDiv :
+	    // case Instruction::URem :
+	    // case Instruction::SRem :
+	    // case Instruction::FRem :
 
-	    // Logical operators...
-		    // case Instruction::And :
-		    // case Instruction::Or :
-		    // case Instruction::Xor :
+    // Logical operators...
+	    // case Instruction::And :
+	    // case Instruction::Or :
+	    // case Instruction::Xor :
 
-	    // Convert instructions...
-		    // case Instruction::Trunc :
-		    // case Instruction::ZExt :
-		    // case Instruction::SExt :
-		    // case Instruction::FPTrunc :
-		    // case Instruction::FPExt :
-		    // case Instruction::FPToUI :
-		    // case Instruction::FPToSI :
-		    // case Instruction::UIToFP :
-		    // case Instruction::SIToFP :
-		    // case Instruction::IntToPtr :
-		    // case Instruction::PtrToInt :
-		    // case Instruction::BitCast :
-		    // case Instruction::AddrSpaceCast :
+    // Convert instructions...
+	    // case Instruction::Trunc :
+	    // case Instruction::ZExt :
+	    // case Instruction::SExt :
+	    // case Instruction::FPTrunc :
+	    // case Instruction::FPExt :
+	    // case Instruction::FPToUI :
+	    // case Instruction::FPToSI :
+	    // case Instruction::UIToFP :
+	    // case Instruction::SIToFP :
+	    // case Instruction::IntToPtr :
+	    // case Instruction::PtrToInt :
+	    // case Instruction::BitCast :
+	    // case Instruction::AddrSpaceCast :
 
 
-		    // errs() << "should call trans_instruction expr2\n";
-		    // assert(false);
+	    // errs() << "should call trans_instruction expr2\n";
+	    // assert(false);
 
-	    // default:
-	        // errs() << "No need to get expr2...\n ";
-	  }
+    // default:
+        // errs() << "No need to get expr2...\n ";
+  }
 	  return e;
 }
 
@@ -6469,8 +6469,9 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
     default:
         errs() << "Invalid instruction type...\n ";
   }
-  errs() << "\t\t\tin trans_instruction";
   gp.update();
+  gp.output(std::cout);
+  errs() << "\t\t\tin trans_instruction";
   return gp;
 }
 
