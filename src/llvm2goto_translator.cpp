@@ -3397,7 +3397,36 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   if(dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isArrayTy())
   {
     I->dump();
+    if(var_name_map.find(I->getName().str()) == var_name_map.end())
+    {
+      symbolt symbol;
+      symbol.base_name = I->getName().str();
+      symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+        + "::" + I->getName().str();
+      var_name_map.insert(std::pair<std::string, std::string>(
+        symbol.base_name.c_str(), symbol.name.c_str()));
+      // std::cout << to_constant_expr(from_integer(index, unsignedbv_typet(32))) << "\n";
+      symbol.type = pointer_typet(comp.type.subtype(), 32);
+      /*pointer_typet(
+        index_exprt(comp.symbol_expr(), from_integer(0, unsignedbv_typet(32)), comp.type.subtype()),
+        32);*/
+      symbol_table.add(symbol);
+      goto_programt::targett decl_add = gp.add_instruction();
+      decl_add->make_decl();
+      decl_add->code=code_declt(symbol.symbol_expr());
+      decl_add->function = irep_idt(I->getFunction()->getName().str());
+      symbol.show(std::cout);
+      // decl_add->source_location = location;
+    }
     dyn_cast<GetElementPtrInst>(I)->getPointerOperand ()->dump();
+    // errs() << var_name_map.find(
+    //   dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName().str())->second << "\n";
+    // symbol_table.show(std::cout);
+    symbolt symbol = symbol_table.lookup(var_name_map.find(
+      dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName().str())->second);
+    comp.show(std::cout);
+    errs() << symbol.type.subtype().id().c_str() << "\n";
+    // symbol.show(std::cout);
     dyn_cast<GetElementPtrInst>(I)->getPointerOperandType ()->dump();
     errs() << dyn_cast<GetElementPtrInst>(I)->getPointerAddressSpace () << "\n";
     errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices ()  << "\n";
@@ -3405,7 +3434,15 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     dyn_cast<GetElementPtrInst>(I)->getResultElementType () ->dump();
     errs() <<  dyn_cast<GetElementPtrInst>(I)->getAddressSpace () << "\n";
     // I->getMetadata()->dump();
-    assert(false && "Array type is not handled");
+    // symbol_creator::create_ArrayTy(type, mdn);
+    goto_programt::targett assgn_inst = gp.add_instruction();
+    assgn_inst->make_assignment();
+    std::string full_name = var_name_map.find(I->getName().str())->second;
+    assgn_inst->code = code_assignt(symbol_table.lookup(full_name).symbol_expr(),
+      address_of_exprt(index_exprt(comp.symbol_expr(), from_integer(index, unsignedbv_typet(32)))));
+    assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+    assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+    // assert(false && "Array type is not handled");
   }
   if(dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isStructTy())
   {
