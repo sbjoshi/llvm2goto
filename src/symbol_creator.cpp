@@ -699,7 +699,7 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn)
   }
   exprt size = from_integer(
     dyn_cast<ArrayType>(type)->getNumElements(),
-    signedbv_typet(19));
+    signedbv_typet(32));
   DICompositeType *md = dyn_cast<DICompositeType>(
   dyn_cast<DIVariable>(mdn)->getType());
   array_typet arrt(create_array_type(type, md), size);
@@ -773,12 +773,30 @@ typet symbol_creator::create_array_type(Type *type,
     if(dyn_cast<ArrayType>(type)
       ->getArrayElementType()->getIntegerBitWidth() == 1)
     {
-    ele_type = bool_typet();
+      ele_type = bool_typet();
     }
     else
     {
-    ele_type = unsignedbv_typet(
-      dyn_cast<ArrayType>(type)->getArrayElementType()->getIntegerBitWidth());
+      ele_type = unsignedbv_typet(
+        dyn_cast<ArrayType>(type)->getArrayElementType()->getIntegerBitWidth());
+      // DIType *type1 = dyn_cast<DIType>(&(*(dyn_cast<DIDerivedType>(md)->getBaseType())));
+      // while(dyn_cast<DIDerivedType>(type1)){
+      //   type1 = dyn_cast<DIType>(&(*(dyn_cast<DIDerivedType>(type1)->getBaseType())));
+      // }
+      // type1->dump();
+      md->dump();
+      dyn_cast<DICompositeType>(md)->dump();
+      dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->dump();
+      switch(dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->getEncoding())
+      {
+        case dwarf::DW_ATE_signed :
+        case dwarf::DW_ATE_signed_char :
+        // case dwarf::DW_EH_PE_signed :
+          ele_type = signedbv_typet(
+            dyn_cast<ArrayType>(type)->getArrayElementType()->getIntegerBitWidth());
+          break;
+      }
+      // assert(false);
     }
     break;
   }
