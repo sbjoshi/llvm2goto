@@ -29,7 +29,7 @@ class symbol_creator
     const llvm::DICompositeType *digv);
   static symbolt create_ArrayTy(Type *type, llvm::MDNode *mdn);
   static typet create_array_type(Type *type,
-    const llvm::DICompositeType *md);
+    const llvm::DIType *md);
   static symbolt create_PointerTy(Type *type, llvm::MDNode *mdn);
   static typet create_pointer_type(Type *type,
     const llvm::DIDerivedType *md);

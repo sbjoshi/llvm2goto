@@ -3211,10 +3211,22 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
       if(dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
       {
-        errs() << "\n..........."
+        dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1))->dump();
+        errs() << "\n........... "
           << symbol.type.id().c_str() << " .. "
-          << symbol.type.subtype().id().c_str() << "\n";
-        value_to_store = from_integer(val, symbol.type.subtype());
+          << symbol.type.subtype().id().c_str() << " " << val << "\n";
+          // to handle multidimentional array.
+          typet t = symbol.type.subtype();
+          while(!(t.id()==ID_signedbv || t.id()==ID_unsignedbv))
+          {
+            // errs() << "mew " << t.id().c_str() << "\n";
+            t = t.subtype();
+            // int k;
+            // std::cin >> k;
+            // errs() << (t.id()==ID_signedbv) << " " << (t.id()==ID_unsignedbv) << " " << !(t.id()==ID_signedbv || t.id()==ID_unsignedbv) << "\n";
+          }
+          errs() << "hi " << t.id().c_str() << "\n";
+        value_to_store = from_integer(val, t);
         // assert(false);
       }
       else
@@ -4513,6 +4525,7 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   exprt condition;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   exprt opnd1, opnd2;
+  typet type1, type2;
   int flag = 2, f1=0, f2=0;
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
@@ -4572,32 +4585,44 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
           (ub + 1)->getName().str())->second).symbol_expr();
       }
     }
-
+    type1 = opnd1.type();
+    type2 = opnd2.type();
+    if(type2.id() == ID_pointer)
+    {
+      type2 = type2.subtype();
+    }
+    if(type1.id() == ID_pointer)
+    {
+      type1 = type1.subtype();
+    }
+    while(type1.id() == ID_array)
+    {
+      type1 = type1.subtype();
+    }
+    while(type2.id() == ID_array)
+    {
+      type2 = type2.subtype();
+    }
     typet op_type;
-    if(opnd2.type().id() == ID_signedbv)
+    if(type2.id() == ID_signedbv)
     {
-      op_type = opnd2.type();
+      op_type = type2;
     }
-    if(opnd1.type().id() == ID_signedbv)
+    if(type1.id() == ID_signedbv)
     {
-      op_type = opnd1.type();
+      op_type = type1;
     }
-    if(opnd2.type().id() == ID_unsignedbv)
+    if(type2.id() == ID_unsignedbv)
     {
-      op_type = opnd2.type();
+      op_type = type2;
     }
-    if(opnd1.type().id() == ID_unsignedbv)
+    if(type1.id() == ID_unsignedbv)
     {
-      op_type = opnd1.type();
+      op_type = type1;
     }
-    if(opnd2.type().id() == ID_pointer)
-    {
-      op_type = opnd2.type().subtype();
-    }
-    if(opnd1.type().id() == ID_pointer)
-    {
-      op_type = opnd1.type().subtype();
-    }
+    // errs() << "hi " << type1.id().c_str() << " " << type2.id().c_str() << " " << op_type.id().c_str() << "\n";
+    // assert(false);
+    errs() << op_type.id().c_str() << "\n";
     if(op_type.id() == ID_signedbv && flag == 1)
     {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
@@ -4745,6 +4770,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     }
     default : errs() << "\nNON ICMP\n";
   }
+  std::cout << from_expr(condition) << "\n";
+  // assert(false && "cmp");
   return condition;
 }
 

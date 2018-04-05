@@ -697,16 +697,27 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn)
   {
     global_variable.is_static_lifetime = true;
   }
+  errs() << "0\n";
   exprt size = from_integer(
     dyn_cast<ArrayType>(type)->getNumElements(),
     signedbv_typet(32));
+  errs() << "1\n";
   DICompositeType *md = dyn_cast<DICompositeType>(
   dyn_cast<DIVariable>(mdn)->getType());
+  md->dump();
+  errs() << "2\n";
   array_typet arrt(create_array_type(type, md), size);
   global_variable.type = arrt;
+  errs() << "3\n";
+  mdn->dump();
+  errs() << "4\n";
+  dyn_cast<DIVariable>(mdn)->dump();
+  errs() << "5\n";
   global_variable.location = locationt::get_location_global_variable(
   dyn_cast<DIVariable>(mdn));
+  errs() << "6\n";
   const irep_idt tmp_name = dyn_cast<DIVariable>(mdn)->getName().str();
+  errs() << "7\n";
   global_variable.base_name = tmp_name;
   global_variable.mode = ID_C;
   return global_variable;
@@ -727,8 +738,13 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn)
 
 \*******************************************************************/
 typet symbol_creator::create_array_type(Type *type,
-  const llvm::DICompositeType *md)
+  const llvm::DIType *md)
 {
+  md->dump();
+  errs() << "9\n";
+  type->dump();
+  dyn_cast<ArrayType>(type)->dump();
+  errs() << (dyn_cast<ArrayType>(type)->getArrayElementType()->getTypeID() == Type::TypeID::ArrayTyID) << "yes";
   typet ele_type;
   switch(dyn_cast<ArrayType>(type)->getArrayElementType()->getTypeID())
   {
@@ -770,6 +786,7 @@ typet symbol_creator::create_array_type(Type *type,
   }
   case llvm::Type::TypeID::IntegerTyID :
   {
+    errs() << "hello \n";
     if(dyn_cast<ArrayType>(type)
       ->getArrayElementType()->getIntegerBitWidth() == 1)
     {
@@ -777,23 +794,38 @@ typet symbol_creator::create_array_type(Type *type,
     }
     else
     {
+      errs() << "hello 1\n";
       ele_type = unsignedbv_typet(
         dyn_cast<ArrayType>(type)->getArrayElementType()->getIntegerBitWidth());
+      errs() << "hello 2\n";
       // DIType *type1 = dyn_cast<DIType>(&(*(dyn_cast<DIDerivedType>(md)->getBaseType())));
       // while(dyn_cast<DIDerivedType>(type1)){
       //   type1 = dyn_cast<DIType>(&(*(dyn_cast<DIDerivedType>(type1)->getBaseType())));
       // }
       // type1->dump();
+      errs() << (md == NULL) << "\n";
       md->dump();
-      dyn_cast<DICompositeType>(md)->dump();
-      dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->dump();
-      switch(dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->getEncoding())
+      int encoding;
+      if(dyn_cast<DIBasicType>(md))
+      {
+        encoding = dyn_cast<DIBasicType>(md)->getEncoding();
+      }
+      if(dyn_cast<DICompositeType>(md))
+      {
+        encoding = dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->getEncoding();
+      }
+      // dyn_cast<DICompositeType>(md)->dump();
+      // dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->dump();
+      // switch(dyn_cast<DIBasicType>(dyn_cast<DICompositeType>(md)->getBaseType())->getEncoding())
+      switch(encoding)
       {
         case dwarf::DW_ATE_signed :
         case dwarf::DW_ATE_signed_char :
         // case dwarf::DW_EH_PE_signed :
+          errs() << "hello 3\n";
           ele_type = signedbv_typet(
             dyn_cast<ArrayType>(type)->getArrayElementType()->getIntegerBitWidth());
+          errs() << "hello 4\n";
           break;
       }
       // assert(false);
@@ -809,15 +841,23 @@ typet symbol_creator::create_array_type(Type *type,
   }
   case llvm::Type::TypeID::ArrayTyID :
   {
+    errs() << "hi\n";
     exprt size = from_integer(
       dyn_cast<ArrayType>(
         dyn_cast<ArrayType>(type)->getArrayElementType())->getNumElements(),
       signedbv_typet(21));
+    errs() << "hi 1\n";
+    dyn_cast<ArrayType>(type)->getArrayElementType()->dump();
+    md->dump();
+    (*dyn_cast<DICompositeType>(md)->getBaseType()).dump();
+    dyn_cast<DIType>(
+          dyn_cast<DICompositeType>(md)->getBaseType())->dump();
     ele_type = array_typet(
       create_array_type(dyn_cast<ArrayType>(type)->getArrayElementType(),
-        dyn_cast<DICompositeType>(
+        dyn_cast<DIType>(
           dyn_cast<DICompositeType>(md)->getBaseType())),
       size);
+    errs() << "hi 2\n";
     break;
   }
   case llvm::Type::TypeID::PointerTyID :
