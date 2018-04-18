@@ -245,10 +245,10 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
     goto_programt::targett br_ins = gp.add_instruction();
     branch_dest_block_map_switch.insert(
       std::pair<goto_programt::targett, const BasicBlock*>(
-        br_ins, i.getCaseSuccessor()));
+        br_ins, i->getCaseSuccessor()));
     br_ins->make_goto();
     br_ins->guard = equal_exprt(var_expr,
-      from_integer(i.getCaseValue()->getZExtValue(),
+      from_integer(i->getCaseValue()->getZExtValue(),
         var_expr.type()));
   }
   goto_programt::targett default_branch = gp.add_instruction();
@@ -3285,8 +3285,17 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     }
   }
   errs() << "4 \n";
-  if(expr.type() != value_to_store.type()){
-  	value_to_store = typecast_exprt(value_to_store, expr.type());
+  typet expr_type = expr.type(), vts_type = value_to_store.type();
+  if(expr_type.id() == ID_pointer)
+  {
+    errs() << vts_type.id().c_str() << "\n";
+    value_to_store = address_of_exprt(value_to_store, to_pointer_type(expr_type));
+    expr_type = expr_type.subtype();
+  }
+  errs() << expr.type().id().c_str() << "             " << value_to_store.type().id().c_str();
+  if(expr_type != value_to_store.type()){
+  	value_to_store = typecast_exprt(value_to_store, expr_type);
+    // assert(false);
   }
   errs() << "5 \n";
   goto_programt::targett store_inst = gp.add_instruction();
