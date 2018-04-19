@@ -3062,7 +3062,14 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
   exprt expr;
   errs() << "1 \n";
-  if(dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
+  if(LoadInst *li = dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
+  {
+    li->dump();
+    expr = get_load(li, symbol_table);
+    // errs() << from_expr(expr) << "\n";
+    // assert(false);
+  }
+  else if(dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
   {
     symbol = symbol_table.lookup(var_name_map.find(
     dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
@@ -3174,6 +3181,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       //   dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))
       //   ->getOperand(0)->getName().str())->second;
       // value_to_store = symbol_table.lookup(name).symbol_expr();
+      errs() << from_expr(value_to_store) << "\n";
+      // assert(false);
     }
   }
   errs() << "4 \n";
@@ -5359,8 +5368,9 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         else if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
         {
           li->getOperand(0)->dump();
-          expr = symbol_table->lookup(var_name_map.find(
-                   li->getOperand(0)->getName().str())->second).symbol_expr();
+          expr = get_load(li, *symbol_table);
+          // expr = symbol_table->lookup(var_name_map.find(
+          //          li->getOperand(0)->getName().str())->second).symbol_expr();
         }
         else
         {
