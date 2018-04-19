@@ -66,6 +66,7 @@ class llvm2goto_translator:public llvm2goto_translatort
   goto_programt trans_Alloca(const Instruction *I,
         symbol_tablet &symbol_table);
   goto_programt trans_Load(const Instruction *I);
+  exprt get_load(const LoadInst *I, const symbol_tablet &symbol_table);
   goto_programt trans_Store(const Instruction *I,
     const symbol_tablet &symbol_table);
   goto_programt trans_AtomicCmpXchg(const Instruction *I);

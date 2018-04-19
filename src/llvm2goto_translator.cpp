@@ -3151,6 +3151,36 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I)
   return gp;
 }
 
+/*******************************************************************\
+
+   Function: llvm2goto_translator::get_load
+
+    Inputs:
+     I - Pointer to the llvm instruction.
+
+    Outputs: Object of goto_programt containing goto instruction corresponding to
+             llvm::Instruction::Store.
+
+    Purpose: Map llvm::Instruction::Store to corresponding goto instruction.
+}
+
+\*******************************************************************/
+exprt llvm2goto_translator::get_load(const LoadInst *I, const symbol_tablet &symbol_table)
+{
+  I->dump();
+  if(I->getOperand(0)->hasName())
+  {
+    errs() << "a\n";
+    std::string var_name = var_name_map.find(I->getOperand(0)->getName().str())->second;
+    return symbol_table.lookup(var_name).symbol_expr();
+  }
+  else
+  {
+    errs() << "b\n";
+    return dereference_exprt(get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table));
+  }
+}
+
  /*******************************************************************\
 
    Function: llvm2goto_translator::trans_Store
@@ -3162,6 +3192,7 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I)
              llvm::Instruction::Store.
 
     Purpose: Map llvm::Instruction::Store to corresponding goto instruction.
+}
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
@@ -3278,14 +3309,20 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     }
     else if(dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0)))
     {
-      std::string name = var_name_map.find(
-        dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))
-        ->getOperand(0)->getName().str())->second;
-      value_to_store = symbol_table.lookup(name).symbol_expr();
+      // if(!dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))->hasName())
+      // {
+      // }
+      dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))->dump();
+      value_to_store = get_load(dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0)), symbol_table);
+      // std::string name = var_name_map.find(
+      //   dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))
+      //   ->getOperand(0)->getName().str())->second;
+      // value_to_store = symbol_table.lookup(name).symbol_expr();
     }
   }
   errs() << "4 \n";
   typet expr_type = expr.type(), vts_type = value_to_store.type();
+  // TODO(Rasika) : need to check this. while
   if(expr_type.id() == ID_pointer)
   {
     errs() << vts_type.id().c_str() << "\n";
@@ -3293,7 +3330,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     expr_type = expr_type.subtype();
   }
   errs() << expr.type().id().c_str() << "             " << value_to_store.type().id().c_str();
-  if(expr_type != value_to_store.type()){
+  if(expr.type() != value_to_store.type()){
   	value_to_store = typecast_exprt(value_to_store, expr_type);
     // assert(false);
   }
