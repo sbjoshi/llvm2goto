@@ -1107,7 +1107,7 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn)
   Purpose: .
 
 \*******************************************************************/
-typet symbol_creator::create_type(Type *type)
+typet symbol_creator::create_type(Type *type, DIType *mdn)
 {
   typet ele_type;
   switch(type->getTypeID())
@@ -1152,12 +1152,34 @@ typet symbol_creator::create_type(Type *type)
     {
       if(type->getIntegerBitWidth() == 1)
       {
-      ele_type = bool_typet();
+        ele_type = bool_typet();
       }
       else
       {
-      ele_type = unsignedbv_typet(type->getIntegerBitWidth());
+        ele_type = unsignedbv_typet(
+        type->getIntegerBitWidth());
       }
+      DIType *type1 = mdn;
+      while(dyn_cast<DIDerivedType>(type1)){
+        type1 = dyn_cast<DIType>(&(*(dyn_cast<DIDerivedType>(type1)->getBaseType())));
+      }
+      switch(dyn_cast<DIBasicType>(type1)->getEncoding())
+      {
+        case dwarf::DW_ATE_signed :
+        case dwarf::DW_ATE_signed_char :
+        // case dwarf::DW_EH_PE_signed :
+          ele_type = signedbv_typet(
+            type->getIntegerBitWidth());
+          break;
+      }
+      // if(type->getIntegerBitWidth() == 1)
+      // {
+      // ele_type = bool_typet();
+      // }
+      // else
+      // {
+      // ele_type = unsignedbv_typet(type->getIntegerBitWidth());
+      // }
       break;
     }
     case llvm::Type::TypeID::StructTyID :
@@ -1250,46 +1272,60 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F)
   code_typet::parameterst para;
   // code_typet::parametert p1(unsignedbv_typet(32));
   // para.push_back(p1);
-  auto arg = F.arg_begin();
-  for(auto it = ft->params().begin(); it < ft->params().end(); it++)
+  if (F.hasMetadata())
   {
-    typet tt = create_type(*it);
-    code_typet::parametert p(tt);
-    p.set_identifier(F.getName().str() + "::" + arg->getName().str());
-    para.push_back(p);
-    errs() << arg->getName() << "\n";
-    arg++;
-    // (*it)->dump();
-    // set_identifier
-    // assert(p.get_identifier() != irep_idt());
-    // assert(tt.id() != irep_idt());
-    // ft->getParamType(0)->dump();
-    // ft->getParamType(i)->getMetadata()->dump();
-  }
-  ct.parameters() = para;
-  ft->getReturnType();
-  ct.return_type() = create_type(ft->getReturnType());
-  if (ft->getReturnType()->isIntegerTy() && F.hasMetadata())
-  {
-    errs() << "$$" << F.hasMetadata() << "\n";
-    SmallVector<std::pair<unsigned, MDNode *>, 1> arr;
-    F.getAllMetadata(arr);
-    // errs() << F.getMetadata(Metadata::MetadataKind::DISubprogramKind);
-    DISubprogram *md = dyn_cast<DISubprogram>(arr[0].second);
-    md->dump();
-    (*(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])).dump();
-    errs() << dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding() << "\n";
-    switch(dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding())
+    DISubroutineType *md = (dyn_cast<DISubprogram>(F.getSubprogram()))->getType();
+    // md->dump();
+    
+    DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+    // errs() << md->size() << "\n\n";
+    // if(md->getTypeArray()->getNumOperands() > 1)
+    // {
+    //   md->dump();
+    //   md->getTypeArray()->dump();
+      
+    //   mdn->dump();
+    //   errs() << "=============\n";
+    // }
+    // errs() << dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding() << "\n";
+    // switch(dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding())
+    // {
+    //   case dwarf::DW_ATE_signed :
+    //   case dwarf::DW_ATE_signed_char :
+    //   // case dwarf::DW_EH_PE_signed :
+    //     ft->getReturnType()->dump();
+    //     errs() << "signed type found!!!\n";
+    //     ct.return_type() = signedbv_typet(
+    //       ft->getReturnType()->getIntegerBitWidth());
+    //     break;
+    // }
+    auto arg = F.arg_begin();
+    unsigned int i = 1;
+    // errs() << F.getName() << " = ";
+    for(auto it = ft->params().begin(); it < ft->params().end(); it++)
     {
-      case dwarf::DW_ATE_signed :
-      case dwarf::DW_ATE_signed_char :
-      // case dwarf::DW_EH_PE_signed :
-        ft->getReturnType()->dump();
-        errs() << "signed type found!!!\n";
-        ct.return_type() = signedbv_typet(
-          ft->getReturnType()->getIntegerBitWidth());
-        break;
+      // errs() << "arg ";
+      DIType *t = dyn_cast<DIType>(&*md->getTypeArray()[i]);
+      typet tt = create_type(*it, t);
+      i++;
+      code_typet::parametert p(tt);
+      p.set_identifier(F.getName().str() + "::" + arg->getName().str());
+      para.push_back(p);
+      // errs() << arg->getName() << ", ";
+      arg++;
+      // (*it)->dump();
+      // set_identifier
+      assert(p.get_identifier() != irep_idt());
+      assert(tt.id() != irep_idt());
+      // ft->getParamType(0)->dump();
+      // ft->getParamType(i)->getMetadata()->dump();
     }
+    // errs() << "\n";
+    ct.parameters() = para;
+    mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+    ft->getReturnType();
+    DIType *ditype = dyn_cast<DIType>(mdn);
+    ct.return_type() = create_type(ft->getReturnType(), ditype);
   }
   // static_cast<unsignedbv_typet &>(rt);
   funct.type = ct;

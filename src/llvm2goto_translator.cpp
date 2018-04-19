@@ -74,7 +74,8 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
     {
       uint64_t val;
       val = cint->getZExtValue();
-      exprt1 = from_integer(val, symbol_creator::create_type(ub->getType()));
+      // TODO(Rasika) : get the type from symbol_table.
+      exprt1 = from_integer(val, unsignedbv_typet(32));
     }
     else if(dyn_cast<ConstantFP>(ub))
     {
@@ -1787,7 +1788,8 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // By default data type is unsigned here.
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -1817,7 +1819,8 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // data type is unsigned by default.
+    exprt2 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2191,7 +2194,8 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // by default unsigned data type.
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2221,7 +2225,8 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // default type is unsigned.
+    exprt2 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2596,7 +2601,8 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // will handle sign later.
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2626,7 +2632,7 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt2 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2723,7 +2729,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2753,7 +2759,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt2 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2849,7 +2855,7 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2879,7 +2885,7 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt2 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -2969,8 +2975,78 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
 {
   goto_programt gp;
   symbolt symbol;
-  symbol.type = symbol_creator::create_type(
-    dyn_cast<AllocaInst>(I)->getAllocatedType());
+  // the type will be set in llvm.dbg.declare
+  // symbol.type = symbol_creator::create_type(
+  //   dyn_cast<AllocaInst>(I)->getAllocatedType());
+  switch(dyn_cast<AllocaInst>(I)->getAllocatedType()->getTypeID())
+  {
+    // 16-bit floating point type
+    case llvm::Type::TypeID::HalfTyID :
+    {
+      symbol.type = to_floatbv_type(bitvector_typet(ID_floatbv, 16));
+      break;
+    }
+    // 32-bit floating point type
+    case llvm::Type::TypeID::FloatTyID :
+    {
+      symbol.type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+      break;
+    }
+    // 64-bit floating point type
+    case llvm::Type::TypeID::DoubleTyID :
+    {
+      symbol.type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+      break;
+    }
+    // 80-bit floating point type (X87)
+    case llvm::Type::TypeID::X86_FP80TyID :
+    {
+      symbol.type = to_floatbv_type(bitvector_typet(ID_floatbv, 80));
+      break;
+    }
+    // 128-bit floating point type (112-bit mantissa)
+    case llvm::Type::TypeID::FP128TyID :
+    {
+      symbol.type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
+      break;
+    }
+    // 128-bit floating point type (two 64-bits, PowerPC)
+    case llvm::Type::TypeID::PPC_FP128TyID :
+    {
+      symbol.type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
+      break;
+    }
+    case llvm::Type::TypeID::IntegerTyID :
+    {
+      if(dyn_cast<AllocaInst>(I)->getAllocatedType()->getIntegerBitWidth() == 1)
+      {
+        symbol.type = bool_typet();
+      }
+      else
+      {
+        symbol.type = unsignedbv_typet(
+        dyn_cast<AllocaInst>(I)->getAllocatedType()->getIntegerBitWidth());
+      }
+      break;
+    }
+    case llvm::Type::TypeID::VoidTyID :
+    {
+      // typet void_type = create_void_typet();
+      symbol.type = void_typet();
+      errs() << "void_typet";
+      break;
+    }
+    case llvm::Type::TypeID::StructTyID :
+    case llvm::Type::TypeID::ArrayTyID :
+    case llvm::Type::TypeID::PointerTyID :
+    case llvm::Type::TypeID::VectorTyID :
+    case llvm::Type::TypeID::X86_MMXTyID :
+    case llvm::Type::TypeID::FunctionTyID :
+    case llvm::Type::TypeID::TokenTyID :
+    case llvm::Type::TypeID::LabelTyID :
+    case llvm::Type::TypeID::MetadataTyID :
+      errs() << "\n This type is not handled\n ";
+  }
   symbol.base_name = I->getName().str();
   symbol.name = I->getFunction()->getName().str() + "::" + I->getName().str();
   symbol_table.add(symbol);
@@ -3056,10 +3132,13 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
 {
   goto_programt gp;
   // I->dump();
-  // dyn_cast<StoreInst>(I)->getOperand(0)->dump();
+  dyn_cast<StoreInst>(I)->getOperand(0)->dump();
   symbolt symbol;
-  symbol = symbol_table.lookup(var_name_map.find(
-    dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
+  if(dyn_cast<StoreInst>(I)->getOperand(1)->hasName())
+  {
+    symbol = symbol_table.lookup(var_name_map.find(
+      dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
+  }
   exprt expr;
   errs() << "1 \n";
   if(LoadInst *li = dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
@@ -3120,6 +3199,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       }
       else
       {
+        symbol.show(std::cout);
+        errs() << symbol.type.id().c_str();
           value_to_store = from_integer(val, symbol.type);
       }
     }
@@ -3441,7 +3522,8 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // TODO(Rasika) : sign.
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -3537,7 +3619,8 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // TODO(Rasika) : sign.
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -3633,7 +3716,8 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // TODO(Rasika) : sign.
+    exprt1 = from_integer(val, signedbv_typet(32));
   }
   else
   {
@@ -3720,8 +3804,19 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
   assert(!dyn_cast<FPTruncInst>(I)->isLosslessCast()
     && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(
-    dyn_cast<FPTruncInst>(I)->getDestTy());
+  typet dest_type;
+  if(dyn_cast<FPTruncInst>(I)->getDestTy()->isFloatTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+  }
+  else if(dyn_cast<FPTruncInst>(I)->getDestTy()->isDoubleTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+  }
+  else
+  {
+    assert(false && "This floattype is not handled");
+  }
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
@@ -3835,8 +3930,19 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
   assert(!dyn_cast<FPExtInst>(I)->isLosslessCast()
     && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(
-    dyn_cast<FPExtInst>(I)->getDestTy());
+  typet dest_type;
+  if(dyn_cast<FPTruncInst>(I)->getDestTy()->isFloatTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+  }
+  else if(dyn_cast<FPTruncInst>(I)->getDestTy()->isDoubleTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+  }
+  else
+  {
+    assert(false && "This floattype is not handled");
+  }
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
@@ -4181,8 +4287,19 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
   assert(!dyn_cast<UIToFPInst>(I)->isLosslessCast()
     && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(
-    dyn_cast<UIToFPInst>(I)->getDestTy());
+  typet dest_type;
+  if(dyn_cast<FPTruncInst>(I)->getDestTy()->isFloatTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+  }
+  else if(dyn_cast<FPTruncInst>(I)->getDestTy()->isDoubleTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+  }
+  else
+  {
+    assert(false && "This floattype is not handled");
+  }
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
@@ -4190,7 +4307,8 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    // default type unsigned.
+    exprt1 = from_integer(val, unsignedbv_typet(32));
   }
   else
   {
@@ -4277,8 +4395,19 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
   assert(!dyn_cast<SIToFPInst>(I)->isLosslessCast()
     && "This type conversion is lossy.");
   goto_programt gp;
-  typet dest_type = symbol_creator::create_type(
-    dyn_cast<SIToFPInst>(I)->getDestTy());
+  typet dest_type;
+  if(dyn_cast<FPTruncInst>(I)->getDestTy()->isFloatTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+  }
+  else if(dyn_cast<FPTruncInst>(I)->getDestTy()->isDoubleTy())
+  {
+    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+  }
+  else
+  {
+    assert(false && "This floattype is not handled");
+  }
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   symbolt op1;
   exprt exprt1;
@@ -4286,7 +4415,7 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
   {
     uint64_t val;
     val = cint->getSExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt1 = from_integer(val, signedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -4626,6 +4755,11 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
           opnd2 = ieee_fl.to_expr();
         }
       }
+    }
+    else if(I->getOperand(0)->getType()->isPointerTy())
+    {
+      I->getOperand(0)->getType()->dump();
+      assert(false && "Pointer datatype has not been handled");
     }
     else
     {
@@ -5360,8 +5494,8 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         if(dyn_cast<ConstantInt>(*ub))
         {
           uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
-          typet type = symbol_creator::create_type(
-            dyn_cast<ConstantInt>(*ub)->getType());
+          // TODO(Rasika) : get type parameters.
+          typet type = unsignedbv_typet(32);
           dyn_cast<ConstantInt>(*ub)->getType()->dump();
           expr = from_integer(val, type);
         }
@@ -5412,7 +5546,7 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt1 = from_integer(val, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -5442,7 +5576,7 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt2 = from_integer(val, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -5533,7 +5667,7 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt1 = from_integer(val, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -5563,7 +5697,7 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt2 = from_integer(val, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -5651,7 +5785,7 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt1 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt1 = from_integer(val, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -5681,7 +5815,7 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
   {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val, symbol_creator::create_type(I->getType()));
+    exprt2 = from_integer(val, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else
   {
@@ -6704,18 +6838,31 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
   goto_programt gp;
   for(Function &F : *M)
   {
-    for(Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
-      arg_b != arg_e; arg_b++)
+    if(F.getSubprogram() != NULL)
     {
-      symbolt arg;
-      arg.type = symbol_creator::create_type(arg_b->getType());
-      arg.name = F.getName().str() + "::" + arg_b->getName().str();
-      arg.base_name = arg_b->getName().str();
-      arg.is_lvalue = true;
-      symbol_table.add(arg);
-      var_name_map.insert(
-        std::pair<std::string, std::string>(arg.base_name.c_str(),
-          arg.name.c_str()));
+      // errs() << "hello\n";
+      // dyn_cast<DISubroutineType>(F.getSubprogram()->getType())->getTypeArray()->dump();
+      // errs() << "hello\n";
+      DISubroutineType *md = (dyn_cast<DISubprogram>(F.getSubprogram()))->getType();
+      // md->dump();
+      DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+      unsigned int i = 1;
+      for(Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
+        arg_b != arg_e; arg_b++)
+      {
+        symbolt arg;
+        // TODO(Rasika) : get type from metadata.
+        arg.type = symbol_creator::create_type(arg_b->getType(),
+          dyn_cast<DIType>(&*md->getTypeArray()[i]));
+        i++;
+        arg.name = F.getName().str() + "::" + arg_b->getName().str();
+        arg.base_name = arg_b->getName().str();
+        arg.is_lvalue = true;
+        symbol_table.add(arg);
+        var_name_map.insert(
+          std::pair<std::string, std::string>(arg.base_name.c_str(),
+            arg.name.c_str()));
+      }
     }
     Type *functt = (dyn_cast<Type>(F.getFunctionType()));
     symbolt fn = symbol_creator::create_FunctionTy(functt, F);
@@ -6728,6 +6875,8 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
         dstringt(F.getName()),
         goto_functionst::goto_functiont()));
   }
+  symbol_table.show(std::cout);
+  // assert(false);
   for(Function &F : *M)
   {
   	symbolt fn = symbol_table.lookup(F.getName().str());
