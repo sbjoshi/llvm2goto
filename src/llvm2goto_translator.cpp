@@ -28,8 +28,9 @@ Author : Rasika
 
 using namespace llvm;
 
-// TODO(Rasika): handle signed type in switch.
 // TODO(Rasika): handle global scope.
+// TODO(Rasika): relation between array and pointer.
+// TODO(Rasika): arr[5].
 
 llvm2goto_translator::llvm2goto_translator(Module *M)
 {
@@ -112,14 +113,15 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
     {
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -215,14 +217,15 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
   {
     var = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      var_expr = dereference_exprt(var.symbol_expr(), var.type);
-    }
-    else
-    {
-      var_expr = var.symbol_expr();
-    }
+    var_expr = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   var_expr = dereference_exprt(var.symbol_expr(), var.type);
+    // }
+    // else
+    // {
+    //   var_expr = var.symbol_expr();
+    // }
   }
   else
   {
@@ -454,15 +457,16 @@ exprt llvm2goto_translator::get_Arith_exprt(const Instruction *I,
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-    }
-    else
-    {
-      exprt1 = symbol_table.lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    exprt1 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    // }
+    // else
+    // {
+    //   exprt1 = symbol_table.lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
@@ -470,15 +474,16 @@ exprt llvm2goto_translator::get_Arith_exprt(const Instruction *I,
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-    }
-    else
-    {
-      exprt2 = op2.symbol_expr();
-      errs() << "....   " << op2.type.id().c_str() << "\n";
-    }
+    exprt2 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+    // }
+    // else
+    // {
+    //   exprt2 = op2.symbol_expr();
+    //   errs() << "....   " << op2.type.id().c_str() << "\n";
+    // }
     f2=1;
   }
   if(f1==1 && f2==1)
@@ -724,15 +729,16 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-    }
-    else
-    {
-      exprt1 = symbol_table.lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    exprt1 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    // }
+    // else
+    // {
+    //   exprt1 = symbol_table.lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
@@ -740,15 +746,16 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-    }
-    else
-    {
-      exprt2 = op2.symbol_expr();
-      errs() << "....   " << op2.type.id().c_str() << "\n";
-    }
+    exprt2 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+    // }
+    // else
+    // {
+    //   exprt2 = op2.symbol_expr();
+    //   errs() << "....   " << op2.type.id().c_str() << "\n";
+    // }
     f2=1;
   }
   if(f1==1 && f2==1)
@@ -883,194 +890,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
-  // errs() << "############################\n";
-  // std::cout << "-----------------------\n";
-  // gp.update();
-      // {
-    	 //  // std::ostream &goto_programt::std::coutput_instruction
-      //   {
-      //     const namespacet ns = namespacet(symbol_table);
-      //     const irep_idt identifier = "main";
-      //     // std::ostream &std::cout,
-      //     const goto_programt::instructiont &instruction = *add_inst;
-          
-      //     std::cout << "        // " << instruction.location_number << " ";
-
-      //     if(!instruction.source_location.is_nil())
-      //       std::cout << instruction.source_location.as_string();
-      //     else
-      //       std::cout << "no location";
-
-      //     std::cout << "\n";
-
-      //     if(!instruction.labels.empty())
-      //     {
-      //       std::cout << "        // Labels:";
-      //       for(const auto &label : instruction.labels)
-      //         std::cout << " " << label;
-
-      //       // std::cout << '\n';
-      //     }
-
-      //     if(instruction.is_target())
-      //       std::cout << std::setw(6) << instruction.target_number << ": ";
-      //     else
-      //       std::cout << "        ";
-
-      //     switch(instruction.type)
-      //     {
-	     //      case NO_INSTRUCTION_TYPE:
-	     //        std::cout << "NO INSTRUCTION TYPE SET";
-	     //        break;
-
-	     //      case GOTO:
-	     //        if(!instruction.guard.is_true())
-	     //        {
-	     //          std::cout << "IF "
-	     //              << from_expr(ns, identifier, instruction.guard)
-	     //              << " THEN ";
-	     //        }
-
-	     //        std::cout << "GOTO ";
-
-	     //        for(goto_programt::instructiont::targetst::const_iterator
-	     //            gt_it=instruction.targets.begin();
-	     //            gt_it!=instruction.targets.end();
-	     //            gt_it++)
-	     //        {
-	     //          if(gt_it!=instruction.targets.begin())
-	     //            std::cout << ", ";
-	     //          std::cout << (*gt_it)->target_number;
-	     //        }
-
-	     //        // std::cout << '\n';
-	     //        break;
-
-	     //      case RETURN:
-	     //      case OTHER:
-	     //      case DECL:
-	     //      case DEAD:
-	     //      case FUNCTION_CALL:
-	     //      case ASSIGN:
-	     //        std::cout << from_expr(ns, identifier, instruction.code);
-	     //        break;
-
-	     //      case ASSUME:
-	     //      case ASSERT:
-	     //        if(instruction.is_assume())
-	     //          std::cout << "ASSUME ";
-	     //        else
-	     //          std::cout << "ASSERT ";
-
-	     //        {
-	     //          std::cout << from_expr(ns, identifier, instruction.guard);
-
-	     //        }
-
-	     //        // std::cout << '\n';
-	     //        break;
-
-	     //      case SKIP:
-	     //        std::cout << "SKIP";
-	     //        break;
-
-	     //      case END_FUNCTION:
-	     //        std::cout << "END_FUNCTION";
-	     //        break;
-
-	     //      case LOCATION:
-	     //        std::cout << "LOCATION";
-	     //        break;
-
-	     //      case THROW:
-	     //        std::cout << "THROW";
-
-	     //        {
-	     //          const irept::subt &exception_list=
-	     //            instruction.code.find(ID_exception_list).get_sub();
-
-	     //          for(const auto &ex : exception_list)
-	     //            std::cout << " " << ex.id();
-	     //        }
-
-	     //        if(instruction.code.operands().size()==1)
-	     //          std::cout << ": " << from_expr(ns, identifier, instruction.code.op0());
-
-	     //        // std::cout << '\n';
-	     //        break;
-
-	     //      case CATCH:
-	     //        if(!instruction.targets.empty())
-	     //        {
-	     //          std::cout << "CATCH-PUSH ";
-
-	     //          unsigned i=0;
-	     //          const irept::subt &exception_list=
-	     //            instruction.code.find(ID_exception_list).get_sub();
-	     //          assert(instruction.targets.size()==exception_list.size());
-	     //          for(goto_programt::instructiont::targetst::const_iterator
-	     //              gt_it=instruction.targets.begin();
-	     //              gt_it!=instruction.targets.end();
-	     //              gt_it++,
-	     //              i++)
-	     //          {
-	     //            if(gt_it!=instruction.targets.begin())
-	     //              std::cout << ", ";
-	     //            std::cout << exception_list[i].id() << "->"
-	     //                << (*gt_it)->target_number;
-	     //          }
-	     //        }
-	     //        else
-	     //          std::cout << "CATCH-POP";
-
-	     //        std::cout << '\n';
-	     //        break;
-
-	     //      case ATOMIC_BEGIN:
-	     //        std::cout << "ATOMIC_BEGIN";
-	     //        break;
-
-	     //      case ATOMIC_END:
-	     //        std::cout << "ATOMIC_END";
-	     //        break;
-
-	     //      case START_THREAD:
-	     //        std::cout << "START THREAD ";
-
-	     //        if(instruction.targets.size()==1)
-	     //          std::cout << instruction.targets.front()->target_number;
-
-	     //        // std::cout << '\n';
-	     //        break;
-
-	     //      case END_THREAD:
-      //       std::cout << "END THREAD";
-      //       break;
-
-	     //      default:
-	     //        throw "unknown statement";
-      //     }
-      //     const irep_idt &comment=instruction.source_location.get_comment();
-	     //    // std::cout << "~~~~~";
-	     //    if(comment!=""){
-	     //    	// std::cout << "~~~~~";
-	     //      std::cout << " // " << comment;
-	     //      // std::cout << "~~~~~";
-	     //    }
-	     //    // else{
-	     //    // 	// std::cout << "~~~~~";
-	     //    // 	assert(false && "comment not set");
-	     //    // 	// std::cout << "~~~~~";
-	     //    // }
-	     //    // std::cout << "~~~~~";
-
-      //     // return std::cout;
-      //   }
-      //   std::cout << "\n";
-
-
-      // }
-  // errs() << "############################\n";
+  
   errs() << from_expr(namespacet(symbol_table),
   	(symbol_table.symbols.begin()->second.name), add_inst->code);
   // assert(false && "hi");
@@ -1131,14 +951,15 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -1181,14 +1002,15 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -1271,15 +1093,16 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-    }
-    else
-    {
-      exprt1 = symbol_table.lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    exprt1 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    // }
+    // else
+    // {
+    //   exprt1 = symbol_table.lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
@@ -1287,15 +1110,16 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-    }
-    else
-    {
-      exprt2 = symbol_table.lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    exprt2 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+    // }
+    // else
+    // {
+    //   exprt2 = symbol_table.lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f2=1;
   }
   if(f1==1 && f2==1)
@@ -1478,14 +1302,15 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -1528,14 +1353,15 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -1614,15 +1440,16 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     li->getOperand(0)->dump();
     op1 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-    }
-    else
-    {
-      exprt1 = symbol_table.lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    exprt1 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    // }
+    // else
+    // {
+    //   exprt1 = symbol_table.lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
@@ -1630,15 +1457,16 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
     li->getOperand(0)->dump();
     op2 = symbol_table.lookup(var_name_map.find(
       li->getOperand(0)->getName().str())->second);
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-    }
-    else
-    {
-      exprt2 = symbol_table.lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    exprt2 = get_load(li, symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+    // }
+    // else
+    // {
+    //   exprt2 = symbol_table.lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f2=1;
   }
   if(f1==1 && f2==1)
@@ -1826,14 +1654,15 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -1876,14 +1705,15 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -1966,14 +1796,15 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -1995,14 +1826,15 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2086,14 +1918,15 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2116,14 +1949,15 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2225,14 +2059,15 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2275,14 +2110,15 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2364,14 +2200,15 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2393,14 +2230,15 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2484,14 +2322,15 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2514,14 +2353,15 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2623,14 +2463,15 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2673,14 +2514,15 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2763,14 +2605,15 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2792,14 +2635,15 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -2888,14 +2732,15 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -2917,14 +2762,15 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -3012,14 +2858,15 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -3041,14 +2888,15 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -3172,7 +3020,15 @@ exprt llvm2goto_translator::get_load(const LoadInst *I, const symbol_tablet &sym
   {
     errs() << "a\n";
     std::string var_name = var_name_map.find(I->getOperand(0)->getName().str())->second;
-    return symbol_table.lookup(var_name).symbol_expr();
+    if(dyn_cast<GetElementPtrInst>(I->getOperand(0)))
+    {
+      return dereference_exprt(symbol_table.lookup(var_name).symbol_expr());
+    }
+    else
+    {
+      // exprt1 = op1.symbol_expr();
+      return symbol_table.lookup(var_name).symbol_expr();
+    }
   }
   else
   {
@@ -3585,14 +3441,15 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -3680,14 +3537,15 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -3775,14 +3633,15 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -3889,14 +3748,15 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -4004,14 +3864,15 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -4118,14 +3979,15 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -4232,14 +4094,15 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -4327,14 +4190,15 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -4422,14 +4286,15 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -4585,24 +4450,26 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
     li->getOperand(0)->dump();
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      symbolt op1 = symbol_table->lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second);
-      opnd1 = dereference_exprt(op1.symbol_expr(), op1.type);
-    }
-    else
-    {
-      opnd1 = symbol_table->lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    opnd1 = get_load(li, *symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   symbolt op1 = symbol_table->lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second);
+    //   opnd1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    // }
+    // else
+    // {
+    //   opnd1 = symbol_table->lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
   {
     li->getOperand(0)->dump();
-    opnd2 = symbol_table->lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second).symbol_expr();
+    // opnd2 = symbol_table->lookup(var_name_map.find(
+    //   li->getOperand(0)->getName().str())->second).symbol_expr();
+    opnd2 = get_load(li, *symbol_table);
     f2=1;
   }
   if(f1==1 && f2==1)
@@ -4849,24 +4716,26 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
   if(const LoadInst *li = dyn_cast<LoadInst>(*ub))
   {
     li->getOperand(0)->dump();
-    if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-    {
-      symbolt op1 = symbol_table->lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second);
-      opnd1 = dereference_exprt(op1.symbol_expr(), op1.type);
-    }
-    else
-    {
-      opnd1 = symbol_table->lookup(var_name_map.find(
-        li->getOperand(0)->getName().str())->second).symbol_expr();
-    }
+    opnd1 = get_load(li, *symbol_table);
+    // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+    // {
+    //   symbolt op1 = symbol_table->lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second);
+    //   opnd1 = dereference_exprt(op1.symbol_expr(), op1.type);
+    // }
+    // else
+    // {
+    //   opnd1 = symbol_table->lookup(var_name_map.find(
+    //     li->getOperand(0)->getName().str())->second).symbol_expr();
+    // }
     f1=1;
   }
   if(const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1)))
   {
     li->getOperand(0)->dump();
-    opnd2 = symbol_table->lookup(var_name_map.find(
-      li->getOperand(0)->getName().str())->second).symbol_expr();
+    opnd2 = get_load(li, *symbol_table);
+    // opnd2 = symbol_table->lookup(var_name_map.find(
+    //   li->getOperand(0)->getName().str())->second).symbol_expr();
     f2=1;
   }
   if(f1==1 && f2==1)
@@ -5542,14 +5411,15 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);;
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -5571,14 +5441,15 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op1.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op1.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -5661,14 +5532,15 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -5690,14 +5562,15 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
@@ -5777,14 +5650,15 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
       li->getOperand(0)->dump();
       op1 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
-      }
-      else
-      {
-        exprt1 = op1.symbol_expr();
-      }
+      exprt1 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
+      // }
+      // else
+      // {
+      //   exprt1 = op1.symbol_expr();
+      // }
     }
     else
     {
@@ -5806,14 +5680,15 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
       li->getOperand(0)->dump();
       op2 = symbol_table.lookup(var_name_map.find(
         li->getOperand(0)->getName().str())->second);
-      if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
-      {
-        exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
-      }
-      else
-      {
-        exprt2 = op2.symbol_expr();
-      }
+      exprt2 = get_load(li, symbol_table);
+      // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
+      // {
+      //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
+      // }
+      // else
+      // {
+      //   exprt2 = op2.symbol_expr();
+      // }
     }
     else
     {
