@@ -81,6 +81,8 @@ class llvm2goto_translatort
     virtual goto_programt trans_Alloca(const Instruction *I,
         symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Load(const Instruction *I) = 0;
+    virtual exprt get_load(const LoadInst *I,
+        const symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_Store(const Instruction *I,
         const symbol_tablet &symbol_table) = 0;
     virtual goto_programt trans_AtomicCmpXchg(const Instruction *I) = 0;
