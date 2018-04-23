@@ -3246,7 +3246,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     {
       errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
       errs() << "searrching " <<
-        dyn_cast<StoreInst>(I)->getOperand(0)->getName() << "\n";
+        dyn_cast<StoreInst>(I)->getOperand(0)->getName() << "\n"
+        << var_name_map.find(
+        dyn_cast<StoreInst>(I)->getOperand(0)->getName().
+        str())->second << "\n";
       value_to_store = symbol_table.lookup(var_name_map.find(
         dyn_cast<StoreInst>(I)->getOperand(0)->getName().
         str())->second).symbol_expr();
@@ -3269,12 +3272,50 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   errs() << "4 \n";
   typet expr_type = expr.type(), vts_type = value_to_store.type();
   // TODO(Rasika) : need to check this. while
-  if(expr_type.id() == ID_pointer)
   {
-    errs() << vts_type.id().c_str() << "\n";
-    value_to_store = address_of_exprt(value_to_store, to_pointer_type(expr_type));
-    expr_type = expr_type.subtype();
+    errs() << "5 \n";
+    int i = 0;
+    while(expr_type.id() == ID_pointer || expr_type.id() == ID_array)
+    {
+      expr_type = expr_type.subtype();
+      i++;
+    }
+    errs() << "6 \n";
+    if(const Instruction *ins = dyn_cast<Instruction>(I->getOperand(0)))
+    {
+      while(!ins->hasName())
+      {
+        ins = dyn_cast<Instruction>(ins->getOperand(0));
+        i--;
+      }
+    }
+    errs() << "7 \n";
+    if(dyn_cast<GetElementPtrInst>(I->getOperand(1)))
+    {
+      i--;
+    }
+    while(expr_type.id() == ID_pointer || expr_type.id() == ID_array)
+    {
+      expr_type = expr_type.subtype();
+      i--;
+    }
+    errs() << "8 \n";
+    if(i>0)
+    {
+      errs() << "address_of_exprt is needed\n";
+      errs() << expr_type.id().c_str() << "    ?    " << vts_type.id().c_str();
+      value_to_store = address_of_exprt(value_to_store, pointer_typet(expr_type));
+      // expr_type = expr_type.subtype();
+      // assert(false);
+    }
   }
+  // expr_type = expr.type(); vts_type = value_to_store.type();
+  // if(expr_type.id() == ID_pointer)
+  // {
+  //   errs() << vts_type.id().c_str() << "\n";
+  //   value_to_store = address_of_exprt(value_to_store, to_pointer_type(expr_type));
+  //   expr_type = expr_type.subtype();
+  // }
   errs() << expr.type().id().c_str() << "             " << value_to_store.type().id().c_str();
   if(expr.type() != value_to_store.type()){
   	value_to_store = typecast_exprt(value_to_store, expr_type);
@@ -3457,7 +3498,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     assgn_inst->type = goto_program_instruction_typet::ASSIGN;
     // assert(false && "Array type is not handled");
   }
-  if(dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isStructTy())
+  else if(dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isStructTy())
   {
     errs() << (
       to_struct_union_type(comp.type).components())[index].get_name().c_str();
@@ -3490,6 +3531,20 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       address_of_exprt(member));
     assgn_inst->function = irep_idt(I->getFunction()->getName().str());
     assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+  }
+  else
+  {
+    // TODO(Rasika) : check if the types match in assignment. 0th index
+    // array to pointer.
+    errs() << ";;;;;;;;;;;;;;;;;;;\n";
+    I->dump();
+    I->getType()->dump();
+    // dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
+    I->getOperand(0)->dump();
+    I->getOperand(0)->getType()->dump();
+    I->getOperand(1)->dump();
+    I->getOperand(1)->getType()->dump();
+    assert(false && "this type is not handled");
   }
   return gp;
 }
