@@ -34,6 +34,7 @@ class symbol_creator
   static typet create_pointer_type(Type *type,
     const llvm::DIDerivedType *md);
   static typet create_type(Type *type, llvm::DIType *mdn);
+  static typet create_type(Type *type);
   static symbolt create_VectorTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_VoidTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_FunctionTy(Type *type, const Function &F);

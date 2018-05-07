@@ -1242,6 +1242,113 @@ typet symbol_creator::create_type(Type *type, DIType *mdn)
 
 /*******************************************************************\
 
+  Function: symbol_creator::create_type
+
+  Inputs:
+   bj - .
+
+  Outputs: .
+
+  Purpose: .
+
+\*******************************************************************/
+typet symbol_creator::create_type(Type *type)
+{
+  typet ele_type;
+  switch(type->getTypeID())
+  {
+    // 16-bit floating point type
+    case llvm::Type::TypeID::HalfTyID :
+    {
+      ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 16));
+      break;
+    }
+    // 32-bit floating point type
+    case llvm::Type::TypeID::FloatTyID :
+    {
+      ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+      break;
+    }
+    // 64-bit floating point type
+    case llvm::Type::TypeID::DoubleTyID :
+    {
+      ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+      break;
+    }
+    // 80-bit floating point type (X87)
+    case llvm::Type::TypeID::X86_FP80TyID :
+    {
+      ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 80));
+      break;
+    }
+    // 128-bit floating point type (112-bit mantissa)
+    case llvm::Type::TypeID::FP128TyID :
+    {
+      ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
+      break;
+    }
+    // 128-bit floating point type (two 64-bits, PowerPC)
+    case llvm::Type::TypeID::PPC_FP128TyID :
+    {
+      ele_type = to_floatbv_type(bitvector_typet(ID_floatbv, 128));
+      break;
+    }
+    case llvm::Type::TypeID::IntegerTyID :
+    {
+      if(type->getIntegerBitWidth() == 1)
+      {
+        ele_type = bool_typet();
+      }
+      else
+      {
+        ele_type = unsignedbv_typet(
+        type->getIntegerBitWidth());
+      }
+      break;
+    }
+    case llvm::Type::TypeID::StructTyID :
+    {
+      errs() << "\n struct no action.................";
+      break;
+    }
+    case llvm::Type::TypeID::ArrayTyID :
+    {
+      errs() << "\n array no action.................";
+      break;
+    }
+    case llvm::Type::TypeID::PointerTyID :
+    {
+      ele_type = pointer_typet(create_type(
+        dyn_cast<PointerType>(type)->getPointerElementType()), 32);
+      break;
+    }
+    case llvm::Type::TypeID::VectorTyID :
+    {
+      errs() << "\nVector type NO ACTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+      break;
+    }
+    case llvm::Type::TypeID::X86_MMXTyID :
+    {
+      break;
+    }
+    case llvm::Type::TypeID::VoidTyID :
+    {
+      ele_type = void_typet();
+      errs() << "void_typet";
+      break;
+    }
+    case llvm::Type::TypeID::FunctionTyID :
+    case llvm::Type::TypeID::TokenTyID :
+    case llvm::Type::TypeID::LabelTyID :
+    case llvm::Type::TypeID::MetadataTyID :
+      errs() << "\ninvalid type for global variable";
+  }
+  return ele_type;
+}
+
+
+/*******************************************************************\
+
   Function: symbol_creator::create_FunctionTy
 
   Inputs:
