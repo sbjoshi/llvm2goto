@@ -249,10 +249,10 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
     goto_programt::targett br_ins = gp.add_instruction();
     branch_dest_block_map_switch.insert(
       std::pair<goto_programt::targett, const BasicBlock*>(
-        br_ins, i->getCaseSuccessor()));
+        br_ins, i.getCaseSuccessor()));
     br_ins->make_goto();
     br_ins->guard = equal_exprt(var_expr,
-      from_integer(i->getCaseValue()->getZExtValue(),
+      from_integer(i.getCaseValue()->getZExtValue(),
         var_expr.type()));
   }
   goto_programt::targett default_branch = gp.add_instruction();
@@ -3425,11 +3425,26 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   const Instruction *I, symbol_tablet &symbol_table)
 {
   goto_programt gp;
-  std::string name_of_composite_var
-    = dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName();
-  std::string comp_var_full_name = var_name_map.find(
-    name_of_composite_var)->second;
-  symbolt comp = symbol_table.lookup(comp_var_full_name);
+  I->dump();
+  dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
+  dyn_cast<GetElementPtrInst>(I)->getResultElementType()->dump();
+  symbolt comp;
+  exprt comp_expr;
+  if(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName()){
+    std::string name_of_composite_var;
+    name_of_composite_var
+      = dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName();
+    std::string comp_var_full_name = var_name_map.find(
+      name_of_composite_var)->second;
+    comp = symbol_table.lookup(comp_var_full_name);
+  }
+  else
+  {
+    dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->dump();
+    comp_expr = get_load(dyn_cast<LoadInst>(
+      dyn_cast<GetElementPtrInst>(I)->getPointerOperand()), symbol_table);
+    // assert(false && "unnamed operand in this instruction is not handled");
+  }
   int index = 0;
   exprt indx_epr;
   dyn_cast<User>(dyn_cast<GetElementPtrInst>(I)->idx_begin())->dump();
@@ -3532,19 +3547,124 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     assgn_inst->function = irep_idt(I->getFunction()->getName().str());
     assgn_inst->type = goto_program_instruction_typet::ASSIGN;
   }
+  else if(dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isPointerTy())
+  {
+    if(dyn_cast<GetElementPtrInst>(I)->getNumIndices() == 1){
+      errs() << "(" << from_expr(comp_expr) << ")\n";
+      // dyn_cast<GetElementPtrInst>(I)->idx_begin()->dump();
+      auto i = dyn_cast<GetElementPtrInst>(I)->idx_begin();
+      exprt indx_epr;
+      if(dyn_cast<ConstantInt>(i))
+      {
+        int index = dyn_cast<ConstantInt>(i)->getSExtValue();
+        indx_epr = from_integer(index, signedbv_typet(32));
+      }
+      else
+      {
+        dyn_cast<User>(i)->dump();
+        errs() << var_name_map.find(dyn_cast<User>(i)->getName().str())->second << "\n";
+        indx_epr = symbol_table.lookup(var_name_map.find(dyn_cast<User>(i)->getName().str())->second).symbol_expr();
+        // assert(false && "unknown type");
+      }
+      comp_expr = plus_exprt(comp_expr, indx_epr);
+      if(var_name_map.find(I->getName().str()) == var_name_map.end())
+      {
+        // TODO(Rasika) : handle sign
+        symbolt symbol;
+        symbol.base_name = I->getName().str();
+        symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+          + "::" + I->getName().str();
+        var_name_map.insert(std::pair<std::string, std::string>(
+          symbol.base_name.c_str(), symbol.name.c_str()));
+        symbol.type = symbol_creator::create_type(I->getType());
+        symbol_table.add(symbol);
+        goto_programt::targett decl_comp = gp.add_instruction();
+        decl_comp->make_decl();
+        decl_comp->code=code_declt(symbol.symbol_expr());
+        decl_comp->function = irep_idt(I->getFunction()->getName().str());
+        // decl_comp->source_location = location;
+        symbol.show(std::cout);
+      }
+      errs() << "(" << from_expr(comp_expr) << ")\n";
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      std::string full_name = var_name_map.find(I->getName().str())->second;
+      assgn_inst->code = code_assignt(symbol_table.lookup(full_name).symbol_expr(),
+        comp_expr);
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+      // assert(false && "pointer arithmetic is not handled yet");
+    }
+    else
+    {
+      assert(false && "multiple arguments in GetElementPtrInst with pointer type");
+    }
+    // assert(false && "pointer type is not handled yet");
+  }
   else
   {
     // TODO(Rasika) : check if the types match in assignment. 0th index
     // array to pointer.
-    errs() << ";;;;;;;;;;;;;;;;;;;\n";
-    I->dump();
-    I->getType()->dump();
-    // dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
-    I->getOperand(0)->dump();
-    I->getOperand(0)->getType()->dump();
-    I->getOperand(1)->dump();
-    I->getOperand(1)->getType()->dump();
-    assert(false && "this type is not handled");
+    if(dyn_cast<GetElementPtrInst>(I)->getNumIndices() == 1){
+      errs() << "(" << from_expr(comp_expr) << ")\n";
+      // dyn_cast<GetElementPtrInst>(I)->idx_begin()->dump();
+      auto i = dyn_cast<GetElementPtrInst>(I)->idx_begin();
+      exprt indx_epr;
+      if(dyn_cast<ConstantInt>(i))
+      {
+        int index = dyn_cast<ConstantInt>(i)->getSExtValue();
+        indx_epr = from_integer(index, signedbv_typet(32));
+      }
+      else
+      {
+        dyn_cast<User>(i)->dump();
+        errs() << var_name_map.find(dyn_cast<User>(i)->getName().str())->second << "\n";
+        indx_epr = symbol_table.lookup(var_name_map.find(dyn_cast<User>(i)->getName().str())->second).symbol_expr();
+        // assert(false && "unknown type");
+      }
+      comp_expr = plus_exprt(comp_expr, indx_epr);
+      if(var_name_map.find(I->getName().str()) == var_name_map.end())
+      {
+        // TODO(Rasika) : handle sign
+        symbolt symbol;
+        symbol.base_name = I->getName().str();
+        symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+          + "::" + I->getName().str();
+        var_name_map.insert(std::pair<std::string, std::string>(
+          symbol.base_name.c_str(), symbol.name.c_str()));
+        symbol.type = symbol_creator::create_type(I->getType());
+        symbol_table.add(symbol);
+        goto_programt::targett decl_comp = gp.add_instruction();
+        decl_comp->make_decl();
+        decl_comp->code=code_declt(symbol.symbol_expr());
+        decl_comp->function = irep_idt(I->getFunction()->getName().str());
+        // decl_comp->source_location = location;
+        symbol.show(std::cout);
+      }
+      errs() << "(" << from_expr(comp_expr) << ")\n";
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      std::string full_name = var_name_map.find(I->getName().str())->second;
+      assgn_inst->code = code_assignt(symbol_table.lookup(full_name).symbol_expr(),
+        comp_expr);
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+      // assert(false && "pointer arithmetic is not handled yet");
+    }
+    else
+    {
+      errs() << ";;;;;;;;;;;;;;;;;;;\n";
+      dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
+      errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices() << "\n";
+      I->dump();
+      I->getType()->dump();
+      // dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
+      I->getOperand(0)->dump();
+      I->getOperand(0)->getType()->dump();
+      I->getOperand(1)->dump();
+      I->getOperand(1)->getType()->dump();
+      assert(false && "this type is not handled");
+    }
   }
   return gp;
 }
