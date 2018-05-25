@@ -3071,7 +3071,26 @@ goto_programt llvm2goto_translator::trans_Alloca(const Instruction *I,
 goto_programt llvm2goto_translator::trans_Load(const Instruction *I)
 {
   goto_programt gp;
-  errs() << "Load is yet to be mapped \n";
+  goto_programt::targett load_inst = gp.add_instruction();
+  load_inst->make_skip();
+  load_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if(I->hasMetadata())
+  {
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+  }
+  load_inst->source_location = location;
+  // load_inst->type = goto_program_instruction_typet::ASSIGN;
+  // errs() << "Load is yet to be mapped \n";
   return gp;
 }
 
@@ -5381,10 +5400,97 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
     Purpose: Map llvm::Instruction::PHI to corresponding goto instruction.
 
 \*******************************************************************/
-goto_programt llvm2goto_translator::trans_PHI(const Instruction *I)
+goto_programt llvm2goto_translator::trans_PHI(const Instruction *I,
+  symbol_tablet *symbol_table,
+  std::map <const BasicBlock*, goto_programt::targett> block_target_map,
+  goto_programt &g_prog)
 {
   goto_programt gp;
-  assert(false && "PHI is yet to be mapped \n");
+  I->dump();
+  errs() << "\n\n";
+  if(var_name_map.find(I->getName().str()) == var_name_map.end())
+  {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = I->getFunction()->getName().str()
+      + "::" + I->getName().str();
+    var_name_map.insert(std::pair<std::string, std::string>(
+      symbol.base_name.c_str(), symbol.name.c_str()));
+    // TODO(Rasika) : regain sign
+    symbol.type = symbol_creator::create_type(I->getType());
+    symbol_table->add(symbol);
+    goto_programt::targett decl_cmp = gp.add_instruction();
+    decl_cmp->make_decl();
+    decl_cmp->code=code_declt(symbol.symbol_expr());
+    decl_cmp->function = irep_idt(I->getFunction()->getName().str());
+    // TODO(Rasika) : set the location
+  }
+  symbolt s;
+  s.name = I->getName().str() + "_";
+  s.type = unsignedbv_typet(32);
+  symbol_table->add(s);
+  namespacet ns(*symbol_table);
+  unsigned n = 0;
+  for(auto i = block_target_map.begin(); i!=block_target_map.end(); i++)
+  {
+    // i->first->begin()->dump();
+    // gp.output_instruction(
+    //   ns,
+    //  "main",
+    //   std::cout,
+    //   i->second);
+    // std::cout << "\n";
+    goto_programt::targett assign_inst = g_prog.insert_after(i->second);
+    assign_inst->make_assignment();
+    assign_inst->code = code_assignt(s.symbol_expr(), from_integer(n, unsignedbv_typet(32)));
+    assign_inst->function = irep_idt(I->getFunction()->getName().str());
+
+    goto_programt::targett br = gp.add_instruction();
+
+    goto_programt::targett assign_inst1 = gp.add_instruction();
+    assign_inst1->make_assignment();
+    exprt value = from_integer(n, unsignedbv_typet(32));
+    errs() << "\n " << n << "   ---";
+    (dyn_cast<PHINode>(I)->getIncomingValue(n))->dump();
+    if(auto a = dyn_cast<PHINode>(I)->getIncomingValue(n)->hasName())
+    {
+      std::string name = dyn_cast<PHINode>(I)->getIncomingValue(n)->getName();
+      value = symbol_table->lookup(var_name_map.find(name)->second).symbol_expr();
+      // assert(false && "hasName");
+    }
+    else if(auto a = dyn_cast<Constant>(dyn_cast<PHINode>(I)->getIncomingValue(n)))
+    {
+      if(dyn_cast<ConstantData>(a))
+      {
+        if(dyn_cast<ConstantInt>(a))
+        {
+          if(I->getType()->getIntegerBitWidth() == 1)
+          {
+            if(dyn_cast<ConstantInt>(a)->isZero())
+              value = false_exprt();
+            else
+              value = true_exprt();
+          }
+          // dyn_cast<ConstantInt>(a)->dump();
+        }
+      }
+      // assert(false);
+    }
+    assign_inst1->code = code_assignt(
+      symbol_table->lookup(var_name_map.find(I->getName().str())->second).symbol_expr(),
+      value);
+    assign_inst1->function = irep_idt(I->getFunction()->getName().str());
+
+    goto_programt::targett skip = gp.add_instruction();
+    skip->make_skip();
+    br->make_goto(skip, notequal_exprt(s.symbol_expr(),
+      from_integer(n, unsignedbv_typet(32))));
+    n = n + 1;
+  }
+  g_prog.update();
+  gp.update();
+  errs() << "\n\n";
+  // assert(false && "PHI is yet to be mapped \n");
   return gp;
 }
 
@@ -6416,7 +6522,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
   std::map <const Instruction*, goto_programt::targett>
     &instruction_target_map,
   std::map <goto_programt::targett, const BasicBlock*>
-    &branch_dest_block_map_switch)
+    &branch_dest_block_map_switch,
+  std::map <const BasicBlock*, goto_programt::targett> &block_target_map)
 {
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
   I.dump();
@@ -6588,7 +6695,8 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
       }
     case Instruction::Load :
     {
-        gp = trans_Load(Inst);
+        goto_programt store_gp = trans_Load(Inst);
+        gp.destructive_append(store_gp);
         break;
       }
     case Instruction::Store :
@@ -6713,7 +6821,7 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
       }
     case Instruction::PHI :
     {
-        gp = trans_PHI(Inst);
+        gp = trans_PHI(Inst, symbol_table, block_target_map, gp);
         break;
       }
     case Instruction::Select :
@@ -6814,7 +6922,8 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
   std::map <const Instruction*, goto_programt::targett>
     &instruction_target_map,
   std::map <goto_programt::targett, const BasicBlock*>
-    &branch_dest_block_map_switch)
+    &branch_dest_block_map_switch,
+  std::map <const BasicBlock*, goto_programt::targett> block_target_map)
 {
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
@@ -6822,7 +6931,7 @@ goto_programt llvm2goto_translator::trans_Block(const BasicBlock &b,
     ie = b.end(); i != ie; ++i)
   {
       goto_programt goto_instr = trans_instruction(*i, symbol_table,
-        instruction_target_map, branch_dest_block_map_switch);
+        instruction_target_map, branch_dest_block_map_switch, block_target_map);
       gp.destructive_append(goto_instr);
       gp.update();
       errs() << "";
@@ -6865,7 +6974,7 @@ goto_programt llvm2goto_translator::trans_Function(const Function &F,
   {
     const BasicBlock &B = *b;
     goto_programt goto_block = trans_Block(B, symbol_table,
-      instruction_target_map, branch_dest_block_map_switch);
+      instruction_target_map, branch_dest_block_map_switch, block_target_map);
     register_language(new_ansi_c_language);
     goto_programt::targett target = goto_block.instructions.begin();
     gp.destructive_append(goto_block);
@@ -7051,6 +7160,25 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
         goto_functionst::goto_functiont()));
   }
   symbol_table.show(std::cout);
+  for(Function &F : *M)
+  {
+    unsigned i = 0;
+    for(BasicBlock &B : F)
+    {
+      for(Instruction &I : B)
+      {
+        if(I.getOpcode() == Instruction::PHI)
+        {
+          if(!I.hasName())
+          {
+            I.setName("_phi_" + std::to_string(i));
+            i++;
+          }
+        }
+      }
+    }
+    F.dump();
+  }
   // assert(false);
   for(Function &F : *M)
   {

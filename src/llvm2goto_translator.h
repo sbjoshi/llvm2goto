@@ -100,7 +100,9 @@ class llvm2goto_translator:public llvm2goto_translatort
   exprt trans_Inverse_Cmp(const Instruction *I, symbol_tablet *symbol_table);
   goto_programt trans_ICmp(const Instruction *I, symbol_tablet *symbol_table);
   goto_programt trans_FCmp(const Instruction *I, symbol_tablet *symbol_table);
-  goto_programt trans_PHI(const Instruction *I);
+  goto_programt trans_PHI(const Instruction *I, symbol_tablet *symbol_table,
+    std::map <const BasicBlock*, goto_programt::targett> block_target_map,
+    goto_programt &g_prog);
   goto_programt trans_Select(const Instruction *I);
   goto_programt trans_Call(const Instruction *I, symbol_tablet *symbol_table);
   goto_programt trans_Shl(const Instruction *I,
@@ -125,13 +127,15 @@ class llvm2goto_translator:public llvm2goto_translatort
       std::map <const Instruction*, goto_programt::targett>
     &instruction_target_map,
     std::map <goto_programt::targett, const BasicBlock*>
-      &branch_dest_block_map_switch);
+      &branch_dest_block_map_switch,
+      std::map <const BasicBlock*, goto_programt::targett> &block_target_map);
 
   goto_programt trans_Block(const BasicBlock &b, symbol_tablet *symbol_table,
     std::map <const Instruction*, goto_programt::targett>
       &instruction_target_map,
     std::map <goto_programt::targett, const BasicBlock*>
-      &branch_dest_block_map_switch);
+      &branch_dest_block_map_switch,
+    std::map <const BasicBlock*, goto_programt::targett> block_target_map);
 
   goto_programt trans_Function(const Function &F, symbol_tablet *symbol_table);
 
