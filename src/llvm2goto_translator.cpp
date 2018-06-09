@@ -18,6 +18,7 @@ Author : Rasika
 #include "scope.h"
 
 #include "llvm/IR/IntrinsicInst.h"
+// #include "llvm/IR/ConstantsContext.h"
 #include "langapi/mode.h"
 #include "solvers/cvc/cvc_conv.h"
 #include "ansi-c/ansi_c_language.h"
@@ -210,6 +211,7 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
     &branch_dest_block_map_switch,
   symbol_tablet &symbol_table)
 {
+  // TODO(Rasika) : handle constant
   goto_programt gp;
   Value *ub = dyn_cast<SwitchInst>(I)->getCondition();
   symbolt var;
@@ -252,7 +254,7 @@ goto_programt llvm2goto_translator::trans_Switch(const Instruction *I,
         br_ins, i.getCaseSuccessor()));
     br_ins->make_goto();
     br_ins->guard = equal_exprt(var_expr,
-      from_integer(i.getCaseValue()->getZExtValue(),
+      from_integer(i.getCaseValue()->getZExtValue(),/*TODO(Rasika) : sign*/
         var_expr.type()));
   }
   goto_programt::targett default_branch = gp.add_instruction();
@@ -345,7 +347,25 @@ goto_programt llvm2goto_translator::trans_Resume(const Instruction *I)
 goto_programt llvm2goto_translator::trans_Unreachable(const Instruction *I)
 {
   goto_programt gp;
-  assert(false && "Unreachable is yet to be mapped \n");
+  goto_programt::targett load_inst = gp.add_instruction();
+  load_inst->make_skip();
+  load_inst->function = irep_idt(I->getFunction()->getName().str());
+  source_locationt location;
+  if(I->hasMetadata())
+  {
+    if(&(I->getDebugLoc()) != NULL)
+    {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc
+            ->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(loc
+            ->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+  }
+  load_inst->source_location = location;
+  // assert(false && "Unreachable is yet to be mapped \n");
   return gp;
 }
 
@@ -3153,14 +3173,14 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   // I->dump();
   dyn_cast<StoreInst>(I)->getOperand(0)->dump();
   symbolt symbol;
+  exprt expr;
   if(dyn_cast<StoreInst>(I)->getOperand(1)->hasName())
   {
     symbol = symbol_table.lookup(var_name_map.find(
       dyn_cast<StoreInst>(I)->getOperand(1)->getName().str())->second);
+    expr = symbol.symbol_expr();
   }
-  exprt expr;
-  errs() << "1 \n";
-  if(LoadInst *li = dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
+  else if(LoadInst *li = dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
   {
     li->dump();
     expr = get_load(li, symbol_table);
@@ -3174,9 +3194,9 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     expr = dereference_exprt(symbol.symbol_expr(), symbol.type);
     // assert(false);
   }
-  else
+  else if(dyn_cast<BitCastInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
   {
-    expr = symbol.symbol_expr();
+    assert(false && "bitcast found");
   }
   errs() << "2 \n";
   exprt value_to_store;
@@ -3256,6 +3276,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     else
     {
       I->dump();
+      dyn_cast<GetElementPtrConstantExpr>(dyn_cast<StoreInst>(I)->getOperand(0));
+      errs() << "\n\n";
       assert(false && "This constant type is not handled");
     }
   }
@@ -6569,7 +6591,9 @@ goto_programt llvm2goto_translator::trans_instruction(const Instruction &I,
       }
     case Instruction::Unreachable :
     {
-        gp = trans_Unreachable(Inst);
+        // gp = trans_Unreachable(Inst);
+        goto_programt unreachable_gp = trans_Unreachable(Inst);
+        gp.destructive_append(unreachable_gp);
         break;
       }
     case Instruction::CleanupRet :
