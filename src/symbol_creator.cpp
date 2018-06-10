@@ -855,7 +855,7 @@ typet symbol_creator::create_array_type(Type *type,
     typet ptr_type = create_pointer_type(
       dyn_cast<ArrayType>(type)->getArrayElementType(),
     dyn_cast<DIDerivedType>(dyn_cast<DICompositeType>(md)->getBaseType()));
-    ele_type = pointer_typet(ptr_type, 23);
+    ele_type = pointer_typet(ptr_type, 32);
     break;
   }
   case llvm::Type::TypeID::VectorTyID :
@@ -1308,7 +1308,21 @@ typet symbol_creator::create_type(Type *type)
     }
     case llvm::Type::TypeID::StructTyID :
     {
-      errs() << "\n struct no action.................";
+      struct_union_typet sut(ID_struct);
+      struct_union_typet::componentst &components = sut.components();
+      int i = 0;
+      for(StructType::element_iterator e =
+          dyn_cast<StructType>(type)->element_begin();
+        e != dyn_cast<StructType>(type)->element_end();
+        e++)
+      {
+        // (*e)->dump();
+        // assert(false);
+        struct_union_typet::componentt component("", create_type(*e));
+        components.push_back(component);
+      }
+      ele_type = sut;
+      // errs() << "\n struct no action.................";
       break;
     }
     case llvm::Type::TypeID::ArrayTyID :
