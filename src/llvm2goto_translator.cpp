@@ -18,7 +18,7 @@ Author : Rasika
 #include "scope.h"
 
 #include "llvm/IR/IntrinsicInst.h"
-// #include "llvm/IR/ConstantsContext.h"
+#include "llvm/IR/Constants.h"
 #include "langapi/mode.h"
 #include "solvers/cvc/cvc_conv.h"
 #include "ansi-c/ansi_c_language.h"
@@ -93,7 +93,7 @@ goto_programt llvm2goto_translator::trans_Ret(const Instruction *I,
         {
           float val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
-          ieee_fl.from_double(val);
+          ieee_fl.from_float(val);
           exprt1 = ieee_fl.to_expr();
         }
         else
@@ -955,7 +955,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -1006,7 +1006,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
       float val = dyn_cast<ConstantFP>(
         *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
-      ieee_fl.from_double(val);
+      ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else
@@ -1306,7 +1306,7 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -1357,7 +1357,7 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
       float val = dyn_cast<ConstantFP>(
         *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
-      ieee_fl.from_double(val);
+      ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else
@@ -1658,7 +1658,7 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -1709,7 +1709,7 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
       float val = dyn_cast<ConstantFP>(
         *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
-      ieee_fl.from_double(val);
+      ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else
@@ -2065,7 +2065,7 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -2116,7 +2116,7 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
       float val = dyn_cast<ConstantFP>(
         *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
-      ieee_fl.from_double(val);
+      ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else
@@ -2471,7 +2471,7 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -2522,7 +2522,7 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
       float val = dyn_cast<ConstantFP>(
         *(ub+1))->getValueAPF().convertToDouble();
       ieee_floatt ieee_fl = ieee_floatt();
-      ieee_fl.from_double(val);
+      ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else
@@ -3148,7 +3148,27 @@ exprt llvm2goto_translator::get_load(const LoadInst *I, const symbol_tablet &sym
   else
   {
     errs() << "b\n";
-    return dereference_exprt(get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table));
+    if(BitCastInst *bci = dyn_cast<BitCastInst>(I->getOperand(0)))
+    {
+      if(bci->getOperand(0)->hasName())
+      {
+        symbolt symbol = symbol_table.lookup(var_name_map.find(
+          bci->getOperand(0)->getName().str())->second);
+        exprt value_to_store = symbol.symbol_expr();
+        value_to_store = typecast_exprt(value_to_store, symbol_creator::create_type(bci->getType()));
+        // errs() << from_expr(value_to_store) << "\n";
+        return value_to_store;
+      }
+      else
+      {
+        assert(false && "bitcast found");
+      }
+      assert(false && "bitcast");
+    }
+    else
+    {
+      return dereference_exprt(get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table));
+    }
   }
 }
 
@@ -3167,7 +3187,7 @@ exprt llvm2goto_translator::get_load(const LoadInst *I, const symbol_tablet &sym
 
 \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
-  const symbol_tablet &symbol_table)
+  symbol_tablet &symbol_table)
 {
   goto_programt gp;
   // I->dump();
@@ -3194,9 +3214,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     expr = dereference_exprt(symbol.symbol_expr(), symbol.type);
     // assert(false);
   }
-  else if(dyn_cast<BitCastInst>(dyn_cast<StoreInst>(I)->getOperand(1)))
+  else
   {
-    assert(false && "bitcast found");
+    I->getOperand(1)->dump();
+    assert(false && "this type is not handled");
   }
   errs() << "2 \n";
   exprt value_to_store;
@@ -3259,12 +3280,14 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       }
       else if(floattype->isDoubleTy())
       {
-        float val = dyn_cast<ConstantFP>(
+        double val = dyn_cast<ConstantFP>(
           dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF().
         convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         value_to_store = ieee_fl.to_expr();
+        errs() << "================\n";
+        errs() << from_expr(value_to_store);
       }
       else
       {
@@ -3275,11 +3298,43 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     }
     else
     {
-      I->dump();
-      dyn_cast<GetElementPtrConstantExpr>(dyn_cast<StoreInst>(I)->getOperand(0));
-      errs() << "\n\n";
-      assert(false && "This constant type is not handled");
+      // I->dump();
+      Instruction *i = dyn_cast<ConstantExpr>(dyn_cast<StoreInst>(I)->getOperand(0))->getAsInstruction();
+      if(dyn_cast<GetElementPtrInst>(i))
+      {
+        i->setName("___temp_getelementptr");
+        i->setDebugLoc (I->getDebugLoc());
+        goto_programt gp_getelementptr = trans_GetElementPtr(i, symbol_table);
+        gp_getelementptr.output(std::cout);
+        goto_programt::targett getele = gp_getelementptr.instructions.begin();
+        getele++;
+        exprt geteleptr_expr = getele->code;
+        errs() << from_expr(geteleptr_expr.op1());
+        value_to_store = geteleptr_expr.op1();
+      }
+      else
+      {
+        assert(false && "This constant type is not handled");
+      }
     }
+  }
+
+  else if(BitCastInst *bci = dyn_cast<BitCastInst>(dyn_cast<StoreInst>(I)->getOperand(0)))
+  {
+    // bci->dump();
+    // bci->getOperand(0)->dump();
+    if(bci->getOperand(0)->hasName())
+    {
+      symbol = symbol_table.lookup(var_name_map.find(
+        bci->getOperand(0)->getName().str())->second);
+      value_to_store = symbol.symbol_expr();
+    }
+    else
+    {
+      assert(false && "bitcast found");
+    }
+    // symbol.show(std::cout);
+    // value_to_store = typecast_exprt(value_to_store, symbol.type);
   }
   else
   {
@@ -3384,6 +3439,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   errs() << "6 \n";
   store_inst->source_location = location;
   store_inst->type = goto_program_instruction_typet::ASSIGN;
+  // gp.output(std::cout);
   // assert(false);
   return gp;
 }
@@ -3471,13 +3527,37 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   dyn_cast<GetElementPtrInst>(I)->getResultElementType()->dump();
   symbolt comp;
   exprt comp_expr;
-  if(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName()){
+  if(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName())
+  {
     std::string name_of_composite_var;
     name_of_composite_var
       = dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName();
-    std::string comp_var_full_name = var_name_map.find(
-      name_of_composite_var)->second;
+      errs () << name_of_composite_var << "\n";
+    auto vnm = var_name_map.find(name_of_composite_var);
+    std::string comp_var_full_name;
+    if(vnm == var_name_map.end())
+    {
+      comp_var_full_name = name_of_composite_var;
+    }
+    else
+    {
+      comp_var_full_name = var_name_map.find(name_of_composite_var)->second;
+    }
     comp = symbol_table.lookup(comp_var_full_name);
+  }
+  else if(const BitCastInst *bci = dyn_cast<BitCastInst>(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()))
+  {
+    bci->getDestTy()->dump();
+    bci->getType()->dump();
+    if(bci->getOperand(0)->hasName())
+    {
+      comp = symbol_table.lookup(var_name_map.find(
+        bci->getOperand(0)->getName().str())->second);
+      comp_expr = comp.symbol_expr();
+    }
+    comp_expr = typecast_exprt(comp_expr, symbol_creator::create_type(bci->getDestTy()));
+    // errs() << from_expr(comp_expr);
+    // assert(false && "ge");
   }
   else
   {
@@ -3524,25 +3604,29 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       goto_programt::targett decl_add = gp.add_instruction();
       decl_add->make_decl();
       decl_add->code=code_declt(symbol.symbol_expr());
-      decl_add->function = irep_idt(I->getFunction()->getName().str());
+      if(I->getName() != "___temp_getelementptr")
+      {
+        decl_add->function = irep_idt(I->getFunction()->getName().str());
+      }
       symbol.show(std::cout);
       // decl_add->source_location = location;
     }
-    dyn_cast<GetElementPtrInst>(I)->getPointerOperand ()->dump();
-    // errs() << var_name_map.find(
-    //   dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName().str())->second << "\n";
-    // symbol_table.show(std::cout);
-    symbolt symbol = symbol_table.lookup(var_name_map.find(
-      dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName().str())->second);
-    comp.show(std::cout);
-    errs() << symbol.type.subtype().id().c_str() << "\n";
+    
+    // dyn_cast<GetElementPtrInst>(I)->getPointerOperand ()->dump();
+    // // errs() << var_name_map.find(
+    // //   dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName().str())->second << "\n";
+    // // symbol_table.show(std::cout);
+    // symbolt symbol = symbol_table.lookup(var_name_map.find(
+    //   dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName().str())->second);
+    // comp.show(std::cout);
+    // errs() << symbol.type.subtype().id().c_str() << "\n";
     // symbol.show(std::cout);
     dyn_cast<GetElementPtrInst>(I)->getPointerOperandType ()->dump();
-    errs() << dyn_cast<GetElementPtrInst>(I)->getPointerAddressSpace () << "\n";
-    errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices ()  << "\n";
-    dyn_cast<GetElementPtrInst>(I)->getSourceElementType () ->dump();
-    dyn_cast<GetElementPtrInst>(I)->getResultElementType () ->dump();
-    errs() <<  dyn_cast<GetElementPtrInst>(I)->getAddressSpace () << "\n";
+    // errs() << dyn_cast<GetElementPtrInst>(I)->getPointerAddressSpace () << "\n";
+    // errs() << dyn_cast<GetElementPtrInst>(I)->getNumIndices ()  << "\n";
+    // dyn_cast<GetElementPtrInst>(I)->getSourceElementType () ->dump();
+    // dyn_cast<GetElementPtrInst>(I)->getResultElementType () ->dump();
+    // errs() <<  dyn_cast<GetElementPtrInst>(I)->getAddressSpace () << "\n";
     // I->getMetadata()->dump();
     // symbol_creator::create_ArrayTy(type, mdn);
     goto_programt::targett assgn_inst = gp.add_instruction();
@@ -3550,7 +3634,10 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     std::string full_name = var_name_map.find(I->getName().str())->second;
     assgn_inst->code = code_assignt(symbol_table.lookup(full_name).symbol_expr(),
       address_of_exprt(index_exprt(comp.symbol_expr(), indx_epr)));
-    assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+    if(I->getName() != "___temp_getelementptr")
+    {
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+    }
     assgn_inst->type = goto_program_instruction_typet::ASSIGN;
     // assert(false && "Array type is not handled");
   }
@@ -4051,7 +4138,7 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -4178,7 +4265,7 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -4293,7 +4380,7 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -4408,7 +4495,7 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
       {
         float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
         ieee_floatt ieee_fl = ieee_floatt();
-        ieee_fl.from_double(val);
+        ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else
@@ -4755,7 +4842,10 @@ goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I)
 goto_programt llvm2goto_translator::trans_BitCast(const Instruction *I)
 {
   goto_programt gp;
-  assert(false && "BitCast is yet to be mapped \n");
+  if(I->hasName())
+  {
+    assert(false && "BitCast is yet to be mapped \n");
+  }
   return gp;
 }
 
@@ -4956,7 +5046,7 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
           double val = dyn_cast<ConstantFP>(*ub)
             ->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
-          ieee_fl.from_double(val);
+          ieee_fl.from_float(val);
           opnd1 = ieee_fl.to_expr();
         }
       }
@@ -4967,7 +5057,7 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
           double val = dyn_cast<ConstantFP>(*(ub+1))
             ->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
-          ieee_fl.from_double(val);
+          ieee_fl.from_float(val);
           opnd2 = ieee_fl.to_expr();
         }
       }
@@ -5217,7 +5307,7 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
           double val = dyn_cast<ConstantFP>(*ub)
             ->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
-          ieee_fl.from_double(val);
+          ieee_fl.from_float(val);
           opnd1 = ieee_fl.to_expr();
         }
       }
@@ -5228,7 +5318,7 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
           double val = dyn_cast<ConstantFP>(*(ub+1))
             ->getValueAPF().convertToDouble();
           ieee_floatt ieee_fl = ieee_floatt();
-          ieee_fl.from_double(val);
+          ieee_fl.from_float(val);
           opnd2 = ieee_fl.to_expr();
         }
       }
@@ -5753,11 +5843,11 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
                 ->getScope()->getFile()->getDirectory().str());
           location.set_line(loc->getLine());
           location.set_column(loc->getColumn());
-          exprt e = trans_Cmp(dyn_cast<Instruction>(
-            dyn_cast<Instruction>(I->op_begin())->op_begin()), symbol_table);
-          location.set_comment(
-            from_expr(namespacet(*symbol_table),
-              (symbol_table->symbols.begin()->second.name), e));
+          // exprt e = trans_Cmp(dyn_cast<Instruction>(
+          //   dyn_cast<Instruction>(I->op_begin())->op_begin()), symbol_table);
+          // location.set_comment(
+          //   from_expr(namespacet(*symbol_table),
+          //     (symbol_table->symbols.begin()->second.name), e));
         }
       }
       ass_inst->source_location = location;
@@ -7142,6 +7232,8 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
     cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
     symbol_table.add(cprover_rounding_mode);
   }
+  // symbol_table.show(std::cout);
+  // exit(0);
 
   goto_programt gp;
   for(Function &F : *M)
