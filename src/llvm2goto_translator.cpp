@@ -1611,15 +1611,17 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
             ->getScope()->getFile()->getDirectory().str());
       location.set_line(loc->getLine());
       location.set_column(loc->getColumn());
-      exprt e = get_exprt(dyn_cast<Instruction>(I), symbol_table);
-      std::string comment = from_expr(namespacet(symbol_table),
-      	(symbol_table.symbols.begin()->second.name), e);
-      location.set_comment(comment);
-      errs() << "\n \n comment : " << comment << "\n\n";
+      // exprt e = get_exprt(dyn_cast<Instruction>(I), symbol_table);
+      // std::string comment = from_expr(namespacet(symbol_table),
+      //   (symbol_table.symbols.begin()->second.name), e);
+      // assert(false);
+      // location.set_comment(comment);
+      // errs() << "\n \n comment : " << comment << "\n\n";
     }
   }
   add_inst->source_location = location;
   add_inst->type = goto_program_instruction_typet::ASSIGN;
+  // assert(false);
   return gp;
 }
 
@@ -5826,10 +5828,26 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       {
         ass_inst = gp.add_instruction(ASSERT);
       }
-      exprt guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
-        dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->
-        getName().str())->second).symbol_expr(),
-        bool_typet());
+      exprt guard;
+      if(const ConstantInt *i = dyn_cast<ConstantInt>(*I->value_op_begin()))
+      {
+        if(i->isZero())
+        {
+          guard = false_exprt();
+        }
+        else
+        {
+          guard = true_exprt();
+        }
+      }
+      else
+      {
+        guard = typecast_exprt(symbol_table->lookup(var_name_map.find(
+          dyn_cast<Instruction>(*I->value_op_begin())->value_op_begin()->
+          getName().str())->second).symbol_expr(),
+          bool_typet());
+      }
+      errs() << from_expr(guard) << "\n";
       ass_inst->guard = guard;
       source_locationt location;
       if(I->hasMetadata())
@@ -7275,7 +7293,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
         dstringt(F.getName()),
         goto_functionst::goto_functiont()));
   }
-  symbol_table.show(std::cout);
+  // symbol_table.show(std::cout);
   for(Function &F : *M)
   {
     unsigned i = 0;
@@ -7293,7 +7311,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
         }
       }
     }
-    F.dump();
+    // F.dump();
   }
   // assert(false);
   for(Function &F : *M)
