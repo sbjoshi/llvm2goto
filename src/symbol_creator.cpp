@@ -1377,7 +1377,7 @@ typet symbol_creator::create_type(Type *type)
 \*******************************************************************/
 symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F)
 {
-  // errs() << "\n FunctionType :";
+  errs() << "\n FunctionType :\n" << F.getName() << "\n";
   FunctionType *ft = dyn_cast<FunctionType>(type);
 
   symbolt funct;
@@ -1398,28 +1398,28 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F)
     DISubroutineType *md = (dyn_cast<DISubprogram>(F.getSubprogram()))->getType();
     // md->dump();
     
-    DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
-    // errs() << md->size() << "\n\n";
-    // if(md->getTypeArray()->getNumOperands() > 1)
-    // {
-    //   md->dump();
-    //   md->getTypeArray()->dump();
-      
-    //   mdn->dump();
-    //   errs() << "=============\n";
-    // }
-    // errs() << dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding() << "\n";
-    // switch(dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding())
-    // {
-    //   case dwarf::DW_ATE_signed :
-    //   case dwarf::DW_ATE_signed_char :
-    //   // case dwarf::DW_EH_PE_signed :
-    //     ft->getReturnType()->dump();
-    //     errs() << "signed type found!!!\n";
-    //     ct.return_type() = signedbv_typet(
-    //       ft->getReturnType()->getIntegerBitWidth());
-    //     break;
-    // }
+    
+      // errs() << md->size() << "\n\n";
+      // if(md->getTypeArray()->getNumOperands() > 1)
+      // {
+      //   md->dump();
+      //   md->getTypeArray()->dump();
+        
+      //   mdn->dump();
+      //   errs() << "=============\n";
+      // }
+      // errs() << dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding() << "\n";
+      // switch(dyn_cast<DIBasicType>(dyn_cast<DISubroutineType>(md->getType())->getTypeArray()[0])->getEncoding())
+      // {
+      //   case dwarf::DW_ATE_signed :
+      //   case dwarf::DW_ATE_signed_char :
+      //   // case dwarf::DW_EH_PE_signed :
+      //     ft->getReturnType()->dump();
+      //     errs() << "signed type found!!!\n";
+      //     ct.return_type() = signedbv_typet(
+      //       ft->getReturnType()->getIntegerBitWidth());
+      //     break;
+      // }
     auto arg = F.arg_begin();
     unsigned int i = 1;
     // errs() << F.getName() << " = ";
@@ -1443,10 +1443,18 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F)
     }
     // errs() << "\n";
     ct.parameters() = para;
-    mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
-    ft->getReturnType();
-    DIType *ditype = dyn_cast<DIType>(mdn);
-    ct.return_type() = create_type(ft->getReturnType(), ditype);
+    if(&*md->getTypeArray()[0] != NULL)
+    {
+      DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+      mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+      ft->getReturnType();
+      DIType *ditype = dyn_cast<DIType>(mdn);
+      ct.return_type() = create_type(ft->getReturnType(), ditype);
+    }
+    else
+    {
+      ct.return_type() = void_typet();
+    }
   }
   // static_cast<unsignedbv_typet &>(rt);
   funct.type = ct;

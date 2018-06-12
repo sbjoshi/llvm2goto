@@ -7263,7 +7263,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename)
       // errs() << "hello\n";
       DISubroutineType *md = (dyn_cast<DISubprogram>(F.getSubprogram()))->getType();
       // md->dump();
-      DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+      // DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
       unsigned int i = 1;
       for(Function::arg_iterator arg_b = F.arg_begin (), arg_e = F.arg_end();
         arg_b != arg_e; arg_b++)
