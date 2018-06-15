@@ -1,0 +1,80 @@
+Test 'if3_switch'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+Running /home/rasika/Downloads/cbmc-cbmc-5.8/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [FAILED]
+
+Test 'if3_switch_fail'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+Running /home/rasika/Downloads/cbmc-cbmc-5.8/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [FAILED]
+
+Test 'if4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/rasika/Downloads/cbmc-cbmc-5.8/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'if6'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/rasika/Downloads/cbmc-cbmc-5.8/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
