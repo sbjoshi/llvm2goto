@@ -10,9 +10,12 @@ Author : Rasika
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "goto-programs/goto_functions.h"
-#include "goto-programs/goto_functions_template.h"
+//#include "goto-programs/goto_functions_template.h"  Removed in 5.11
 #include "util/arith_tools.h"
 #include "util/ieee_float.h"
+
+#include "pointer-analysis/dereference_callback.h"
+
 
 // using llvm::Instruction;
 // using llvm::Module;

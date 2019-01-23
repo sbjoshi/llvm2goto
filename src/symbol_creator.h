@@ -10,6 +10,9 @@ Author : Rasika
 #include "llvm/IR/DebugInfoMetadata.h"
 
 #include "util/std_types.h"
+
+#include "pointer-analysis/dereference_callback.h"
+
 using namespace llvm;
 #ifndef SRC_SYMBOL_CREATOR_H_
 #define SRC_SYMBOL_CREATOR_H_

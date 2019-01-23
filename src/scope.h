@@ -13,6 +13,9 @@ Author : Rasika
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 
+#include "pointer-analysis/dereference_callback.h"
+
+
 using namespace llvm;
 #ifndef SRC_SCOPE_H_
 #define SRC_SCOPE_H_

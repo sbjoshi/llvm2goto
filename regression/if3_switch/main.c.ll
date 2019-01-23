@@ -3,15 +3,15 @@ source_filename = "if3_switch/main.c"
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
-; Function Attrs: noinline nounwind uwtable
-define i32 @main() #0 !dbg !6 {
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @main() #0 !dbg !7 {
 entry:
   %retval = alloca i32, align 4
   %i = alloca i32, align 4
   %j = alloca i32, align 4
   store i32 0, i32* %retval, align 4
-  call void @llvm.dbg.declare(metadata i32* %i, metadata !10, metadata !11), !dbg !12
-  call void @llvm.dbg.declare(metadata i32* %j, metadata !13, metadata !11), !dbg !14
+  call void @llvm.dbg.declare(metadata i32* %i, metadata !11, metadata !DIExpression()), !dbg !12
+  call void @llvm.dbg.declare(metadata i32* %j, metadata !13, metadata !DIExpression()), !dbg !14
   %0 = load i32, i32* %i, align 4, !dbg !15
   %cmp = icmp sgt i32 %0, 0, !dbg !17
   br i1 %cmp, label %if.then, label %if.else9, !dbg !18
@@ -86,63 +86,63 @@ if.end14:                                         ; preds = %sw.epilog, %if.end7
 
 lor.lhs.false:                                    ; preds = %if.end14
   %10 = load i32, i32* %j, align 4, !dbg !61
-  %cmp17 = icmp sge i32 %10, 0, !dbg !63
-  br i1 %cmp17, label %land.rhs, label %land.end, !dbg !64
+  %cmp17 = icmp sge i32 %10, 0, !dbg !62
+  br i1 %cmp17, label %land.rhs, label %land.end, !dbg !63
 
 land.rhs:                                         ; preds = %lor.lhs.false, %if.end14
-  %11 = load i32, i32* %i, align 4, !dbg !65
-  %cmp19 = icmp sle i32 %11, 0, !dbg !67
-  br i1 %cmp19, label %lor.rhs, label %lor.end, !dbg !68
+  %11 = load i32, i32* %i, align 4, !dbg !64
+  %cmp19 = icmp sle i32 %11, 0, !dbg !65
+  br i1 %cmp19, label %lor.rhs, label %lor.end, !dbg !66
 
 lor.rhs:                                          ; preds = %land.rhs
-  %12 = load i32, i32* %j, align 4, !dbg !69
-  %cmp21 = icmp slt i32 %12, 0, !dbg !71
-  br label %lor.end, !dbg !72
+  %12 = load i32, i32* %j, align 4, !dbg !67
+  %cmp21 = icmp slt i32 %12, 0, !dbg !68
+  br label %lor.end, !dbg !66
 
 lor.end:                                          ; preds = %lor.rhs, %land.rhs
   %13 = phi i1 [ true, %land.rhs ], [ %cmp21, %lor.rhs ]
   br label %land.end
 
 land.end:                                         ; preds = %lor.end, %lor.lhs.false
-  %14 = phi i1 [ false, %lor.lhs.false ], [ %13, %lor.end ]
-  %land.ext = zext i1 %14 to i32, !dbg !73
-  %call23 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %land.ext), !dbg !75
-  %15 = load i32, i32* %retval, align 4, !dbg !76
-  ret i32 %15, !dbg !76
+  %14 = phi i1 [ false, %lor.lhs.false ], [ %13, %lor.end ], !dbg !69
+  %land.ext = zext i1 %14 to i32, !dbg !63
+  %call23 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %land.ext), !dbg !70
+  %15 = load i32, i32* %retval, align 4, !dbg !71
+  ret i32 %15, !dbg !71
 }
 
-; Function Attrs: nounwind readnone
+; Function Attrs: nounwind readnone speculatable
 declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
-declare i32 @assert(...) #2
+declare dso_local i32 @assert(...) #2
 
-attributes #0 = { noinline nounwind uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { nounwind readnone }
+attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { nounwind readnone speculatable }
 attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.dbg.cu = !{!0}
-!llvm.module.flags = !{!3, !4}
-!llvm.ident = !{!5}
+!llvm.module.flags = !{!3, !4, !5}
+!llvm.ident = !{!6}
 
-!0 = distinct !DICompileUnit(language: DW_LANG_C99, file: !1, producer: "clang version 5.0.0 (trunk 295264)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !2)
-!1 = !DIFile(filename: "if3_switch/main.c", directory: "/home/rasika/llvm2goto/llvm2goto-regression-master")
+!0 = distinct !DICompileUnit(language: DW_LANG_C99, file: !1, producer: "clang version 7.0.1 (https://github.com/llvm-mirror/clang.git 4519e2637fcc4bf6e3049a0a80e6a5e7b97667cb) (https://github.com/llvm-mirror/llvm.git cd98f42d0747826062fc3d2d2fad383aedf58dd6)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !2)
+!1 = !DIFile(filename: "if3_switch/main.c", directory: "/home/akash/Documents/CBMC/cbmc/src/llvm2goto/regression")
 !2 = !{}
 !3 = !{i32 2, !"Dwarf Version", i32 4}
 !4 = !{i32 2, !"Debug Info Version", i32 3}
-!5 = !{!"clang version 5.0.0 (trunk 295264)"}
-!6 = distinct !DISubprogram(name: "main", scope: !1, file: !1, line: 3, type: !7, isLocal: false, isDefinition: true, scopeLine: 4, isOptimized: false, unit: !0, variables: !2)
-!7 = !DISubroutineType(types: !8)
-!8 = !{!9}
-!9 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-!10 = !DILocalVariable(name: "i", scope: !6, file: !1, line: 5, type: !9)
-!11 = !DIExpression()
-!12 = !DILocation(line: 5, column: 6, scope: !6)
-!13 = !DILocalVariable(name: "j", scope: !6, file: !1, line: 5, type: !9)
-!14 = !DILocation(line: 5, column: 8, scope: !6)
+!5 = !{i32 1, !"wchar_size", i32 4}
+!6 = !{!"clang version 7.0.1 (https://github.com/llvm-mirror/clang.git 4519e2637fcc4bf6e3049a0a80e6a5e7b97667cb) (https://github.com/llvm-mirror/llvm.git cd98f42d0747826062fc3d2d2fad383aedf58dd6)"}
+!7 = distinct !DISubprogram(name: "main", scope: !1, file: !1, line: 3, type: !8, isLocal: false, isDefinition: true, scopeLine: 4, isOptimized: false, unit: !0, retainedNodes: !2)
+!8 = !DISubroutineType(types: !9)
+!9 = !{!10}
+!10 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+!11 = !DILocalVariable(name: "i", scope: !7, file: !1, line: 5, type: !10)
+!12 = !DILocation(line: 5, column: 6, scope: !7)
+!13 = !DILocalVariable(name: "j", scope: !7, file: !1, line: 5, type: !10)
+!14 = !DILocation(line: 5, column: 8, scope: !7)
 !15 = !DILocation(line: 7, column: 5, scope: !16)
-!16 = distinct !DILexicalBlock(scope: !6, file: !1, line: 7, column: 5)
+!16 = distinct !DILexicalBlock(scope: !7, file: !1, line: 7, column: 5)
 !17 = !DILocation(line: 7, column: 6, scope: !16)
-!18 = !DILocation(line: 7, column: 5, scope: !6)
+!18 = !DILocation(line: 7, column: 5, scope: !7)
 !19 = !DILocation(line: 9, column: 6, scope: !20)
 !20 = distinct !DILexicalBlock(scope: !21, file: !1, line: 9, column: 6)
 !21 = distinct !DILexicalBlock(scope: !16, file: !1, line: 8, column: 2)
@@ -182,22 +182,17 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !55 = !DILocation(line: 33, column: 10, scope: !45)
 !56 = !DILocation(line: 33, column: 11, scope: !45)
 !57 = !DILocation(line: 33, column: 3, scope: !45)
-!58 = !DILocation(line: 37, column: 12, scope: !6)
-!59 = !DILocation(line: 37, column: 13, scope: !6)
-!60 = !DILocation(line: 37, column: 17, scope: !6)
-!61 = !DILocation(line: 37, column: 21, scope: !62)
-!62 = !DILexicalBlockFile(scope: !6, file: !1, discriminator: 2)
-!63 = !DILocation(line: 37, column: 22, scope: !62)
-!64 = !DILocation(line: 37, column: 28, scope: !62)
-!65 = !DILocation(line: 37, column: 34, scope: !66)
-!66 = !DILexicalBlockFile(scope: !6, file: !1, discriminator: 4)
-!67 = !DILocation(line: 37, column: 35, scope: !66)
-!68 = !DILocation(line: 37, column: 40, scope: !66)
-!69 = !DILocation(line: 37, column: 45, scope: !70)
-!70 = !DILexicalBlockFile(scope: !6, file: !1, discriminator: 6)
-!71 = !DILocation(line: 37, column: 46, scope: !70)
-!72 = !DILocation(line: 37, column: 40, scope: !70)
-!73 = !DILocation(line: 37, column: 28, scope: !74)
-!74 = !DILexicalBlockFile(scope: !6, file: !1, discriminator: 8)
-!75 = !DILocation(line: 37, column: 2, scope: !74)
-!76 = !DILocation(line: 38, column: 1, scope: !6)
+!58 = !DILocation(line: 37, column: 12, scope: !7)
+!59 = !DILocation(line: 37, column: 13, scope: !7)
+!60 = !DILocation(line: 37, column: 17, scope: !7)
+!61 = !DILocation(line: 37, column: 21, scope: !7)
+!62 = !DILocation(line: 37, column: 22, scope: !7)
+!63 = !DILocation(line: 37, column: 28, scope: !7)
+!64 = !DILocation(line: 37, column: 34, scope: !7)
+!65 = !DILocation(line: 37, column: 35, scope: !7)
+!66 = !DILocation(line: 37, column: 40, scope: !7)
+!67 = !DILocation(line: 37, column: 45, scope: !7)
+!68 = !DILocation(line: 37, column: 46, scope: !7)
+!69 = !DILocation(line: 0, scope: !7)
+!70 = !DILocation(line: 37, column: 2, scope: !7)
+!71 = !DILocation(line: 38, column: 1, scope: !7)

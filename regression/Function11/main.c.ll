@@ -5,16 +5,16 @@ target triple = "x86_64-unknown-linux-gnu"
 
 %struct.s = type { i32 }
 
-@g = common global %struct.s zeroinitializer, align 4, !dbg !0
+@g = common dso_local global %struct.s zeroinitializer, align 4, !dbg !0
 
-; Function Attrs: noinline nounwind uwtable
-define void @f(i32* %pp) #0 !dbg !15 {
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local void @f(i32* %pp) #0 !dbg !16 {
 entry:
   %pp.addr = alloca i32*, align 8
   %p3 = alloca i32*, align 8
   store i32* %pp, i32** %pp.addr, align 8
-  call void @llvm.dbg.declare(metadata i32** %pp.addr, metadata !19, metadata !20), !dbg !21
-  call void @llvm.dbg.declare(metadata i32** %p3, metadata !22, metadata !20), !dbg !23
+  call void @llvm.dbg.declare(metadata i32** %pp.addr, metadata !20, metadata !DIExpression()), !dbg !21
+  call void @llvm.dbg.declare(metadata i32** %p3, metadata !22, metadata !DIExpression()), !dbg !23
   %0 = load i32*, i32** %pp.addr, align 8, !dbg !24
   store i32* %0, i32** %p3, align 8, !dbg !23
   %1 = load i32*, i32** %p3, align 8, !dbg !25
@@ -24,19 +24,19 @@ entry:
   ret void, !dbg !28
 }
 
-; Function Attrs: nounwind readnone
+; Function Attrs: nounwind readnone speculatable
 declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
-declare i32 @assert(...) #2
+declare dso_local i32 @assert(...) #2
 
-; Function Attrs: noinline nounwind uwtable
-define i32 @main() #0 !dbg !29 {
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @main() #0 !dbg !29 {
 entry:
   %p1 = alloca i8*, align 8
   %p2 = alloca %struct.s*, align 8
-  call void @llvm.dbg.declare(metadata i8** %p1, metadata !32, metadata !20), !dbg !34
+  call void @llvm.dbg.declare(metadata i8** %p1, metadata !32, metadata !DIExpression()), !dbg !34
   store i8* bitcast (%struct.s* @g to i8*), i8** %p1, align 8, !dbg !34
-  call void @llvm.dbg.declare(metadata %struct.s** %p2, metadata !35, metadata !20), !dbg !36
+  call void @llvm.dbg.declare(metadata %struct.s** %p2, metadata !35, metadata !DIExpression()), !dbg !36
   %0 = load i8*, i8** %p1, align 8, !dbg !37
   %1 = bitcast i8* %0 to %struct.s*, !dbg !38
   store %struct.s* %1, %struct.s** %p2, align 8, !dbg !36
@@ -46,18 +46,18 @@ entry:
   ret i32 0, !dbg !42
 }
 
-attributes #0 = { noinline nounwind uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { nounwind readnone }
+attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { nounwind readnone speculatable }
 attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.dbg.cu = !{!2}
-!llvm.module.flags = !{!12, !13}
-!llvm.ident = !{!14}
+!llvm.module.flags = !{!12, !13, !14}
+!llvm.ident = !{!15}
 
-!0 = !DIGlobalVariableExpression(var: !1)
+!0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
 !1 = distinct !DIGlobalVariable(name: "g", scope: !2, file: !3, line: 3, type: !7, isLocal: false, isDefinition: true)
-!2 = distinct !DICompileUnit(language: DW_LANG_C99, file: !3, producer: "clang version 5.0.0 (trunk 295264)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !4, retainedTypes: !5, globals: !11)
-!3 = !DIFile(filename: "Function11/main.c", directory: "/home/rasika/llvm2goto/llvm2goto-regression-master")
+!2 = distinct !DICompileUnit(language: DW_LANG_C99, file: !3, producer: "clang version 7.0.1 (https://github.com/llvm-mirror/clang.git 4519e2637fcc4bf6e3049a0a80e6a5e7b97667cb) (https://github.com/llvm-mirror/llvm.git cd98f42d0747826062fc3d2d2fad383aedf58dd6)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !4, retainedTypes: !5, globals: !11)
+!3 = !DIFile(filename: "Function11/main.c", directory: "/home/akash/Documents/CBMC/cbmc/src/llvm2goto/regression")
 !4 = !{}
 !5 = !{!6}
 !6 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !7, size: 64)
@@ -68,22 +68,22 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !11 = !{!0}
 !12 = !{i32 2, !"Dwarf Version", i32 4}
 !13 = !{i32 2, !"Debug Info Version", i32 3}
-!14 = !{!"clang version 5.0.0 (trunk 295264)"}
-!15 = distinct !DISubprogram(name: "f", scope: !3, file: !3, line: 5, type: !16, isLocal: false, isDefinition: true, scopeLine: 6, flags: DIFlagPrototyped, isOptimized: false, unit: !2, variables: !4)
-!16 = !DISubroutineType(types: !17)
-!17 = !{null, !18}
-!18 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !10, size: 64)
-!19 = !DILocalVariable(name: "pp", arg: 1, scope: !15, file: !3, line: 5, type: !18)
-!20 = !DIExpression()
-!21 = !DILocation(line: 5, column: 13, scope: !15)
-!22 = !DILocalVariable(name: "p3", scope: !15, file: !3, line: 7, type: !18)
-!23 = !DILocation(line: 7, column: 8, scope: !15)
-!24 = !DILocation(line: 7, column: 11, scope: !15)
-!25 = !DILocation(line: 8, column: 10, scope: !15)
-!26 = !DILocation(line: 8, column: 12, scope: !15)
-!27 = !DILocation(line: 8, column: 3, scope: !15)
-!28 = !DILocation(line: 9, column: 1, scope: !15)
-!29 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 11, type: !30, isLocal: false, isDefinition: true, scopeLine: 12, isOptimized: false, unit: !2, variables: !4)
+!14 = !{i32 1, !"wchar_size", i32 4}
+!15 = !{!"clang version 7.0.1 (https://github.com/llvm-mirror/clang.git 4519e2637fcc4bf6e3049a0a80e6a5e7b97667cb) (https://github.com/llvm-mirror/llvm.git cd98f42d0747826062fc3d2d2fad383aedf58dd6)"}
+!16 = distinct !DISubprogram(name: "f", scope: !3, file: !3, line: 5, type: !17, isLocal: false, isDefinition: true, scopeLine: 6, flags: DIFlagPrototyped, isOptimized: false, unit: !2, retainedNodes: !4)
+!17 = !DISubroutineType(types: !18)
+!18 = !{null, !19}
+!19 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !10, size: 64)
+!20 = !DILocalVariable(name: "pp", arg: 1, scope: !16, file: !3, line: 5, type: !19)
+!21 = !DILocation(line: 5, column: 13, scope: !16)
+!22 = !DILocalVariable(name: "p3", scope: !16, file: !3, line: 7, type: !19)
+!23 = !DILocation(line: 7, column: 8, scope: !16)
+!24 = !DILocation(line: 7, column: 11, scope: !16)
+!25 = !DILocation(line: 8, column: 10, scope: !16)
+!26 = !DILocation(line: 8, column: 12, scope: !16)
+!27 = !DILocation(line: 8, column: 3, scope: !16)
+!28 = !DILocation(line: 9, column: 1, scope: !16)
+!29 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 11, type: !30, isLocal: false, isDefinition: true, scopeLine: 12, isOptimized: false, unit: !2, retainedNodes: !4)
 !30 = !DISubroutineType(types: !31)
 !31 = !{!10}
 !32 = !DILocalVariable(name: "p1", scope: !29, file: !3, line: 13, type: !33)
