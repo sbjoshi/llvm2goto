@@ -9,4 +9,6 @@ int main(void)
   B var;
   unsigned *p = var;
   fun(p);
+  assert(1);
+  return 0;
 }

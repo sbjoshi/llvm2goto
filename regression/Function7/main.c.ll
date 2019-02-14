@@ -18,19 +18,25 @@ declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local i32 @main() #0 !dbg !15 {
 entry:
+  %retval = alloca i32, align 4
   %var = alloca [8 x i32], align 16
   %p = alloca i32*, align 8
+  store i32 0, i32* %retval, align 4
   call void @llvm.dbg.declare(metadata [8 x i32]* %var, metadata !19, metadata !DIExpression()), !dbg !24
   call void @llvm.dbg.declare(metadata i32** %p, metadata !25, metadata !DIExpression()), !dbg !26
   %arraydecay = getelementptr inbounds [8 x i32], [8 x i32]* %var, i32 0, i32 0, !dbg !27
   store i32* %arraydecay, i32** %p, align 8, !dbg !26
   %0 = load i32*, i32** %p, align 8, !dbg !28
   call void @fun(i32* %0), !dbg !29
-  ret i32 0, !dbg !30
+  %call = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 1), !dbg !30
+  ret i32 0, !dbg !31
 }
+
+declare dso_local i32 @assert(...) #2
 
 attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind readnone speculatable }
+attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.dbg.cu = !{!0}
 !llvm.module.flags = !{!3, !4, !5}
@@ -66,4 +72,5 @@ attributes #1 = { nounwind readnone speculatable }
 !27 = !DILocation(line: 10, column: 17, scope: !15)
 !28 = !DILocation(line: 11, column: 7, scope: !15)
 !29 = !DILocation(line: 11, column: 3, scope: !15)
-!30 = !DILocation(line: 12, column: 1, scope: !15)
+!30 = !DILocation(line: 12, column: 3, scope: !15)
+!31 = !DILocation(line: 13, column: 3, scope: !15)

@@ -26,6 +26,7 @@
 #include "goto-cc/compile.h"
 #include "util/ieee_float.h"
 #include "util/simplify_expr_class.h"
+#include <util/config.h>
 #include "langapi/language_util.h"
 
 #include "goto-programs/write_goto_binary.h"
@@ -658,7 +659,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
 //  symbolt op1, op2;
-  const symbolt* op1, *op2;  //akash
+  const symbolt* op1 = nullptr, *op2 = nullptr;  //akash
   exprt exprt1, exprt2;
   typet op_type;
   int flag = 2, f1 = 0, f2 = 0;
@@ -720,24 +721,30 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
       }
     }
     // typet op_type;
-    if (op2->type.id() == ID_signedbv) {
-      op_type = op2->type;
-    }
-    if (op1->type.id() == ID_signedbv) {
-      op_type = op1->type;
-    }
-    if (op2->type.id() == ID_unsignedbv) {
-      op_type = op2->type;
-    }
-    if (op1->type.id() == ID_unsignedbv) {
-      op_type = op1->type;
-    }
-    if (op2->type.id() == ID_pointer) {
-      op_type = op2->type.subtype();
-    }
-    if (op1->type.id() == ID_pointer) {
-      op_type = op1->type.subtype();
-    }
+    if(op2 != nullptr)
+      if (op2->type.id() == ID_signedbv) {
+        op_type = op2->type;
+      }
+    if(op1 != nullptr)
+      if (op1->type.id() == ID_signedbv) {
+        op_type = op1->type;
+      }
+    if(op2 != nullptr)
+      if (op2->type.id() == ID_unsignedbv) {
+        op_type = op2->type;
+      }
+    if(op1 != nullptr)
+      if (op1->type.id() == ID_unsignedbv) {
+        op_type = op1->type;
+      }
+    if(op2 != nullptr)
+      if (op2->type.id() == ID_pointer) {
+        op_type = op2->type.subtype();
+      }
+    if(op1 != nullptr)
+      if (op1->type.id() == ID_pointer) {
+        op_type = op1->type.subtype();
+      }
     if (op_type.id() == ID_signedbv && flag == 1) {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
       typet type = op_type;
@@ -6066,7 +6073,7 @@ goto_programt llvm2goto_translator::trans_instruction(
       errs() << "Invalid instruction type...\n ";
   }
   gp.update();
-  gp.output(std::cout);
+//  gp.output(std::cout);
   errs() << "\t\t\tin trans_instruction";
   return gp;
 }
@@ -6239,6 +6246,7 @@ void llvm2goto_translator::set_branches(
 goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
   register_language(new_ansi_c_language);
 
+  config.ansi_c.set_64();
   // TODO(Rasika): check for presence of function body
   errs() << "in trans_Program\n";
   goto_functionst goto_functions;
@@ -6263,6 +6271,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     cprover_rounding_mode.name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.type = signedbv_typet(32);
+//    cprover_rounding_mode.type.set
     cprover_rounding_mode.mode = ID_C;
     cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
     symbol_table.add(cprover_rounding_mode);
@@ -6334,6 +6343,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
   }
   set_entry_point(goto_functions, symbol_table);
   cmdlinet cmdline;
+
+//  configt config;
+
+
 //  ui_message_handlert umht;
 
 //  compilet compile(cmdline, umht, false);

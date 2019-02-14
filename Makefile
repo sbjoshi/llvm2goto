@@ -67,8 +67,8 @@ BUILD_ENV_ := Unix
 LIBEXT = .a
 OBJEXT = .o
 EXEEXT =
-CFLAGS ?= -Wall -O2
-CXXFLAGS ?= -Wall -O2 -fno-rtti -O0 -g
+CFLAGS ?= -Wall -ggdb
+CXXFLAGS ?= -Wall -O0 -fno-rtti -ggdb
 CP_CFLAGS = -MMD -MP
 CP_CXXFLAGS = -MMD -MP -std=c++11
 
