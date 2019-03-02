@@ -1,0 +1,199 @@
+CBMC version 5.11 (cbmc-5.11-dirty) 64-bit x86_64 linux
+Reading GOTO program from file
+Reading: main.c.i
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+__CPROVER__start /* __CPROVER__start */
+        // 79 no location
+        __CPROVER_initialize();
+        // 80 no location
+        main();
+        // 81 no location
+        return' = main#return_value;
+        // 82 no location
+        dead main#return_value;
+        // 83 no location
+        OUTPUT("return", return');
+        // 84 no location
+        END_FUNCTION
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+__CPROVER_initialize /* __CPROVER_initialize */
+        // 78 no location
+        END_FUNCTION
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+assert /* assert */
+        // 0 no location
+        END_FUNCTION
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+llvm.dbg.declare /* llvm.dbg.declare */
+        // 85 no location
+        END_FUNCTION
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+main /* main */
+        // 1 
+        retval = 0;
+        // 2 file main.c line 5 column 6
+        int arr1[3];
+        // 3 file main.c line 6 column 6
+        int arr2[3];
+        // 4 file main.c line 8 column 6
+        int x;
+        // 5 file main.c line 8 column 6
+        x = 1;
+        // 6 file main.c line 9 column 10
+        int i;
+        // 7 file main.c line 9 column 10
+        i = 0;
+        // 8 no location
+     1: __CPROVER_bool cmp;
+        // 9 file main.c line 9 column 17
+        cmp = i < 3;
+        // 10 no location
+        IF !(i < 3) THEN GOTO 2
+        // 11 file main.c line 11 column 6
+        long int idxprom;
+        // 12 file main.c line 11 column 6
+        idxprom = (long int)i;
+        // 13 no location
+        int *arrayidx;
+        // 14 no location
+        arrayidx = &arr1[idxprom];
+        // 15 file main.c line 11 column 13
+        *arrayidx = x;
+        // 16 file main.c line 12 column 6
+        long int idxprom1;
+        // 17 file main.c line 12 column 6
+        idxprom1 = (long int)i;
+        // 18 no location
+        int *arrayidx2;
+        // 19 no location
+        arrayidx2 = &arr2[idxprom1];
+        // 20 file main.c line 12 column 13
+        *arrayidx2 = x;
+        // 21 no location
+        int inc;
+        // 22 file main.c line 13 column 7
+        inc = x + 1;
+        // 23 file main.c line 13 column 7
+        x = inc;
+        // 24 no location
+        int inc3;
+        // 25 file main.c line 9 column 23
+        inc3 = i + 1;
+        // 26 file main.c line 9 column 23
+        i = inc3;
+        // 27 no location
+        GOTO 1
+        // 28 file main.c line 16 column 6
+     2: int arr3[3];
+        // 29 file main.c line 19 column 10
+        int i;
+        // 30 file main.c line 19 column 10
+        i = 0;
+        // 31 no location
+     3: __CPROVER_bool cmp6;
+        // 32 file main.c line 19 column 17
+        cmp6 = i < 3;
+        // 33 no location
+        IF !(i < 3) THEN GOTO 4
+        // 34 file main.c line 21 column 13
+        long int idxprom8;
+        // 35 file main.c line 21 column 13
+        idxprom8 = (long int)i;
+        // 36 no location
+        int *arrayidx9;
+        // 37 no location
+        arrayidx9 = &arr1[idxprom8];
+        // 38 file main.c line 21 column 23
+        long int idxprom10;
+        // 39 file main.c line 21 column 23
+        idxprom10 = (long int)i;
+        // 40 no location
+        int *arrayidx11;
+        // 41 no location
+        arrayidx11 = &arr2[idxprom10];
+        // 42 no location
+        int add;
+        // 43 file main.c line 21 column 21
+        add = *arrayidx9 + *arrayidx11;
+        // 44 file main.c line 21 column 3
+        long int idxprom12;
+        // 45 file main.c line 21 column 3
+        idxprom12 = (long int)i;
+        // 46 no location
+        int *arrayidx13;
+        // 47 no location
+        arrayidx13 = &arr3[idxprom12];
+        // 48 file main.c line 21 column 11
+        *arrayidx13 = add;
+        // 49 no location
+        int inc15;
+        // 50 file main.c line 19 column 23
+        inc15 = i + 1;
+        // 51 file main.c line 19 column 23
+        i = inc15;
+        // 52 no location
+        GOTO 3
+        // 53 file main.c line 25 column 10
+     4: int i;
+        // 54 file main.c line 25 column 10
+        i = 0;
+        // 55 no location
+     5: __CPROVER_bool cmp19;
+        // 56 file main.c line 25 column 16
+        cmp19 = i < 3;
+        // 57 no location
+        IF !(i < 3) THEN GOTO 6
+        // 58 file main.c line 27 column 10
+        long int idxprom21;
+        // 59 file main.c line 27 column 10
+        idxprom21 = (long int)i;
+        // 60 no location
+        int *arrayidx22;
+        // 61 no location
+        arrayidx22 = &arr3[idxprom21];
+        // 62 file main.c line 27 column 23
+        long int idxprom23;
+        // 63 file main.c line 27 column 23
+        idxprom23 = (long int)i;
+        // 64 no location
+        int *arrayidx24;
+        // 65 no location
+        arrayidx24 = &arr1[idxprom23];
+        // 66 no location
+        int mul;
+        // 67 file main.c line 27 column 22
+        mul = 2 * *arrayidx24;
+        // 68 no location
+        __CPROVER_bool cmp25;
+        // 69 file main.c line 27 column 18
+        cmp25 = *arrayidx22 != mul;
+        // 70 file main.c line 27 column 18
+        unsigned int conv;
+        // 71 file main.c line 27 column 18
+        conv = (unsigned int)cmp25;
+        // 72 file main.c line 27 column 3
+        ASSERT (__CPROVER_bool)cmp25
+        // 73 no location
+        int inc27;
+        // 74 file main.c line 25 column 21
+        inc27 = i + 1;
+        // 75 file main.c line 25 column 21
+        i = inc27;
+        // 76 no location
+        GOTO 5
+        // 77 no location
+     6: END_FUNCTION
+

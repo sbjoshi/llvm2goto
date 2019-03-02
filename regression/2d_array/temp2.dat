@@ -1,0 +1,162 @@
+CBMC version 5.11 (cbmc-5.11-dirty) 64-bit x86_64 linux
+Parsing main.c
+Converting
+Type-checking main
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+__CPROVER__start /* __CPROVER__start */
+        // 64 no location
+        // Labels: __CPROVER_HIDE
+        __CPROVER_initialize();
+        // 65 file main.c line 3
+        main();
+        // 66 file main.c line 3
+        return' = main#return_value;
+        // 67 file main.c line 3
+        dead main#return_value;
+        // 68 file main.c line 3
+        OUTPUT("return", return');
+        // 69 no location
+        END_FUNCTION
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+__CPROVER_initialize /* __CPROVER_initialize */
+        // 52 file <built-in-additions> line 11
+        // Labels: __CPROVER_HIDE
+        __CPROVER_dead_object = NULL;
+        // 53 file <built-in-additions> line 10
+        __CPROVER_deallocated = NULL;
+        // 54 file <built-in-additions> line 14
+        __CPROVER_malloc_is_new_array = 0 != 0;
+        // 55 file <built-in-additions> line 12
+        __CPROVER_malloc_object = NULL;
+        // 56 file <built-in-additions> line 13
+        __CPROVER_malloc_size = 0ul;
+        // 57 file <built-in-additions> line 15
+        __CPROVER_memory_leak = NULL;
+        // 58 file <built-in-additions> line 8
+        __CPROVER_next_thread_id = (unsigned long int)0;
+        // 59 file <built-in-additions> line 29
+        __CPROVER_pipe_count = (unsigned int)0;
+        // 60 file <built-in-additions> line 20
+        __CPROVER_rounding_mode = 0;
+        // 61 file <built-in-additions> line 6
+        __CPROVER_thread_id = (unsigned long int)0;
+        // 62 file <built-in-additions> line 7
+        __CPROVER_threads_exited = ARRAY_OF(FALSE);
+        // 63 no location
+        END_FUNCTION
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+main /* main */
+        // 0 file main.c line 5 function main
+        signed int arr1[3l][3l];
+        // 1 file main.c line 6 function main
+        signed int arr2[3l][3l];
+        // 2 file main.c line 8 function main
+        signed int x;
+        // 3 file main.c line 8 function main
+        x = 1;
+        // 4 file main.c line 9 function main
+        signed int i;
+        // 5 file main.c line 9 function main
+        i = 0;
+        // 6 file main.c line 9 function main
+     1: IF !(i < 3) THEN GOTO 4
+        // 7 file main.c line 11 function main
+        signed int j;
+        // 8 file main.c line 11 function main
+        j = 0;
+        // 9 file main.c line 11 function main
+     2: IF !(j < 3) THEN GOTO 3
+        // 10 file main.c line 13 function main
+        arr1[(signed long int)i][(signed long int)j] = x;
+        // 11 file main.c line 14 function main
+        arr2[(signed long int)i][(signed long int)j] = x;
+        // 12 file main.c line 15 function main
+        x = x + 1;
+        // 13 file main.c line 11 function main
+        j = j + 1;
+        // 14 file main.c line 11 function main
+        GOTO 2
+        // 15 file main.c line 16 function main
+     3: dead j;
+        // 16 file main.c line 9 function main
+        i = i + 1;
+        // 17 file main.c line 9 function main
+        GOTO 1
+        // 18 file main.c line 17 function main
+     4: dead i;
+        // 19 file main.c line 19 function main
+        signed int arr3[3l][3l];
+        // 20 file main.c line 22 function main
+        signed int i;
+        // 21 file main.c line 22 function main
+        i = 0;
+        // 22 file main.c line 22 function main
+     5: IF !(i < 3) THEN GOTO 8
+        // 23 file main.c line 24 function main
+        signed int j;
+        // 24 file main.c line 24 function main
+        j = 0;
+        // 25 file main.c line 24 function main
+     6: IF !(j < 3) THEN GOTO 7
+        // 26 file main.c line 26 function main
+        arr3[(signed long int)i][(signed long int)j] = arr1[(signed long int)i][(signed long int)j] + arr2[(signed long int)i][(signed long int)j];
+        // 27 file main.c line 24 function main
+        j = j + 1;
+        // 28 file main.c line 24 function main
+        GOTO 6
+        // 29 file main.c line 27 function main
+     7: dead j;
+        // 30 file main.c line 22 function main
+        i = i + 1;
+        // 31 file main.c line 22 function main
+        GOTO 5
+        // 32 file main.c line 28 function main
+     8: dead i;
+        // 33 file main.c line 31 function main
+        signed int i;
+        // 34 file main.c line 31 function main
+        i = 0;
+        // 35 file main.c line 31 function main
+     9: IF !(i < 3) THEN GOTO 12
+        // 36 file main.c line 33 function main
+        signed int j;
+        // 37 file main.c line 33 function main
+        j = 0;
+        // 38 file main.c line 33 function main
+    10: IF !(j < 3) THEN GOTO 11
+        // 39 file main.c line 35 function main
+        ASSERT arr3[(signed long int)i][(signed long int)j] != 2 * arr1[(signed long int)i][(signed long int)j] // assertion arr3[(signed long int)i][(signed long int)j] != 2 * arr1[(signed long int)i][(signed long int)j]
+        // 40 file main.c line 33 function main
+        j = j + 1;
+        // 41 file main.c line 33 function main
+        GOTO 10
+        // 42 file main.c line 36 function main
+    11: dead j;
+        // 43 file main.c line 31 function main
+        i = i + 1;
+        // 44 file main.c line 31 function main
+        GOTO 9
+        // 45 file main.c line 37 function main
+    12: dead i;
+        // 46 file main.c line 41 function main
+        main#return_value = 0;
+        // 47 file main.c line 41 function main
+        dead arr3;
+        // 48 file main.c line 41 function main
+        dead x;
+        // 49 file main.c line 41 function main
+        dead arr2;
+        // 50 file main.c line 41 function main
+        dead arr1;
+        // 51 file main.c line 43 function main
+        END_FUNCTION
+

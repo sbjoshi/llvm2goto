@@ -68,7 +68,7 @@ LIBEXT = .a
 OBJEXT = .o
 EXEEXT =
 CFLAGS ?= -Wall -ggdb
-CXXFLAGS ?= -Wall -O0 -fno-rtti -ggdb
+CXXFLAGS ?= -Wall -O0 -fno-rtti -ggdb -Wno-deprecated-declarations
 CP_CFLAGS = -MMD -MP
 CP_CXXFLAGS = -MMD -MP -std=c++11
 

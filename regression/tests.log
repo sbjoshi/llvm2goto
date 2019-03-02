@@ -1,3 +1,24 @@
+Test '1d_array'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
+^warning: ignoring [OK]
+
 Test '2d_array'
   Level: CORE
   Input: main.c.i
@@ -10,13 +31,55 @@ Test '2d_array'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test '2d_array2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test '2d_array3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test '2d_array_addition'
@@ -59,6 +122,48 @@ Execution [OK]
 ^EXIT=0\r\\?$ [FAILED]
 ^SIGNAL=0\r\\?$ [OK]
 ^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test '3d_array1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test '3d_array2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test '3d_array_fail'
@@ -399,7 +504,7 @@ Test 'Pointer_Arithmetic5'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 6
   Signal: 0
   Core: 0
 Execution [OK]

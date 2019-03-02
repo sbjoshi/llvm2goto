@@ -1,4 +1,3 @@
-// #include <assert.h>
 #define N 3
 
 int main()
@@ -11,7 +10,7 @@ int main()
 	{
 		for(int j=0 ; j<N ; j++)
 		{
-			arr1[i][j]=x ;
+			arr1[i][j]=x;
 			arr2[i][j]=x;
 			x++ ;
 		}
