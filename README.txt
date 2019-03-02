@@ -15,4 +15,6 @@ To run on the test cases in regression:
 To use the tool:
 llvm2goto <yourllvmir>.ll -o output.gb
 
-NOTE: Use complete paths wherever applicable, i.e, don't use ~/Documents/..., use /home/yourname/Documents/... instead.
+NOTE:
+Use complete paths wherever applicable, i.e, don't use ~/Documents/..., use /home/yourname/Documents/... instead.
+LLVM IR should be compiled using following flags - '-O0 -S -emit-llvm -g'
