@@ -115,7 +115,7 @@ Test '3d_array'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
@@ -166,6 +166,27 @@ Execution [OK]
 ^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
+Test '3d_array4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
 Test '3d_array_fail'
   Level: CORE
   Input: main.c.i
@@ -178,13 +199,34 @@ Test '3d_array_fail'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test '7d_array'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Function10'
@@ -697,13 +739,13 @@ Test 'bitwise3_fail'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_1'
@@ -802,7 +844,7 @@ Test 'bitwise_3'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
