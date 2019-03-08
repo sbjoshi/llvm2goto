@@ -38,6 +38,7 @@
 
 using namespace llvm;
 
+std::set<const symbolt*> gep_symbols;
 // TODO(Rasika): handle global scope.
 // TODO(Rasika): relation between array and pointer.
 // TODO(Rasika): arr[5].
@@ -2789,6 +2790,62 @@ goto_programt llvm2goto_translator::trans_Load(const Instruction *I) {
 
  \*******************************************************************/
 exprt llvm2goto_translator::get_load(const LoadInst *I,
+                                     const symbol_tablet &symbol_table,
+                                     const symbolt **ret_symbol) {
+  I->dump();
+  if (I->getOperand(0)->hasName()) {
+    errs() << "a\n";
+    std::string var_name = var_name_map.find(I->getOperand(0)->getName().str())
+        ->second;
+    if (dyn_cast<GetElementPtrInst>(I->getOperand(0))) {
+      *ret_symbol = symbol_table.lookup(var_name);
+      return dereference_exprt(symbol_table.lookup(var_name)->symbol_expr());
+    }
+    else {
+      // exprt1 = op1.symbol_expr();
+      *ret_symbol = symbol_table.lookup(var_name);
+      return symbol_table.lookup(var_name)->symbol_expr();
+    }
+  }
+  else {
+    errs() << "b\n";
+    if (BitCastInst *bci = dyn_cast<BitCastInst>(I->getOperand(0))) {
+      if (bci->getOperand(0)->hasName()) {
+        const symbolt *symbol = symbol_table.lookup(
+            var_name_map.find(bci->getOperand(0)->getName().str())->second);
+        *ret_symbol = symbol;
+        exprt value_to_store = symbol->symbol_expr();
+        value_to_store = typecast_exprt(
+            value_to_store, symbol_creator::create_type(bci->getType()));
+        errs() << from_expr(value_to_store) << "\n";
+        return value_to_store;
+      }
+      else {
+        assert(false && "bitcast found");
+      }
+      assert(false && "bitcast");
+    }
+    else {
+      return dereference_exprt(
+          get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table));
+    }
+  }
+}
+
+/*******************************************************************
+ Function: llvm2goto_translator::get_load
+
+ Inputs:
+ I - Pointer to the llvm instruction.
+
+ Outputs: Object of goto_programt containing goto instruction corresponding to
+ llvm::Instruction::Store.
+
+ Purpose: Map llvm::Instruction::Store to corresponding goto instruction.
+ }
+
+ \*******************************************************************/
+exprt llvm2goto_translator::get_load(const LoadInst *I,
                                      const symbol_tablet &symbol_table) {
   I->dump();
   if (I->getOperand(0)->hasName()) {
@@ -2843,9 +2900,10 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
                                                 symbol_tablet &symbol_table) {
   goto_programt gp;
+  int flag = 1; //akash bad way to prevent &<constant_int> in line:3107
   // I->dump();
   dyn_cast<StoreInst>(I)->getOperand(0)->dump();
-  const symbolt *symbol;
+  const symbolt *symbol = nullptr;
   exprt expr;
   if (dyn_cast<StoreInst>(I)->getOperand(1)->hasName()) {
     symbol = symbol_table.lookup(
@@ -2856,7 +2914,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   else if (LoadInst *li = dyn_cast<LoadInst>(
       dyn_cast<StoreInst>(I)->getOperand(1))) {
     li->dump();
-    expr = get_load(li, symbol_table);
+    expr = get_load(li, symbol_table, &symbol);
+    expr = dereference_exprt(expr, symbol->type);
     // errs() << from_expr(expr) << "\n";
     // assert(false);
   }
@@ -2900,12 +2959,17 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
         }
         errs() << "hi " << t.id().c_str() << "\n";
         value_to_store = from_integer(val, t);
+        flag = 0;
         // assert(false);
       }
       else {
-        symbol->show(std::cout);
-        errs() << symbol->type.id().c_str();
-        value_to_store = from_integer(val, symbol->type);
+        typet t = symbol->type;
+        while (!(t.id() == ID_signedbv || t.id() == ID_unsignedbv)) {
+          t = t.subtype();
+        }
+        value_to_store = from_integer(val, t);
+        flag = 0;
+//        value_to_store = from_integer(val, symbol->type);
       }
     }
     else if (dyn_cast<ConstantFP>(dyn_cast<StoreInst>(I)->getOperand(0))) {
@@ -2964,6 +3028,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       symbol = symbol_table.lookup(
           var_name_map.find(bci->getOperand(0)->getName().str())->second);
       value_to_store = symbol->symbol_expr();
+
+      if (gep_symbols.find(symbol) != gep_symbols.end()) {
+        value_to_store = dereference_exprt(value_to_store);
+      }
     }
     else {
       assert(false && "bitcast found");
@@ -2979,10 +3047,15 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
           << var_name_map.find(
               dyn_cast<StoreInst>(I)->getOperand(0)->getName().str())->second
           << "\n";
-      value_to_store = symbol_table.lookup(
+      const symbolt *temp_sym;
+      temp_sym = symbol_table.lookup(
           var_name_map.find(
-              dyn_cast<StoreInst>(I)->getOperand(0)->getName().str())->second)
-          ->symbol_expr();
+              dyn_cast<StoreInst>(I)->getOperand(0)->getName().str())->second);
+      value_to_store = temp_sym->symbol_expr();
+
+      if (gep_symbols.find(temp_sym) != gep_symbols.end()) {
+        value_to_store = dereference_exprt(value_to_store);
+      }
     }
     else if (dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))) {
       // if(!dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))->hasName())
@@ -3033,7 +3106,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       errs() << expr_type.id().c_str() << "    ?    " << vts_type.id().c_str();
       pointer_typet ptr_type(expr_type, config.ansi_c.pointer_width);
 //      array_typet arr_type(expr_type, from_integer(3, index_type()));
-      value_to_store = address_of_exprt(value_to_store, ptr_type);
+      if (flag) value_to_store =
+          address_of_exprt(value_to_store, ptr_type);
       // expr_type = expr_type.subtype();
       // assert(false);
     }
@@ -3047,7 +3121,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   // }
   errs() << expr.type().id().c_str() << "             "
       << value_to_store.type().id().c_str();
-  if (expr.type().id() == ID_pointer) {
+
+  if (gep_symbols.find(symbol) != gep_symbols.end()) {
     expr = dereference_exprt(expr);
   }
 
@@ -3151,7 +3226,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
   I->dump();
   dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->dump();
   dyn_cast<GetElementPtrInst>(I)->getResultElementType()->dump();
-  const symbolt *comp;
+  const symbolt *comp = nullptr;
   exprt comp_expr;
   if (dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName()) {
     std::string name_of_composite_var;
@@ -3220,24 +3295,36 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       var_name_map.insert(
           std::pair<std::string, std::string>(symbol.base_name.c_str(),
                                               symbol.name.c_str()));
-      // std::cout << to_constant_expr(from_integer(index, unsignedbv_typet(32))) << "\n";
-//      index_exprt ind_e(indx_epr,  from_integer(index, index_type()), comp->type.subtype());
-//      symbol.type = pointer_typet(ind_e.type(), 32);
-//      array_typet a_t(comp->type.subtype(), from_integer(index, index_type()));
-      if (comp->type.id() == ID_pointer) {
-        symbol.type = pointer_typet(comp->type.subtype().subtype(),
-                                    config.ansi_c.pointer_width);
+
+      llvm::User::const_value_op_iterator ub = I->value_op_begin();
+
+      const symbolt *op1 = nullptr;
+      if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+        li->getOperand(0)->dump();
+        op1 = symbol_table.lookup(
+            var_name_map.find(li->getOperand(0)->getName().str())->second);\
+        if (op1->type.id() == ID_pointer) {
+          symbol.type = pointer_typet(op1->type.subtype().subtype(),
+                                      config.ansi_c.pointer_width);
+        }
+        else {
+          symbol.type = pointer_typet(op1->type.subtype(),
+                                      config.ansi_c.pointer_width);
+        }
       }
       else {
-        symbol.type = pointer_typet(comp->type.subtype(),
-                                    config.ansi_c.pointer_width);
+        if (comp->type.id() == ID_pointer) {
+          symbol.type = pointer_typet(comp->type.subtype().subtype(),
+                                      config.ansi_c.pointer_width);
+        }
+        else {
+          symbol.type = pointer_typet(comp->type.subtype(),
+                                      config.ansi_c.pointer_width);
+        }
       }
-//        symbol.type = array_typet(comp->type.subtype(), from_integer(index, index_type()));
 
-      /*pointer_typet(
-       index_exprt(comp.symbol_expr(), from_integer(0, unsignedbv_typet(32)), comp.type.subtype()),
-       32);*/
       symbol_table.add(symbol);
+      gep_symbols.insert(symbol_table.lookup(symbol.name));
       goto_programt::targett decl_add = gp.add_instruction();
       decl_add->make_decl();
       decl_add->code = code_declt(symbol.symbol_expr());
@@ -3271,60 +3358,58 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     std::string full_name = var_name_map.find(I->getName().str())->second;
 
     auto index_operand = I->getOperand(2);
-    std::string index_op_name = var_name_map.find(
-        index_operand->getName().str())->second;
+    exprt array_index_expr;
+    if (dyn_cast<ConstantInt>(index_operand)) {
+      unsigned index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
+      array_index_expr = from_integer(index, index_type());
+    }
+    else {
+      std::string index_op_name = var_name_map.find(
+          index_operand->getName().str())->second;
+      array_index_expr = symbol_table.lookup(index_op_name)->symbol_expr();
+    }
 
-    auto array = I->getOperand(0);
-    std::string array_name = var_name_map.find(array->getName().str())->second;
+    const symbolt *op1 = nullptr;
+    llvm::User::const_value_op_iterator ub = I->value_op_begin();
+    exprt array_expr;
+    const symbolt *array_symbol;
 
-    exprt array_expr = symbol_table.lookup(array_name)->symbol_expr();
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      li->getOperand(0)->dump();
+      op1 = symbol_table.lookup(
+          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      array_symbol = op1;
+      array_expr = op1->symbol_expr();
+    }
+    else {
+      auto array = I->getOperand(0);
+      std::string array_name = var_name_map.find(array->getName().str())->second;
+      array_symbol = symbol_table.lookup(array_name);
+      array_expr = array_symbol->symbol_expr();
+    }
 
     if (array_expr.type().id() == ID_array) {
       assgn_inst->code = code_assignt(
           symbol_table.lookup(full_name)->symbol_expr(),
-          address_of_exprt(
-              index_exprt(comp->symbol_expr(),
-                          symbol_table.lookup(index_op_name)->symbol_expr())));
+          address_of_exprt(index_exprt(array_expr, array_index_expr)));
     }
-    else if (array_expr.type().id() == ID_pointer) {
-//      exprt *lhs = symbol_table.lookup(full_name)->symbol_expr();
+    else {
 
-      exprt expr_temp_1 = dereference_exprt(comp->symbol_expr());
+      exprt expr_temp_1 = dereference_exprt(array_expr);
 
-      exprt expr_temp_2 = index_exprt(expr_temp_1,
-                                      symbol_table.lookup(index_op_name)->symbol_expr());
+      exprt expr_temp_2 = index_exprt(expr_temp_1, array_index_expr);
 
       exprt expr_temp_3 = address_of_exprt(expr_temp_2);
 
-//      exprt expr_temp_4 = plus_exprt(
-//          expr_temp_3, symbol_table.lookup(index_op_name)->symbol_expr());
-
       assgn_inst->code = code_assignt(
           symbol_table.lookup(full_name)->symbol_expr(), expr_temp_3);
-//      goto_programt::targett assgn_inst = gp.add_instruction();
-//      assgn_inst->make_assignment();
-//      assgn_inst->code = code_assignt(
-//          symbol_table.lookup(full_name)->symbol_expr(),
-//          plus_exprt(symbol_table.lookup(full_name)->symbol_expr(),
-//                     symbol_table.lookup(index_op_name)->symbol_expr()));
-    }
-    else {
-      assgn_inst->code = code_assignt(
-          symbol_table.lookup(full_name)->symbol_expr(),
-          index_exprt(comp->symbol_expr(),
-                      symbol_table.lookup(index_op_name)->symbol_expr()));
     }
 
-//    assgn_inst->code = code_assignt(
-//        symbol_table.lookup(full_name)->symbol_expr(),
-//            array_of_exprt(comp->symbol_expr(),
-//                        array_typet(comp->type.subtype(), from_integer(index, index_type()))));  // akash
-//    assgn_inst->code = code_assignt(
-//        symbol_table.lookup(full_name)->symbol_expr(),array_exprt(array_typet(comp->type.subtype(), from_integer(index, index_type()))));
     if (I->getName() != "___temp_getelementptr") {
       assgn_inst->function = irep_idt(I->getFunction()->getName().str());
     }
     assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+    errs() << assgn_inst->to_string().c_str();
     // assert(false && "Array type is not handled");
   }
   else if (dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isStructTy()) {
@@ -3685,7 +3770,7 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
   typet dest_type = signedbv_typet(
       dyn_cast<SExtInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
-  const symbolt *op1 = nullptr;
+  const symbolt *op1 = nullptr;    //  Akash reminder maybe no used of op1 here.
   exprt exprt1;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
