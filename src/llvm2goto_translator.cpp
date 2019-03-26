@@ -2900,7 +2900,7 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
                                                 symbol_tablet &symbol_table) {
   goto_programt gp;
-  int flag = 1; //akash bad way to prevent &<constant_int> in line:3107
+  int flag = 1;  //akash bad way to prevent &<constant_int> in line:3107
   // I->dump();
   dyn_cast<StoreInst>(I)->getOperand(0)->dump();
   const symbolt *symbol = nullptr;
@@ -2947,7 +2947,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       if (dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1))) {
         dyn_cast<GetElementPtrInst>(dyn_cast<StoreInst>(I)->getOperand(1))->dump();
         errs() << "\n........... " << symbol->type.id().c_str() << " .. "
-            << symbol->type.subtype().id().c_str() << " " << val << "\n";
+               << symbol->type.subtype().id().c_str() << " " << val << "\n";
         // to handle multidimentional array.
         typet t = symbol->type.subtype();
         while (!(t.id() == ID_signedbv || t.id() == ID_unsignedbv)) {
@@ -3042,8 +3042,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   else {
     if (dyn_cast<StoreInst>(I)->getOperand(0)->hasName()) {
       errs() << dyn_cast<StoreInst>(I)->getOperand(0)->getName();
-      errs() << "searrching "
-          << dyn_cast<StoreInst>(I)->getOperand(0)->getName() << "\n"
+      errs()
+          << "searrching "
+          << dyn_cast<StoreInst>(I)->getOperand(0)->getName()
+          << "\n"
           << var_name_map.find(
               dyn_cast<StoreInst>(I)->getOperand(0)->getName().str())->second
           << "\n";
@@ -3106,8 +3108,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       errs() << expr_type.id().c_str() << "    ?    " << vts_type.id().c_str();
       pointer_typet ptr_type(expr_type, config.ansi_c.pointer_width);
 //      array_typet arr_type(expr_type, from_integer(3, index_type()));
-      if (flag) value_to_store =
-          address_of_exprt(value_to_store, ptr_type);
+      if (flag) value_to_store = address_of_exprt(value_to_store, ptr_type);
       // expr_type = expr_type.subtype();
       // assert(false);
     }
@@ -3120,7 +3121,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   //   expr_type = expr_type.subtype();
   // }
   errs() << expr.type().id().c_str() << "             "
-      << value_to_store.type().id().c_str();
+         << value_to_store.type().id().c_str();
 
   if (gep_symbols.find(symbol) != gep_symbols.end()) {
     expr = dereference_exprt(expr);
@@ -3277,7 +3278,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     else {
       dyn_cast<User>(i)->dump();
       errs() << var_name_map.find(dyn_cast<User>(i)->getName().str())->second
-          << "\n";
+             << "\n";
       indx_epr = symbol_table.lookup(
           var_name_map.find(dyn_cast<User>(i)->getName().str())->second)
           ->symbol_expr();
@@ -3465,7 +3466,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       else {
         dyn_cast<User>(i)->dump();
         errs() << var_name_map.find(dyn_cast<User>(i)->getName().str())->second
-            << "\n";
+               << "\n";
         indx_epr = symbol_table.lookup(
             var_name_map.find(dyn_cast<User>(i)->getName().str())->second)
             ->symbol_expr();
@@ -3521,7 +3522,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       else {
         dyn_cast<User>(i)->dump();
         errs() << var_name_map.find(dyn_cast<User>(i)->getName().str())->second
-            << "\n";
+               << "\n";
         indx_epr = symbol_table.lookup(
             var_name_map.find(dyn_cast<User>(i)->getName().str())->second)
             ->symbol_expr();
@@ -4980,7 +4981,8 @@ goto_programt llvm2goto_translator::trans_ICmp(const Instruction *I,
 
     errs()
         << (scope_name_map.find(I->getDebugLoc()->getScope())
-            == scope_name_map.end()) << "\n";
+            == scope_name_map.end())
+        << "\n";
     symbol.name = scope_name_map.find(
         I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
         + "::" + I->getName().str();
@@ -5254,7 +5256,8 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     std::string full_name_to_remove = m->second;
     var_name_map.erase(m);
     symbol_table->remove(full_name_to_remove);
-    errs() << "\n adding "
+    errs()
+        << "\n adding "
         << (scope_name_map.find(
             I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
             + "::" + dyn_cast<DIVariable>(mdn)->getName().str() + "\n");
@@ -5383,14 +5386,26 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         }
       }
       else {
-        guard =
-            typecast_exprt(
-                symbol_table->lookup(
-                    var_name_map.find(
-                        dyn_cast<Instruction>(*I->value_op_begin())
-                            ->value_op_begin()->getName().str())->second)
-                    ->symbol_expr(),
-                bool_typet());
+        const Instruction *a = dyn_cast<Instruction>(*(I->value_op_begin()));
+        std::string op_code_name(a->getOpcodeName());
+
+        auto b = a->getName().str();
+
+        if (!(op_code_name.compare("zext") || op_code_name.compare("sext"))) {
+          b = a->value_op_begin()->getName().str();
+        }
+        auto c = var_name_map.find(b)->second;
+        auto d = symbol_table->lookup(c)->symbol_expr();
+        guard = typecast_exprt(d, bool_typet());
+
+//        guard =
+//            typecast_exprt(
+//                symbol_table->lookup(
+//                    var_name_map.find(
+//                        dyn_cast<Instruction>(*I->value_op_begin())
+//                            ->value_op_begin()->getName().str())->second)
+//                    ->symbol_expr(),
+//                bool_typet());
       }
       errs() << from_expr(guard) << "\n";
       ass_inst->guard = guard;
@@ -5959,11 +5974,12 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
       GV.getMetadata(LLVMContext::MD_dbg, MDs);
       if (!MDs.empty()) {
         for (auto md = MDs.begin(), mde = MDs.end(); md != mde; md++) {
-          symbolt global_variable;
-          global_variable.clear();
-          global_variable.is_static_lifetime = true;
+//          symbolt global_variable;
+//          global_variable.clear();
+//          global_variable.is_static_lifetime = true;
           for (auto mmd = (*md)->op_begin(); mmd != (*md)->op_end(); ++mmd) {
-            if (mmd->get()) {
+//            if (mmd->get()) {
+            if (dyn_cast<DIGlobalVariable>(*mmd)) {
               switch (GV.getValueType()->getTypeID()) {
                 // 16-bit floating point type
                 case llvm::Type::TypeID::HalfTyID: {
@@ -5988,6 +6004,7 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_DoubleTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+//                  symbol.is_static_lifetime = true;
                   symbol_table.add(symbol);
                   errs() << "\nDouble type";
                   break;
