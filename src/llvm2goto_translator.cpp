@@ -19,6 +19,7 @@
 
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Constants.h"
+//#include "llvm/IR/ConstantsContext.h"
 #include "langapi/mode.h"
 //#include "solvers/cvc/cvc_conv.h"
 #include "ansi-c/ansi_c_language.h"
@@ -65,12 +66,13 @@ llvm2goto_translator::~llvm2goto_translator() {
 goto_programt llvm2goto_translator::trans_Ret(
     const Instruction *I, const symbol_tablet &symbol_table) {
   goto_programt gp;
-  if (I->getType()->isVoidTy()) {
+
+  Value *ub = dyn_cast<ReturnInst>(I)->getReturnValue();
+  if (!ub) {
     goto_programt::targett ret_inst = gp.add_instruction();
     ret_inst->make_skip();
     return gp;
   }
-  Value *ub = dyn_cast<ReturnInst>(I)->getReturnValue();
 //  symbolt op1;
   const symbolt* op1 = nullptr;  //akash
   exprt exprt1;
@@ -112,7 +114,8 @@ goto_programt llvm2goto_translator::trans_Ret(
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
       op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + li->getOperand(0)->getName().str());
       exprt1 = get_load(li, symbol_table);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
@@ -779,22 +782,22 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
       exprt2 = from_integer(val, type);
     }
   }
-  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {
-    symbolt symbol;
-    symbol.base_name = I->getName().str();
-    // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
-    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
-        + "::" + I->getName().str();
-    var_name_map.insert(
-        std::pair<std::string, std::string>(symbol.base_name.c_str(),
-                                            symbol.name.c_str()));
-    symbol.type = op_type;
-    symbol_table.add(symbol);
-    goto_programt::targett decl_add = gp.add_instruction();
-    decl_add->make_decl();
-    decl_add->code = code_declt(symbol.symbol_expr());
-    errs() << from_expr(decl_add->code) << "\n";
-  }
+//  if (var_name_map.find(I->getName().str()) == var_name_map.end()) {      //akash removed the if condition
+  symbolt symbol;
+  symbol.base_name = I->getName().str();
+  // errs() << scope_name_map.find(I->getDebugLoc()->getScope())->second;
+  symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+      + I->getName().str();
+  var_name_map.insert(
+      std::pair<std::string, std::string>(symbol.base_name.c_str(),
+                                          symbol.name.c_str()));
+  symbol.type = op_type;
+  symbol_table.add(symbol);
+  goto_programt::targett decl_add = gp.add_instruction();
+  decl_add->make_decl();
+  decl_add->code = code_declt(symbol.symbol_expr());
+  errs() << from_expr(decl_add->code) << "\n";
+//  }
 //  symbolt result = symbol_table.lookup(var_name_map.find(
 //    I->getName().str())->second);
   const symbolt* result = symbol_table.lookup(
@@ -2877,6 +2880,15 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
       }
       assert(false && "bitcast");
     }
+    else if (auto *CE = dyn_cast<ConstantExpr>(I->getOperand(0))) {
+      GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(
+          CE->getAsInstruction());
+      exprt value_to_store = trans_ConstGetElementPtr(GE, symbol_table);
+
+      GE->deleteValue();
+
+      return value_to_store;
+    }
     else {
       return dereference_exprt(
           get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table));
@@ -2900,11 +2912,20 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
 goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
                                                 symbol_tablet &symbol_table) {
   goto_programt gp;
-  int flag = 1;  //akash bad way to prevent &<constant_int> in line:3107
+  int flag = 1;  //akash bad way to prevent &<constant_int> around line:3107
   // I->dump();
+  if (dyn_cast<DbgDeclareInst>(I->getNextNode())) {
+//    I->getNextNode()->moveBefore(I);
+    goto_programt Call_Inst = trans_Call(I->getNextNode(), &symbol_table);
+    gp.destructive_append(Call_Inst);
+    Instruction *ni = const_cast<Instruction*>(I->getNextNode());
+    ni->eraseFromParent();
+  }
   dyn_cast<StoreInst>(I)->getOperand(0)->dump();
   const symbolt *symbol = nullptr;
   exprt expr;
+  I->getOperand(1)->dump();
+
   if (dyn_cast<StoreInst>(I)->getOperand(1)->hasName()) {
     symbol = symbol_table.lookup(
         var_name_map.find(
@@ -2926,6 +2947,16 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     expr = dereference_exprt(symbol->symbol_expr(), symbol->type);
     // assert(false);
   }
+  else if (auto *CE = dyn_cast<ConstantExpr>(I->getOperand(1))) {
+    GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
+
+    symbol = symbol_table.lookup(
+        var_name_map.find(GE->getOperand(0)->getName().str())->second);
+
+    expr = trans_ConstGetElementPtr(GE, symbol_table);
+
+    GE->deleteValue();
+  }
   else {
     I->getOperand(1)->dump();
     assert(false && "this type is not handled");
@@ -2936,7 +2967,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       arg != I->getFunction()->arg_end(); arg++) {
     if (dyn_cast<StoreInst>(I)->getOperand(0)->getName() == arg->getName()) {
       // assert(false && "found parameters");
-      return gp;
+//      return gp;
     }
   }
   errs() << "3 \n";
@@ -3207,6 +3238,75 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
   goto_programt gp;
   assert(false && "Fence is yet to be mapped \n");
   return gp;
+}
+
+/*******************************************************************
+ Function: llvm2goto_translator::trans_ConstGetElementPtr
+
+ Inputs:
+ I - Pointer to the llvm instruction.
+
+ Outputs: exprt containing goto instruction corresponding to
+ llvm::ConstantExpression::GetElementPtr.
+
+ Purpose: Map llvm::ConstantExpr::GetElementPtr to corresponding goto instruction.
+
+ \*******************************************************************/
+exprt llvm2goto_translator::trans_ConstGetElementPtr(
+    const GetElementPtrInst *I, const symbol_tablet &symbol_table) {
+  exprt op_expr;
+  const symbolt *op_symbol = nullptr;
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+
+  if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    li->getOperand(0)->dump();
+    op_symbol = symbol_table.lookup(
+        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    op_expr = op_symbol->symbol_expr();
+  }
+  else {
+    auto array = I->getOperand(0);
+    std::string array_name = var_name_map.find(array->getName().str())->second;
+    op_symbol = symbol_table.lookup(array_name);
+    op_expr = op_symbol->symbol_expr();
+  }
+
+  for (unsigned i = 2; i < I->getNumOperands(); i++) {
+
+    exprt array_index_expr;
+    auto index_operand = I->getOperand(i);
+
+    if (dyn_cast<ConstantInt>(index_operand)) {
+      unsigned index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
+      array_index_expr = from_integer(index, index_type());
+    }
+    else {
+      std::string index_op_name = var_name_map.find(
+          index_operand->getName().str())->second;
+      array_index_expr = symbol_table.lookup(index_op_name)->symbol_expr();
+    }
+
+    op_expr = index_exprt(op_expr, array_index_expr);
+  }
+
+//  if (op_expr.type().id() == ID_array) {
+//    assgn_inst->code = code_assignt(
+//        symbol_table.lookup(full_name)->symbol_expr(),
+//        address_of_exprt(index_exprt(op_expr, array_index_expr)));
+//  }
+//  else {
+//
+//    exprt expr_temp_1 = dereference_exprt(op_expr);
+//
+//    exprt expr_temp_2 = index_exprt(expr_temp_1, array_index_expr);
+//
+//    exprt expr_temp_3 = address_of_exprt(expr_temp_2);
+//
+//    assgn_inst->code = code_assignt(
+//        symbol_table.lookup(full_name)->symbol_expr(), expr_temp_3);
+//  }
+
+  return op_expr;
 }
 
 /*******************************************************************
@@ -4600,10 +4700,11 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
         flag = 0;
       }
       else {
-        opnd2 =
-            symbol_table->lookup(
-                var_name_map.find((ub + 1)->getName().str())->second)
-                ->symbol_expr();
+        const symbolt *op2_sym = symbol_table->lookup(
+            scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                + (ub + 1)->getName().str());
+
+        opnd2 = op2_sym->symbol_expr();
       }
     }
     type1 = opnd1.type();
@@ -5238,6 +5339,7 @@ std::string llvm2goto_translator::get_arg_name(const Instruction *I) {
 goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
                                                symbol_tablet *symbol_table) {
   goto_programt gp;
+  unsigned flag = 0;
   if (const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I)) {
     Type *type = &(*dyn_cast<Type>(
         dyn_cast<PointerType>(
@@ -5249,7 +5351,8 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     for (auto arg = I->getFunction()->arg_begin();
         arg != I->getFunction()->arg_end(); arg++) {
       if (dyn_cast<DIVariable>(mdn)->getName() == arg->getName()) {
-        return gp;
+        flag = 1;
+//        return gp;
       }
     }
     errs() << "removing " << m->second << "\n";
@@ -5261,6 +5364,11 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         << (scope_name_map.find(
             I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
             + "::" + dyn_cast<DIVariable>(mdn)->getName().str() + "\n");
+    errs()
+        << scope_name_map.find(
+            I->getDebugLoc()->getScope()->getNonLexicalBlockFileScope())->second
+            + "::" + dyn_cast<DIVariable>(mdn)->getName().str();
+    errs() << "akash\n";
     symbolt symbol;
     switch (dyn_cast<PointerType>(
         dyn_cast<Type>(dbgDeclareInst->getAddress()->getType()))
@@ -5340,13 +5448,22 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       default:
         errs() << "\ninvalid type for global variable";
     }
-    symbol.name = scope_name_map.find(
-        dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())
-            ->getNonLexicalBlockFileScope())->second + "::"
-        + dyn_cast<DIVariable>(mdn)->getName().str();
-    var_name_map.insert(
-        std::pair<std::string, std::string>(name_to_remove,
-                                            symbol.name.c_str()));
+    if (flag) {
+      symbol.name = full_name_to_remove;
+      symbol.base_name = name_to_remove;
+      var_name_map.insert(
+          std::pair<std::string, std::string>(symbol.base_name.c_str(),
+                                              symbol.name.c_str()));
+    }
+    else {
+      symbol.name = scope_name_map.find(
+          dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())
+              ->getNonLexicalBlockFileScope())->second + "::"
+          + dyn_cast<DIVariable>(mdn)->getName().str();
+      var_name_map.insert(
+          std::pair<std::string, std::string>(name_to_remove,
+                                              symbol.name.c_str()));
+    }
     symbol_table->add(symbol);
     goto_programt::targett decl_symbol = gp.add_instruction();
     decl_symbol->make_decl();
@@ -5386,17 +5503,17 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         }
       }
       else {
-        const Instruction *a = dyn_cast<Instruction>(*(I->value_op_begin()));
-        std::string op_code_name(a->getOpcodeName());
+        const Instruction *op = dyn_cast<Instruction>(*(I->value_op_begin()));
+        std::string op_code_name(op->getOpcodeName());
 
-        auto b = a->getName().str();
+        auto op_name = op->getName().str();
 
         if (!(op_code_name.compare("zext") || op_code_name.compare("sext"))) {
-          b = a->value_op_begin()->getName().str();
+          op_name = op->value_op_begin()->getName().str();
         }
-        auto c = var_name_map.find(b)->second;
-        auto d = symbol_table->lookup(c)->symbol_expr();
-        guard = typecast_exprt(d, bool_typet());
+        auto op_symbol = var_name_map.find(op_name)->second;
+        auto op_symbol_expr = symbol_table->lookup(op_symbol)->symbol_expr();
+        guard = typecast_exprt(op_symbol_expr, bool_typet());
 
 //        guard =
 //            typecast_exprt(
@@ -5987,6 +6104,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_HalfTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   break;
                 }
@@ -5996,6 +6116,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_FloatTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   break;
                 }
@@ -6004,7 +6127,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_DoubleTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
-//                  symbol.is_static_lifetime = true;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nDouble type";
                   break;
@@ -6014,6 +6139,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_X86_FP80Ty(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nX86_FP80 type";
                   break;
@@ -6023,6 +6151,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_FP128Ty(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nFP128 type";
                   break;
@@ -6032,6 +6163,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_PPC_FP128Ty(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nPPC_FP128 type";
                   break;
@@ -6040,6 +6174,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_IntegerTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nInteger type";
                   break;
@@ -6049,6 +6186,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_StructTy(
                       GV.getValueType(), dit);
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nStruct type";
                   break;
@@ -6056,7 +6196,14 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                 case llvm::Type::TypeID::ArrayTyID: {
                   symbolt symbol = symbol_creator::create_ArrayTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
+
+//                  symbol.base_name = I->getName().str();
+//                  symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+//                      + "::" + I->getName().str();
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nArray type";
                   break;
@@ -6065,6 +6212,10 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_PointerTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  ;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nPointer type";
                   break;
@@ -6073,6 +6224,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_VectorTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   errs() << "\nVector type";
                   break;
@@ -6081,6 +6235,9 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_X86_MMXTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  var_name_map.insert(
+                      std::pair<std::string, std::string>(
+                          symbol.base_name.c_str(), symbol.name.c_str()));
                   symbol_table.add(symbol);
                   break;
                 }
