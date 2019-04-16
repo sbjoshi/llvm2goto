@@ -668,7 +668,8 @@ typet symbol_creator::create_array_type(Type *type, const llvm::DIType *md) {
   dyn_cast<ArrayType>(type)->dump();
   errs()
       << (dyn_cast<ArrayType>(type)->getArrayElementType()->getTypeID()
-          == Type::TypeID::ArrayTyID) << "yes";
+          == Type::TypeID::ArrayTyID)
+      << "yes";
   typet ele_type;
   switch (dyn_cast<ArrayType>(type)->getArrayElementType()->getTypeID()) {
     // 16-bit floating point type
@@ -905,13 +906,22 @@ typet symbol_creator::create_pointer_type(Type *type, const llvm::DIType *md) {
         errs() << (md == NULL) << "\n";
         md->dump();
         int encoding;
-        if (dyn_cast<DIBasicType>(md)) {
-          encoding = dyn_cast<DIBasicType>(md)->getEncoding();
+//        if (dyn_cast<DIBasicType>(md)) {
+//          encoding = dyn_cast<DIBasicType>(md)->getEncoding();
+//        }
+//        else if (dyn_cast<DIDerivedType>(md)) {
+//          encoding = dyn_cast<DIBasicType>(
+//              dyn_cast<DIDerivedType>(md)->getBaseType())->getEncoding();
+//      }
+        while (!(dyn_cast<DIBasicType>(md))) {
+          if (dyn_cast<DIDerivedType>(md)) {
+            md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
+          }
+          if (dyn_cast<DICompositeType>(md)) {
+            md = dyn_cast<DIType>(dyn_cast<DICompositeType>(md)->getBaseType());
+          }
         }
-        else if (dyn_cast<DIDerivedType>(md)) {
-          encoding = dyn_cast<DIBasicType>(
-              dyn_cast<DIDerivedType>(md)->getBaseType())->getEncoding();
-        }
+        encoding = dyn_cast<DIBasicType>(md)->getEncoding();
         switch (encoding) {
           case dwarf::DW_ATE_signed:
           case dwarf::DW_ATE_signed_char:
@@ -974,7 +984,17 @@ typet symbol_creator::create_pointer_type(Type *type, const llvm::DIType *md) {
       break;
     }
     case llvm::Type::TypeID::VoidTyID:
-    case llvm::Type::TypeID::FunctionTyID:
+    case llvm::Type::TypeID::FunctionTyID: {
+      if (dyn_cast<DICompositeType>(md)) {
+        md = dyn_cast<DIType>(dyn_cast<DICompositeType>(md)->getBaseType());
+      }
+      else if (dyn_cast<DIDerivedType>(md)) {
+        md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
+      }
+      ele_type = create_Function_Ptr(
+          dyn_cast<FunctionType>(type->getPointerElementType()), md);
+      break;
+    }
     case llvm::Type::TypeID::TokenTyID:
     case llvm::Type::TypeID::LabelTyID:
     case llvm::Type::TypeID::MetadataTyID:
@@ -1037,6 +1057,38 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
   global_variable.base_name = tmp_bname;
   global_variable.mode = ID_C;
   return global_variable;
+}
+
+typet symbol_creator::create_Function_Ptr(FunctionType *ft, const DIType *mdn) {
+  code_typet ct = code_typet();
+  code_typet::parameterst para;
+  const DISubroutineType *md;
+  if (dyn_cast<DISubroutineType>(mdn)) {
+    md = dyn_cast<DISubroutineType>(mdn);
+  }
+  unsigned int i = 1;
+  for (auto it = ft->params().begin(); it < ft->params().end(); it++) {
+    DIType *t = dyn_cast<DIType>(&*md->getTypeArray()[i]);
+    typet tt = create_type(*it, t);
+    i++;
+    code_typet::parametert p(tt);
+//    p.set_identifier(F.getName().str() + "::" + arg->getName().str());
+    para.push_back(p);
+    assert(tt.id() != irep_idt());
+  }
+  ct.parameters() = para;
+  if (&*md->getTypeArray()[0] != NULL) {
+    DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+    mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
+    ft->getReturnType();
+    DIType *ditype = dyn_cast<DIType>(mdn);
+    ct.return_type() = create_type(ft->getReturnType(), ditype);
+  }
+  else {
+    ct.return_type() = void_typet();
+  }
+
+  return ct;
 }
 
 /*******************************************************************
@@ -1136,10 +1188,8 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
     }
     case llvm::Type::TypeID::PointerTyID: {
       errs() << "\n pointer no action.................";
-      // typet ptr_type = create_pointer_type(
-      //   dyn_cast<PointerType>(type)->getPointerElementType(),
-      //   dyn_cast<DIDerivedType>((md)->getBaseType()));
-      // ele_type = pointer_typet(ptr_type, 15);
+      typet ptr_sub_type = create_pointer_type(type, mdn);
+      ele_type = pointer_typet(ptr_sub_type, config.ansi_c.pointer_width);
       break;
     }
     case llvm::Type::TypeID::VectorTyID: {
@@ -1220,7 +1270,6 @@ typet symbol_creator::create_type(Type *type) {
     case llvm::Type::TypeID::StructTyID: {
       struct_union_typet sut(ID_struct);
       struct_union_typet::componentst &components = sut.components();
-      int i = 0;
       for (StructType::element_iterator e = dyn_cast<StructType>(type)
           ->element_begin(); e != dyn_cast<StructType>(type)->element_end();
           e++) {
@@ -1280,20 +1329,19 @@ typet symbol_creator::create_type(Type *type) {
 symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F) {
   errs() << "\n FunctionType :\n" << F.getName() << "\n";
   FunctionType *ft = dyn_cast<FunctionType>(type);
-
   symbolt funct;
   funct.clear();
   funct.is_static_lifetime = true;
   funct.is_thread_local = false;
-  // const irep_idt funct_bname = "funct";
-  // const irep_idt funct_name = "funct";
+// const irep_idt funct_bname = "funct";
+// const irep_idt funct_name = "funct";
   funct.mode = ID_C;
-  // funct.name = funct_name;
-  // funct.base_name = funct_bname;
+// funct.name = funct_name;
+// funct.base_name = funct_bname;
   code_typet ct = code_typet();
   code_typet::parameterst para;
-  // code_typet::parametert p1(unsignedbv_typet(32));
-  // para.push_back(p1);
+// code_typet::parametert p1(unsignedbv_typet(32));
+// para.push_back(p1);
   if (F.hasMetadata()) {
     DISubroutineType *md =
         (dyn_cast<DISubprogram>(F.getSubprogram()))->getType();
@@ -1353,11 +1401,11 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F) {
       ct.return_type() = void_typet();
     }
   }
-  // static_cast<unsignedbv_typet &>(rt);
+// static_cast<unsignedbv_typet &>(rt);
   funct.type = ct;
 
-  // funct.location = locationt::get_location_funct(
-  // dyn_cast<DIVariable>(mdn));
+// funct.location = locationt::get_location_funct(
+// dyn_cast<DIVariable>(mdn));
   return funct;
 }
 

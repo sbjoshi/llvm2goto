@@ -41,5 +41,6 @@ class symbol_creator {
   static symbolt create_TokenTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_LabelTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_MetadataTy(Type *type, llvm::MDNode *mdn);
+  static typet create_Function_Ptr(FunctionType *type, const llvm::DIType *mdn);
 };
 #endif  // SRC_SYMBOL_CREATOR_H_"
