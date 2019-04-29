@@ -2905,7 +2905,9 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
     else if (auto *CE = dyn_cast<ConstantExpr>(I->getOperand(0))) {
       GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(
           CE->getAsInstruction());
-      exprt value_to_store = trans_ConstGetElementPtr(GE, symbol_table);
+
+      typet dummy;
+      exprt value_to_store = trans_ConstGetElementPtr(GE, symbol_table, &dummy);
 
       GE->deleteValue();
 
@@ -2936,6 +2938,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   goto_programt gp;
   int flag = 1;  //akash bad way to prevent &<constant_int> around line:3107
   int function_parameter_flag = 0;
+  typet final_type;
   // I->dump();
   if (dyn_cast<DbgDeclareInst>(I->getNextNode())) {
 //    I->getNextNode()->moveBefore(I);
@@ -2975,8 +2978,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
 
     symbol = symbol_table.lookup(
         var_name_map.find(GE->getOperand(0)->getName().str())->second);
-
-    expr = trans_ConstGetElementPtr(GE, symbol_table);
+    expr = trans_ConstGetElementPtr(GE, symbol_table, &final_type);
 
     GE->deleteValue();
   }
@@ -3019,13 +3021,17 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
                  << symbol->type.subtype().id().c_str() << " " << val << "\n";
           // to handle multidimentional array.
           typet t = symbol->type.subtype();
-          while (!(t.id() == ID_signedbv || t.id() == ID_unsignedbv)) {
-            // errs() << "mew " << t.id().c_str() << "\n";
-            t = t.subtype();
-            // int k;
-            // std::cin >> k;
-            // errs() << (t.id()==ID_signedbv) << " " << (t.id()==ID_unsignedbv) << " " << !(t.id()==ID_signedbv || t.id()==ID_unsignedbv) << "\n";
-          }
+          if (t.id() == ID_struct)
+            t = final_type;
+          else
+            while (!(t.id() == ID_signedbv || t.id() == ID_unsignedbv)) {
+              // errs() << "mew " << t.id().c_str() << "\n";
+
+              t = t.subtype();
+              // int k;
+              // std::cin >> k;
+              // errs() << (t.id()==ID_signedbv) << " " << (t.id()==ID_unsignedbv) << " " << !(t.id()==ID_signedbv || t.id()==ID_unsignedbv) << "\n";
+            }
           errs() << "hi " << t.id().c_str() << "\n";
           value_to_store = from_integer(val, t);
           flag = 0;
@@ -3033,6 +3039,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
         }
         else {
           typet t = symbol->type;
+
+          if (t.id() == ID_struct)
+            t = final_type;
+          else
           while (!(t.id() == ID_signedbv || t.id() == ID_unsignedbv)) {
             t = t.subtype();
           }
@@ -3313,7 +3323,8 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
 
  \*******************************************************************/
 exprt llvm2goto_translator::trans_ConstGetElementPtr(
-    const GetElementPtrInst *I, const symbol_tablet &symbol_table) {
+    const GetElementPtrInst *I, const symbol_tablet &symbol_table,
+    typet *final_type) {
   exprt op_expr;
   const symbolt *op_symbol = nullptr;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -3324,48 +3335,70 @@ exprt llvm2goto_translator::trans_ConstGetElementPtr(
         var_name_map.find(li->getOperand(0)->getName().str())->second);
     op_expr = op_symbol->symbol_expr();
   }
+
   else {
-    auto array = I->getOperand(0);
-    std::string array_name = var_name_map.find(array->getName().str())->second;
-    op_symbol = symbol_table.lookup(array_name);
+    auto var = I->getOperand(0);
+    std::string var_name = var_name_map.find(var->getName().str())->second;
+    op_symbol = symbol_table.lookup(var_name);
     op_expr = op_symbol->symbol_expr();
   }
 
-  for (unsigned i = 2; i < I->getNumOperands(); i++) {
+  if (op_symbol->type.id() == ID_struct) {
+    const struct_typet struct_t = to_struct_type(op_symbol->type);
+    for (unsigned i = 2; i < I->getNumOperands(); i++) {
+      exprt struct_member_expr;
+      unsigned index;
+      auto index_operand = I->getOperand(i);
 
-    exprt array_index_expr;
-    auto index_operand = I->getOperand(i);
+      index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
 
-    if (dyn_cast<ConstantInt>(index_operand)) {
-      unsigned index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
-      array_index_expr = from_integer(index, index_type());
+      auto component = struct_t.components().at(index);
+      *final_type = component.type();
+      unsigned depth = 0;
+      op_expr = member_exprt(op_expr, component);
+
+      if (component.type().id() == ID_array
+          || component.type().id() == ID_pointer) {
+        typet temp = component.type();
+        while ((temp.id() == ID_array || temp.id() == ID_pointer)
+            && i < I->getNumOperands()) {
+          temp = temp.subtype();
+          *final_type = temp;
+          i++;
+          index_operand = I->getOperand(i);
+          exprt array_index_expr;
+          if (dyn_cast<ConstantInt>(index_operand)) {
+            index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
+            array_index_expr = from_integer(index, index_type());
+          }
+          else {
+            std::string index_op_name = var_name_map.find(
+                index_operand->getName().str())->second;
+            array_index_expr =
+                symbol_table.lookup(index_op_name)->symbol_expr();
+          }
+          op_expr = index_exprt(op_expr, array_index_expr);
+        }
+      }
     }
-    else {
-      std::string index_op_name = var_name_map.find(
-          index_operand->getName().str())->second;
-      array_index_expr = symbol_table.lookup(index_op_name)->symbol_expr();
-    }
-
-    op_expr = index_exprt(op_expr, array_index_expr);
   }
+  else
+    for (unsigned i = 2; i < I->getNumOperands(); i++) {
 
-//  if (op_expr.type().id() == ID_array) {
-//    assgn_inst->code = code_assignt(
-//        symbol_table.lookup(full_name)->symbol_expr(),
-//        address_of_exprt(index_exprt(op_expr, array_index_expr)));
-//  }
-//  else {
-//
-//    exprt expr_temp_1 = dereference_exprt(op_expr);
-//
-//    exprt expr_temp_2 = index_exprt(expr_temp_1, array_index_expr);
-//
-//    exprt expr_temp_3 = address_of_exprt(expr_temp_2);
-//
-//    assgn_inst->code = code_assignt(
-//        symbol_table.lookup(full_name)->symbol_expr(), expr_temp_3);
-//  }
+      exprt array_index_expr;
+      auto index_operand = I->getOperand(i);
 
+      if (dyn_cast<ConstantInt>(index_operand)) {
+        unsigned index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
+        array_index_expr = from_integer(index, index_type());
+      }
+      else {
+        std::string index_op_name = var_name_map.find(
+            index_operand->getName().str())->second;
+        array_index_expr = symbol_table.lookup(index_op_name)->symbol_expr();
+      }
+      op_expr = index_exprt(op_expr, array_index_expr);
+    }
   return op_expr;
 }
 
@@ -4864,6 +4897,9 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     else {
       assert(false && "This datatype has not been handled");
     }
+  }
+  if(opnd1.type().id() != opnd2.type().id()){
+    opnd2 = typecast_exprt(opnd2, opnd1.type());
   }
   switch (dyn_cast<CmpInst>(I)->getPredicate()) {
     case CmpInst::Predicate::ICMP_EQ: {

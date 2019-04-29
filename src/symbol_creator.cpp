@@ -282,8 +282,8 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
   if (dyn_cast<DIGlobalVariable>(mdn)) {
     global_variable.is_static_lifetime = true;
   }
-  struct_union_typet sut(ID_struct);
-  struct_union_typet::componentst &components = sut.components();
+  struct_typet sut;
+  struct_typet::componentst &components = sut.components();
   DICompositeType *md = dyn_cast<DICompositeType>(
       dyn_cast<DIVariable>(mdn)->getType());
   DINodeArray Fields = md->getElements();
@@ -294,56 +294,84 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
     switch ((*e)->getTypeID()) {
       case llvm::Type::TypeID::HalfTyID: {
         bitvector_typet bvt(ID_floatbv, 16);
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::FloatTyID: {
         bitvector_typet bvt(ID_floatbv, 32);
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::DoubleTyID: {
         bitvector_typet bvt(ID_floatbv, 64);
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::X86_FP80TyID: {
         bitvector_typet bvt(ID_floatbv, 80);
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::FP128TyID: {
         bitvector_typet bvt(ID_floatbv, 128);
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::PPC_FP128TyID: {
         bitvector_typet bvt(ID_floatbv, 128);
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::IntegerTyID: {
+        auto temp_type = Fields[i];
         if ((*e)->getIntegerBitWidth() == 1) {
-          struct_union_typet::componentt component(ele_name, bool_typet());
+          struct_typet::componentt component(ele_name, bool_typet());
           components.push_back(component);
+          break;
+        }
+
+        while (dyn_cast<DIDerivedType>(temp_type)
+            || dyn_cast<DICompositeType>(temp_type)) {
+          if (DIDerivedType* temp = dyn_cast<DIDerivedType>(temp_type)) temp_type =
+              dyn_cast<DIType>(temp->getBaseType());
+          if (DICompositeType* temp = dyn_cast<DICompositeType>(temp_type)) temp_type =
+              dyn_cast<DIType>(temp->getBaseType());
+        }
+
+        struct_typet::componentt component(
+            ele_name, unsignedbv_typet((*e)->getIntegerBitWidth()));
+
+        int encoding;
+        if (dyn_cast<DIBasicType>(temp_type)) {
+          encoding = dyn_cast<DIBasicType>(temp_type)->getEncoding();
         }
         else {
-          struct_union_typet::componentt component(
-              ele_name, unsignedbv_typet((*e)->getIntegerBitWidth()));
+          component = struct_typet::componentt(
+              ele_name, signedbv_typet((*e)->getIntegerBitWidth()));
           components.push_back(component);
+          break;
         }
+
+        switch (encoding) {
+          case dwarf::DW_ATE_signed:
+          case dwarf::DW_ATE_signed_char:
+            component = struct_typet::componentt(
+                ele_name, signedbv_typet((*e)->getIntegerBitWidth()));
+            break;
+        }
+        components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::StructTyID: {
@@ -356,7 +384,7 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
           errs() << "\n Unhandled datatype in :\n";
           Fields[i]->dump();
         }
-        struct_union_typet::componentt component(
+        struct_typet::componentt component(
             ele_name,
             create_struct_union_type(*e, dyn_cast<DICompositeType>(ele_type)));
         components.push_back(component);
@@ -371,7 +399,7 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
             *e,
             dyn_cast<DICompositeType>(
                 dyn_cast<DIDerivedType>(Fields[i])->getBaseType()));
-        struct_union_typet::componentt component(ele_name,
+        struct_typet::componentt component(ele_name,
                                                  array_typet(arrt, size));
         components.push_back(component);
         break;
@@ -382,7 +410,7 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
             dyn_cast<DIDerivedType>(
                 dyn_cast<DIDerivedType>(Fields[i])->getBaseType()));
         pointer_typet pt(ptr_type, config.ansi_c.pointer_width);
-        struct_union_typet::componentt component(ele_name, pt);
+        struct_typet::componentt component(ele_name, pt);
         components.push_back(component);
         break;
       }

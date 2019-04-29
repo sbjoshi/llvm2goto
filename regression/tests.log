@@ -94,13 +94,13 @@ Test '2d_array_addition'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test '3d_array'
@@ -115,7 +115,7 @@ Test '3d_array'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
@@ -199,13 +199,13 @@ Test '3d_array_fail'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [OK]
+^EXIT=10\r\\?$ [FAILED]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [FAILED]
 ^warning: ignoring [OK]
 
 Test '7d_array'
@@ -241,7 +241,7 @@ Test 'Function10'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
@@ -360,13 +360,13 @@ Test 'Function15'
     ^VERIFICATION FAILED$
     --
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 
 Test 'Function2'
   Level: CORE
@@ -420,7 +420,7 @@ Test 'Multi_Dimensional_Array3'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
@@ -441,7 +441,7 @@ Test 'Multi_Dimensional_Array5'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
@@ -504,7 +504,7 @@ Test 'Pointer_Arithmetic3'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --pointer-check main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
@@ -642,6 +642,48 @@ Test 'Pointer_diff'
     --
     ^warning: ignoring
 Execution [SKIPPED]
+
+Test 'akash_struct_1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'akash_struct_2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
 
 Test 'assume1'
   Level: CORE
@@ -1054,13 +1096,13 @@ Test 'functino_1_fail'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_1'
@@ -1075,7 +1117,7 @@ Test 'function_1'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
@@ -1096,7 +1138,7 @@ Test 'function_2'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
@@ -1117,13 +1159,13 @@ Test 'function_2_fail'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_3'
@@ -1138,16 +1180,16 @@ Test 'function_3'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
-Test 'function_call1'
+Test 'function_4'
   Level: CORE
   Input: main.c.i
   Output: main.c.out
@@ -1159,13 +1201,34 @@ Test 'function_call1'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'function_5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_next'
@@ -1895,12 +1958,12 @@ Test 'variable_scopes'
     --
     ^warning: ignoring
 Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 

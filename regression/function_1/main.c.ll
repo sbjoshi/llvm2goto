@@ -17,6 +17,7 @@ define dso_local i32 @main() #0 !dbg !16 {
 entry:
   %retval = alloca i32, align 4
   %x = alloca i32, align 4
+  %test = alloca double, align 8
   store i32 0, i32* %retval, align 4
   call void @llvm.dbg.declare(metadata i32* %x, metadata !20, metadata !DIExpression()), !dbg !21
   store i32 2, i32* %x, align 4, !dbg !21
@@ -52,12 +53,18 @@ if.then4:                                         ; preds = %if.end2
   br label %if.end6, !dbg !39
 
 if.end6:                                          ; preds = %if.then4, %if.end2
-  %4 = load double, double* @d, align 8, !dbg !40
-  %cmp7 = fcmp oeq double %4, 2.000000e+00, !dbg !41
-  %conv = zext i1 %cmp7 to i32, !dbg !41
-  %call8 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv), !dbg !42
-  %5 = load i32, i32* %retval, align 4, !dbg !43
-  ret i32 %5, !dbg !43
+  call void @llvm.dbg.declare(metadata double* %test, metadata !40, metadata !DIExpression()), !dbg !41
+  store double 2.000000e+00, double* %test, align 8, !dbg !41
+  %4 = load double, double* @d, align 8, !dbg !42
+  %5 = load double, double* %test, align 8, !dbg !43
+  %cmp7 = fcmp oeq double %4, %5, !dbg !44
+  %conv = zext i1 %cmp7 to i32, !dbg !44
+  %call8 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv), !dbg !45
+  %6 = load double, double* @d, align 8, !dbg !46
+  %cmp9 = fcmp oeq double %6, 2.000000e+00, !dbg !47
+  %conv10 = zext i1 %cmp9 to i32, !dbg !47
+  %call11 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv10), !dbg !48
+  ret i32 0, !dbg !49
 }
 
 ; Function Attrs: nounwind readnone speculatable
@@ -67,7 +74,7 @@ declare dso_local i32 @nondet_int(...) #2
 
 declare dso_local i32 @assert(...) #2
 
-attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind readnone speculatable }
 attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
@@ -77,7 +84,7 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 
 !0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
 !1 = distinct !DIGlobalVariable(name: "d", scope: !2, file: !3, line: 5, type: !6, isLocal: false, isDefinition: true)
-!2 = distinct !DICompileUnit(language: DW_LANG_C99, file: !3, producer: "clang version 7.0.1 (https://github.com/llvm-mirror/clang.git 4519e2637fcc4bf6e3049a0a80e6a5e7b97667cb) (https://github.com/llvm-mirror/llvm.git cd98f42d0747826062fc3d2d2fad383aedf58dd6)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !4, globals: !5)
+!2 = distinct !DICompileUnit(language: DW_LANG_C99, file: !3, producer: "clang version 8.0.0 ", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !4, globals: !5, nameTableKind: None)
 !3 = !DIFile(filename: "function_1/main.c", directory: "/home/akash/Documents/CBMC/cbmc/src/llvm2goto/regression")
 !4 = !{}
 !5 = !{!0}
@@ -85,13 +92,13 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !7 = !{i32 2, !"Dwarf Version", i32 4}
 !8 = !{i32 2, !"Debug Info Version", i32 3}
 !9 = !{i32 1, !"wchar_size", i32 4}
-!10 = !{!"clang version 7.0.1 (https://github.com/llvm-mirror/clang.git 4519e2637fcc4bf6e3049a0a80e6a5e7b97667cb) (https://github.com/llvm-mirror/llvm.git cd98f42d0747826062fc3d2d2fad383aedf58dd6)"}
-!11 = distinct !DISubprogram(name: "f1", scope: !3, file: !3, line: 7, type: !12, isLocal: false, isDefinition: true, scopeLine: 8, isOptimized: false, unit: !2, retainedNodes: !4)
+!10 = !{!"clang version 8.0.0 "}
+!11 = distinct !DISubprogram(name: "f1", scope: !3, file: !3, line: 7, type: !12, scopeLine: 8, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !4)
 !12 = !DISubroutineType(types: !13)
 !13 = !{null}
 !14 = !DILocation(line: 9, column: 5, scope: !11)
 !15 = !DILocation(line: 10, column: 1, scope: !11)
-!16 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 12, type: !17, isLocal: false, isDefinition: true, scopeLine: 13, isOptimized: false, unit: !2, retainedNodes: !4)
+!16 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 12, type: !17, scopeLine: 13, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !4)
 !17 = !DISubroutineType(types: !18)
 !18 = !{!19}
 !19 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
@@ -115,7 +122,13 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !37 = !DILocation(line: 24, column: 6, scope: !16)
 !38 = !DILocation(line: 25, column: 5, scope: !35)
 !39 = !DILocation(line: 25, column: 4, scope: !35)
-!40 = !DILocation(line: 27, column: 10, scope: !16)
-!41 = !DILocation(line: 27, column: 12, scope: !16)
-!42 = !DILocation(line: 27, column: 3, scope: !16)
-!43 = !DILocation(line: 28, column: 1, scope: !16)
+!40 = !DILocalVariable(name: "test", scope: !16, file: !3, line: 26, type: !6)
+!41 = !DILocation(line: 26, column: 10, scope: !16)
+!42 = !DILocation(line: 27, column: 10, scope: !16)
+!43 = !DILocation(line: 27, column: 15, scope: !16)
+!44 = !DILocation(line: 27, column: 12, scope: !16)
+!45 = !DILocation(line: 27, column: 3, scope: !16)
+!46 = !DILocation(line: 28, column: 10, scope: !16)
+!47 = !DILocation(line: 28, column: 12, scope: !16)
+!48 = !DILocation(line: 28, column: 3, scope: !16)
+!49 = !DILocation(line: 29, column: 3, scope: !16)

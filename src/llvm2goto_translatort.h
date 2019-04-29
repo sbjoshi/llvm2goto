@@ -92,7 +92,8 @@ class llvm2goto_translatort {
   virtual goto_programt trans_GetElementPtr(const Instruction *I,
                                             symbol_tablet &symbol_table) = 0;
   virtual exprt trans_ConstGetElementPtr(const GetElementPtrInst *I,
-                                         const symbol_tablet &symbol_table) = 0;
+                                         const symbol_tablet &symbol_table,
+                                         typet *final_type) = 0;
   virtual goto_programt trans_Trunc(const Instruction *I,
                                     symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_ZExt(const Instruction *I,

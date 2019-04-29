@@ -2,7 +2,7 @@
 
 int global;
 
-void other_func1(int z, int my_func(int b, int c))
+void other_func1(int z, int my_func(int akash1, int akash2))
 {
   my_func(1, 2);
 }
