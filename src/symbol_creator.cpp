@@ -294,43 +294,37 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
     switch ((*e)->getTypeID()) {
       case llvm::Type::TypeID::HalfTyID: {
         bitvector_typet bvt(ID_floatbv, 16);
-        struct_typet::componentt component(ele_name,
-                                                 to_floatbv_type(bvt));
+        struct_typet::componentt component(ele_name, to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::FloatTyID: {
         bitvector_typet bvt(ID_floatbv, 32);
-        struct_typet::componentt component(ele_name,
-                                                 to_floatbv_type(bvt));
+        struct_typet::componentt component(ele_name, to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::DoubleTyID: {
         bitvector_typet bvt(ID_floatbv, 64);
-        struct_typet::componentt component(ele_name,
-                                                 to_floatbv_type(bvt));
+        struct_typet::componentt component(ele_name, to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::X86_FP80TyID: {
         bitvector_typet bvt(ID_floatbv, 80);
-        struct_typet::componentt component(ele_name,
-                                                 to_floatbv_type(bvt));
+        struct_typet::componentt component(ele_name, to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::FP128TyID: {
         bitvector_typet bvt(ID_floatbv, 128);
-        struct_typet::componentt component(ele_name,
-                                                 to_floatbv_type(bvt));
+        struct_typet::componentt component(ele_name, to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::PPC_FP128TyID: {
         bitvector_typet bvt(ID_floatbv, 128);
-        struct_typet::componentt component(ele_name,
-                                                 to_floatbv_type(bvt));
+        struct_typet::componentt component(ele_name, to_floatbv_type(bvt));
         components.push_back(component);
         break;
       }
@@ -399,8 +393,7 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
             *e,
             dyn_cast<DICompositeType>(
                 dyn_cast<DIDerivedType>(Fields[i])->getBaseType()));
-        struct_typet::componentt component(ele_name,
-                                                 array_typet(arrt, size));
+        struct_typet::componentt component(ele_name, array_typet(arrt, size));
         components.push_back(component);
         break;
       }
@@ -1296,6 +1289,7 @@ typet symbol_creator::create_type(Type *type) {
       break;
     }
     case llvm::Type::TypeID::StructTyID: {
+      static long akash_name = 0;
       struct_union_typet sut(ID_struct);
       struct_union_typet::componentst &components = sut.components();
       for (StructType::element_iterator e = dyn_cast<StructType>(type)
@@ -1303,8 +1297,10 @@ typet symbol_creator::create_type(Type *type) {
           e++) {
         // (*e)->dump();
         // assert(false);
-        struct_union_typet::componentt component("", create_type(*e));
+        struct_union_typet::componentt component(
+            ("a" + std::to_string(akash_name)).c_str(), create_type(*e));
         components.push_back(component);
+        akash_name++;
       }
       ele_type = sut;
       // errs() << "\n struct no action.................";
