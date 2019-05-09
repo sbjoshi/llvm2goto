@@ -102,13 +102,13 @@ goto_programt llvm2goto_translator::trans_Ret(
       Type *floattype = dyn_cast<Type>((ub)->getType());
       if (floattype->isFloatTy()) {
         float val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToFloat();
-        ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+        ieee_floatt ieee_fl(float_type());
         ieee_fl.from_float(val);
         exprt1 = ieee_fl.to_expr();
       }
       else if (floattype->isDoubleTy()) {
         double val = dyn_cast<ConstantFP>(ub)->getValueAPF().convertToDouble();
-        ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+        ieee_floatt ieee_fl(double_type());
         ieee_fl.from_double(val);
         exprt1 = ieee_fl.to_expr();
       }
@@ -874,13 +874,13 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -917,22 +917,22 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
     if (floattype->isFloatTy()) {
       float val =
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
-      exprt rounding = symbol_table.lookup(
-          var_name_map.find("__CPROVER_rounding_mode")->second)->symbol_expr();
+      exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+          ->symbol_expr();
       exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
                                       float_type());
     }
     else if (floattype->isDoubleTy()) {
-      float val =
-          dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
+          .convertToDouble();
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
 //      exprt rounding = symbol_table.lookup(
 //          var_name_map.find("__CPROVER_rounding_mode")->second)->symbol_expr();
-      exprt rounding = from_integer(ieee_floatt::ROUND_TO_ZERO,
-                                    unsignedbv_typet(64));
+      exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+          ->symbol_expr();
       exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
                                       double_type());
     }
@@ -1192,13 +1192,13 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -1235,14 +1235,14 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
     if (floattype->isFloatTy()) {
       float val =
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       float val =
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     }
@@ -1503,13 +1503,13 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -1546,14 +1546,14 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
     if (floattype->isFloatTy()) {
       float val =
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
-      float val =
-          dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
+          .convertToDouble();
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     }
@@ -1865,13 +1865,13 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -1908,14 +1908,14 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
     if (floattype->isFloatTy()) {
       float val =
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
-      float val =
-          dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
+          .convertToDouble();
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     }
@@ -2225,13 +2225,13 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -2268,14 +2268,14 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
     if (floattype->isFloatTy()) {
       float val =
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt2 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
-      float val =
-          dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
+          .convertToDouble();
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt2 = ieee_fl.to_expr();
     }
@@ -2891,9 +2891,10 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
       if (bci->getOperand(0)->hasName()) {
         const symbolt *symbol = symbol_table.lookup(
             var_name_map.find(bci->getOperand(0)->getName().str())->second);
-        exprt value_to_store = symbol->symbol_expr();
+        exprt value_to_store = address_of_exprt(symbol->symbol_expr());
         value_to_store = typecast_exprt(
             value_to_store, symbol_creator::create_type(bci->getType()));
+        value_to_store = dereference_exprt(value_to_store);
         errs() << from_expr(value_to_store) << "\n";
         return value_to_store;
       }
@@ -3059,16 +3060,24 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
           float val = dyn_cast<ConstantFP>(
               dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF()
               .convertToFloat();
-          ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+          ieee_floatt ieee_fl(float_type());
           ieee_fl.from_float(val);
+//          exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+//              ->symbol_expr();
+//          value_to_store = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
+//                                                  float_type());
           value_to_store = ieee_fl.to_expr();
         }
         else if (floattype->isDoubleTy()) {
           double val = dyn_cast<ConstantFP>(
               dyn_cast<StoreInst>(I)->getOperand(0))->getValueAPF()
               .convertToDouble();
-          ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+          ieee_floatt ieee_fl(double_type());
           ieee_fl.from_double(val);
+//          exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+//              ->symbol_expr();
+//          value_to_store = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
+//                                                  double_type());
           value_to_store = ieee_fl.to_expr();
           errs() << "================\n";
           errs() << from_expr(value_to_store);
@@ -3354,7 +3363,6 @@ exprt llvm2goto_translator::trans_ConstGetElementPtr(
 
       auto component = struct_t.components().at(index);
       *final_type = component.type();
-      unsigned depth = 0;
       op_expr = member_exprt(op_expr, component);
 
       if (component.type().id() == ID_array
@@ -3759,6 +3767,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
                                                 symbol.name.c_str()));
         symbol.type = symbol_creator::create_type(I->getType());
         symbol_table.add(symbol);
+        gep_symbols.insert(symbol_table.lookup(symbol.name));
         goto_programt::targett decl_comp = gp.add_instruction();
         decl_comp->make_decl();
         decl_comp->code = code_declt(symbol.symbol_expr());
@@ -4093,13 +4102,13 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -4206,13 +4215,13 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
     floattype->dump();
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -4310,13 +4319,13 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -4414,13 +4423,13 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
     Type *floattype = dyn_cast<Type>((*ub)->getType());
     if (floattype->isFloatTy()) {
       float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-      ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+      ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
       exprt1 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-      ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+      ieee_floatt ieee_fl(double_type());
       ieee_fl.from_double(val);
       exprt1 = ieee_fl.to_expr();
     }
@@ -4880,17 +4889,21 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
       if (f1 == 0) {
         if (dyn_cast<ConstantFP>(*ub)) {
           float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-          ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+          ieee_floatt ieee_fl(float_type());
           ieee_fl.from_float(val);
+          ieee_fl.rounding_mode = ieee_floatt::ROUND_TO_ZERO;
+          ieee_fl.spec = ieee_float_spect::single_precision();
           opnd1 = to_constant_expr(ieee_fl.to_expr());
         }
       }
       if (f2 == 0) {
         if (dyn_cast<ConstantFP>(*(ub + 1))) {
-          double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
+          float val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
               .convertToFloat();
-          ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+          ieee_floatt ieee_fl(float_type());
           ieee_fl.from_double(val);
+//          ieee_fl.rounding_mode = ieee_floatt::ROUND_TO_ZERO;
+//          ieee_fl.spec = ieee_float_spect::single_precision();
           opnd2 = to_constant_expr(ieee_fl.to_expr());
         }
       }
@@ -4900,8 +4913,8 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
         if (dyn_cast<ConstantFP>(*ub)) {
           double val =
               dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-          ieee_floatt ieee_fl(ieee_float_spect::single_precision());
-          ieee_fl.from_float(val);
+          ieee_floatt ieee_fl(double_type());
+          ieee_fl.from_double(val);
           opnd1 = ieee_fl.to_expr();
         }
       }
@@ -4909,7 +4922,7 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
         if (dyn_cast<ConstantFP>(*(ub + 1))) {
           double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
               .convertToDouble();
-          ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+          ieee_floatt ieee_fl(double_type());
           ieee_fl.from_double(val);
           opnd2 = ieee_fl.to_expr();
         }
@@ -5104,17 +5117,17 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
       if (f1 == 0) {
         if (dyn_cast<ConstantFP>(*ub)) {
           float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-          ieee_floatt ieee_fl(ieee_float_spect::single_precision());
+          ieee_floatt ieee_fl(float_type());
           ieee_fl.from_float(val);
           opnd1 = to_constant_expr(ieee_fl.to_expr());
         }
       }
       if (f2 == 0) {
         if (dyn_cast<ConstantFP>(*(ub + 1))) {
-          double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
+          float val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
               .convertToFloat();
-          ieee_floatt ieee_fl(ieee_float_spect::double_precision());
-          ieee_fl.from_double(val);
+          ieee_floatt ieee_fl(float_type());
+          ieee_fl.from_float(val);
           opnd2 = to_constant_expr(ieee_fl.to_expr());
         }
       }
@@ -5124,8 +5137,8 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
         if (dyn_cast<ConstantFP>(*ub)) {
           double val =
               dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-          ieee_floatt ieee_fl(ieee_float_spect::single_precision());
-          ieee_fl.from_float(val);
+          ieee_floatt ieee_fl(double_type());
+          ieee_fl.from_double(val);
           opnd1 = ieee_fl.to_expr();
         }
       }
@@ -5133,7 +5146,7 @@ exprt llvm2goto_translator::trans_Inverse_Cmp(const Instruction *I,
         if (dyn_cast<ConstantFP>(*(ub + 1))) {
           double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
               .convertToDouble();
-          ieee_floatt ieee_fl(ieee_float_spect::double_precision());
+          ieee_floatt ieee_fl(double_type());
           ieee_fl.from_double(val);
           opnd2 = ieee_fl.to_expr();
         }
@@ -7048,7 +7061,11 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
   cmdlinet cmdline;
   config.set(cmdline);
   config.ansi_c.set_64();
-  config.ansi_c.double_width = 64;
+  config.ansi_c.double_width = 32;
+  config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_ZERO;
+  config.ansi_c.set_c11();
+  config.ansi_c.long_double_width = 64;
+//  config.ansi_c.
 // TODO(Rasika): check for presence of function body
   errs() << "in trans_Program\n";
   goto_functionst goto_functions;
@@ -7072,9 +7089,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     symbolt cprover_rounding_mode;
     cprover_rounding_mode.name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
-    cprover_rounding_mode.type = unsignedbv_typet(64);
+    cprover_rounding_mode.type = float_type();
+//    cprover_rounding_mode.type.set("__CPROVER_rounding_mode", 32);
 //    cprover_rounding_mode.type.set
-    cprover_rounding_mode.mode = ID_C;
+    cprover_rounding_mode.mode = ID_floatbv;
     cprover_rounding_mode.value = from_integer(ieee_floatt::ROUND_TO_ZERO,
                                                cprover_rounding_mode.type);
     var_name_map.insert(

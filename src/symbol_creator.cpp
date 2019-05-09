@@ -1284,7 +1284,7 @@ typet symbol_creator::create_type(Type *type) {
         ele_type = bool_typet();
       }
       else {
-        ele_type = unsignedbv_typet(type->getIntegerBitWidth());
+        ele_type = signedbv_typet(type->getIntegerBitWidth());
       }
       break;
     }
