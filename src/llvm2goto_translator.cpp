@@ -126,10 +126,10 @@ goto_programt llvm2goto_translator::trans_Ret(
   }
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
-      op1 = symbol_table.lookup(
-          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-              + li->getOperand(0)->getName().str());
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+//              + li->getOperand(0)->getName().str());
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -219,12 +219,12 @@ goto_programt llvm2goto_translator::trans_Switch(
   goto_programt gp;
   Value *ub = dyn_cast<SwitchInst>(I)->getCondition();
 //  symbolt var;
-  const symbolt* var;  //akash
+  const symbolt* var = nullptr;  //akash
   exprt var_expr;
   if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
-    var = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    var_expr = get_load(li, symbol_table);
+//    var = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    var_expr = get_load(li, symbol_table, &var);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   var_expr = dereference_exprt(var.symbol_expr(), var.type);
@@ -454,9 +454,9 @@ exprt llvm2goto_translator::get_Arith_exprt(const Instruction *I,
   int flag = 2, f1 = 0, f2 = 0;
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt1 = get_load(li, symbol_table);
+//    op1 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt1 = get_load(li, symbol_table, &op1);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -470,9 +470,9 @@ exprt llvm2goto_translator::get_Arith_exprt(const Instruction *I,
   }
   if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt2 = get_load(li, symbol_table);
+//    op2 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt2 = get_load(li, symbol_table, &op2);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -695,9 +695,9 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   int flag = 2, f1 = 0, f2 = 0;
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt1 = get_load(li, symbol_table);
+//    op1 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt1 = get_load(li, symbol_table, &op1);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -711,9 +711,9 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   }
   if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt2 = get_load(li, symbol_table);
+//    op2 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt2 = get_load(li, symbol_table, &op2);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -726,10 +726,13 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
     f2 = 1;
   }
   if (f1 == 1 && f2 == 1) {
-    if (op1->type.id() == ID_pointer)
-      op_type = op1->type.subtype();
-    else
-      op_type = op1->type;
+    op_type = exprt1.type();
+//    while (op_type.id() == ID_pointer)
+//      op_type = op_type.subtype();
+//    if (op1->type.id() == ID_pointer)
+//      op_type = op1->type.subtype();
+//    else
+//      op_type = op1->type;
     errs() << "done!";
   }
   else if (I->getOperand(0)->getType()->isIntegerTy()
@@ -757,24 +760,24 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
       }
     }
     // typet op_type;
-    if (op2) if (op2->type.id() == ID_signedbv) {
-      op_type = op2->type;
+    if (op2) if (exprt2.type().id() == ID_signedbv) {
+      op_type = exprt2.type();
     }
-    if (op1) if (op1->type.id() == ID_signedbv) {
-      op_type = op1->type;
+    if (op1) if (exprt1.type().id() == ID_signedbv) {
+      op_type = exprt1.type();
     }
-    if (op2) if (op2->type.id() == ID_unsignedbv) {
-      op_type = op2->type;
+    if (op2) if (exprt2.type().id() == ID_unsignedbv) {
+      op_type = exprt2.type();
     }
-    if (op1) if (op1->type.id() == ID_unsignedbv) {
-      op_type = op1->type;
+    if (op1) if (exprt1.type().id() == ID_unsignedbv) {
+      op_type = exprt1.type();
     }
-    if (op2) if (op2->type.id() == ID_pointer) {
-      op_type = op2->type.subtype();
-    }
-    if (op1) if (op1->type.id() == ID_pointer) {
-      op_type = op1->type.subtype();
-    }
+//    if (op2) if (op2->type.id() == ID_pointer) {
+//      op_type = op2->type.subtype();
+//    }
+//    if (op1) if (op1->type.id() == ID_pointer) {
+//      op_type = op1->type.subtype();
+//    }
     if (op_type.id() == ID_signedbv && flag == 1) {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
       typet type = op_type;
@@ -894,9 +897,9 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -933,8 +936,9 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
 //          var_name_map.find("__CPROVER_rounding_mode")->second)->symbol_expr();
       exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
           ->symbol_expr();
-      exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
-                                      double_type());
+//      exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
+//                                      double_type());
+      exprt2 = ieee_fl.to_expr();
     }
     else {
       (ub + 1)->dump();
@@ -946,9 +950,9 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1032,9 +1036,9 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   int flag = 2, f1 = 0, f2 = 0;
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt1 = get_load(li, symbol_table);
+//    op1 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt1 = get_load(li, symbol_table, &op1);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1048,9 +1052,9 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
   }
   if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt2 = get_load(li, symbol_table);
+//    op2 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt2 = get_load(li, symbol_table, &op2);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1212,9 +1216,9 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1256,9 +1260,9 @@ goto_programt llvm2goto_translator::trans_FSub(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1336,9 +1340,9 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   int flag = 2, f1 = 0, f2 = 0;
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op1 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt1 = get_load(li, symbol_table);
+//    op1 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt1 = get_load(li, symbol_table, &op1);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1352,9 +1356,9 @@ goto_programt llvm2goto_translator::trans_Mul(const Instruction *I,
   }
   if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
-    op2 = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    exprt2 = get_load(li, symbol_table);
+//    op2 = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    exprt2 = get_load(li, symbol_table, &op2);
     // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
     // {
     //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1523,9 +1527,9 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1567,9 +1571,9 @@ goto_programt llvm2goto_translator::trans_FMul(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1651,9 +1655,9 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1677,9 +1681,9 @@ goto_programt llvm2goto_translator::trans_UDiv(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1760,9 +1764,9 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1786,9 +1790,9 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -1885,9 +1889,9 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -1929,9 +1933,9 @@ goto_programt llvm2goto_translator::trans_FDiv(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2011,9 +2015,9 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -2037,9 +2041,9 @@ goto_programt llvm2goto_translator::trans_URem(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2120,9 +2124,9 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -2146,9 +2150,9 @@ goto_programt llvm2goto_translator::trans_SRem(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2245,9 +2249,9 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -2289,9 +2293,9 @@ goto_programt llvm2goto_translator::trans_FRem(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2372,9 +2376,9 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -2397,9 +2401,9 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2484,9 +2488,9 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -2509,9 +2513,9 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2595,9 +2599,9 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -2620,9 +2624,9 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
       // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
       // {
       //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -2852,7 +2856,8 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
     }
     else {
       return dereference_exprt(
-          get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table));
+          get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table,
+                   ret_symbol));
     }
   }
 }
@@ -2963,7 +2968,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       dyn_cast<StoreInst>(I)->getOperand(1))) {
     li->dump();
     expr = get_load(li, symbol_table, &symbol);
-    expr = dereference_exprt(expr, symbol->type);
+    expr = dereference_exprt(expr);
     // errs() << from_expr(expr) << "\n";
     // assert(false);
   }
@@ -3233,7 +3238,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   errs() << expr.type().id().c_str() << "             "
          << value_to_store.type().id().c_str();
 
-  if (gep_symbols.find(symbol) != gep_symbols.end()) {
+  if (gep_symbols.find(symbol) != gep_symbols.end()
+      && expr.type().id() == ID_pointer) {
     expr = dereference_exprt(expr);
   }
 
@@ -3340,9 +3346,9 @@ exprt llvm2goto_translator::trans_ConstGetElementPtr(
 
   if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
     li->getOperand(0)->dump();
-    op_symbol = symbol_table.lookup(
-        var_name_map.find(li->getOperand(0)->getName().str())->second);
-    op_expr = op_symbol->symbol_expr();
+//    op_symbol = symbol_table.lookup(
+//        var_name_map.find(li->getOperand(0)->getName().str())->second);
+    op_expr = get_load(li, symbol_table, &op_symbol);
   }
 
   else {
@@ -3505,8 +3511,9 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       const symbolt *op1 = nullptr;
       if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
         li->getOperand(0)->dump();
-        op1 = symbol_table.lookup(
-            var_name_map.find(li->getOperand(0)->getName().str())->second);\
+//        op1 = symbol_table.lookup(
+//            var_name_map.find(li->getOperand(0)->getName().str())->second);
+        get_load(li, symbol_table, &op1);
         if (op1->type.id() == ID_pointer) {
           symbol.type = pointer_typet(op1->type.subtype().subtype(),
                                       config.ansi_c.pointer_width);
@@ -3580,10 +3587,10 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
 
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      array_expr = get_load(li, symbol_table, &op1);
       array_symbol = op1;
-      array_expr = op1->symbol_expr();
     }
     else {
       auto array = I->getOperand(0);
@@ -3834,9 +3841,9 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -3922,9 +3929,9 @@ goto_programt llvm2goto_translator::trans_ZExt(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4010,9 +4017,9 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4122,9 +4129,9 @@ goto_programt llvm2goto_translator::trans_FPTrunc(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4235,9 +4242,9 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4339,9 +4346,9 @@ goto_programt llvm2goto_translator::trans_FPToUI(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4443,9 +4450,9 @@ goto_programt llvm2goto_translator::trans_FPToSI(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4539,9 +4546,9 @@ goto_programt llvm2goto_translator::trans_UIToFP(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -4635,9 +4642,9 @@ goto_programt llvm2goto_translator::trans_SIToFP(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -5697,10 +5704,16 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         if (!(op_code_name.compare("zext") || op_code_name.compare("sext"))) {
           op_name = op->value_op_begin()->getName().str();
         }
-        auto op_symbol = var_name_map.find(op_name)->second;
+        exprt op_symbol_expr;
+        if (const LoadInst *li = dyn_cast<LoadInst>(op)) {
+          op_symbol_expr = get_load(li, *symbol_table);
+        }
+        else {
+          auto op_symbol = var_name_map.find(op_name)->second;
+          op_symbol_expr = symbol_table->lookup(op_symbol)->symbol_expr();
+        }
 //        const Instruction *akash = dyn_cast<Instruction>(dyn_cast<Instruction>(I->getOperand(0))->getOperand(0));
 //        guard = trans_Cmp(akash, symbol_table);
-        auto op_symbol_expr = symbol_table->lookup(op_symbol)->symbol_expr();
         guard = typecast_exprt(op_symbol_expr, bool_typet());
       }
       errs() << from_expr(guard) << "\n";
@@ -5917,10 +5930,9 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
-      ;
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -5944,9 +5956,9 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt2 = dereference_exprt(op1.symbol_expr(), op2.type);
@@ -6027,9 +6039,9 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -6053,9 +6065,9 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt2 = dereference_exprt(op2->symbol_expr(), op2.type);
@@ -6132,9 +6144,9 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
       li->getOperand(0)->dump();
-      op1 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt1 = get_load(li, symbol_table);
+//      op1 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt1 = get_load(li, symbol_table, &op1);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt1 = dereference_exprt(op1.symbol_expr(), op1.type);
@@ -6158,9 +6170,9 @@ goto_programt llvm2goto_translator::trans_AShr(const Instruction *I,
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
-      op2 = symbol_table.lookup(
-          var_name_map.find(li->getOperand(0)->getName().str())->second);
-      exprt2 = get_load(li, symbol_table);
+//      op2 = symbol_table.lookup(
+//          var_name_map.find(li->getOperand(0)->getName().str())->second);
+      exprt2 = get_load(li, symbol_table, &op2);
 // if(dyn_cast<GetElementPtrInst>(li->getOperand(0)))
 // {
 //   exprt2 = dereference_exprt(op2.symbol_expr(), op2.type);
@@ -7062,7 +7074,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
   config.set(cmdline);
   config.ansi_c.set_64();
   config.ansi_c.double_width = 32;
-  config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_ZERO;
+  config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_EVEN;
   config.ansi_c.set_c11();
   config.ansi_c.long_double_width = 64;
 //  config.ansi_c.
@@ -7089,11 +7101,11 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     symbolt cprover_rounding_mode;
     cprover_rounding_mode.name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
-    cprover_rounding_mode.type = float_type();
+    cprover_rounding_mode.type = signedbv_typet(32);
 //    cprover_rounding_mode.type.set("__CPROVER_rounding_mode", 32);
 //    cprover_rounding_mode.type.set
-    cprover_rounding_mode.mode = ID_floatbv;
-    cprover_rounding_mode.value = from_integer(ieee_floatt::ROUND_TO_ZERO,
+    cprover_rounding_mode.mode = ID_signedbv;
+    cprover_rounding_mode.value = from_integer(config.ansi_c.rounding_mode,
                                                cprover_rounding_mode.type);
     var_name_map.insert(
         std::pair<std::string, std::string>(
