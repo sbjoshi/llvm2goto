@@ -1,0 +1,458 @@
+CBMC version 5.11 (cbmc-5.11-dirty) 64-bit x86_64 linux
+Parsing main.c
+Converting
+Type-checking main
+file main.c line 11 function main: function `assert' is not declared
+Generating GOTO Program
+
+Symbols:
+
+Symbol......: __CPROVER__start
+Pretty name.: 
+Module......: 
+Base name...: 
+Mode........: C
+Type........: void (void)
+Value.......: {
+
+__CPROVER_HIDE:
+  ;
+  __CPROVER_initialize();
+  return'=main();
+  OUTPUT("return", return');
+}
+Flags.......:
+Location....: 
+
+Symbol......: __CPROVER_architecture_NULL_is_zero
+Pretty name.: __CPROVER_architecture_NULL_is_zero
+Module......: main
+Base name...: __CPROVER_architecture_NULL_is_zero
+Mode........: C
+Type........: const signed int
+Value.......: 1
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 20
+
+Symbol......: __CPROVER_architecture_alignment
+Pretty name.: __CPROVER_architecture_alignment
+Module......: main
+Base name...: __CPROVER_architecture_alignment
+Mode........: C
+Type........: const signed int
+Value.......: 1
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 15
+
+Symbol......: __CPROVER_architecture_arch
+Pretty name.: __CPROVER_architecture_arch
+Module......: main
+Base name...: __CPROVER_architecture_arch
+Mode........: C
+Type........: const char *
+Value.......: "x86_64"
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 18
+
+Symbol......: __CPROVER_architecture_bool_width
+Pretty name.: __CPROVER_architecture_bool_width
+Module......: main
+Base name...: __CPROVER_architecture_bool_width
+Mode........: C
+Type........: const signed int
+Value.......: 8
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 4
+
+Symbol......: __CPROVER_architecture_char_is_unsigned
+Pretty name.: __CPROVER_architecture_char_is_unsigned
+Module......: main
+Base name...: __CPROVER_architecture_char_is_unsigned
+Mode........: C
+Type........: const signed int
+Value.......: 0
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 13
+
+Symbol......: __CPROVER_architecture_char_width
+Pretty name.: __CPROVER_architecture_char_width
+Module......: main
+Base name...: __CPROVER_architecture_char_width
+Mode........: C
+Type........: const signed int
+Value.......: 8
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 5
+
+Symbol......: __CPROVER_architecture_double_width
+Pretty name.: __CPROVER_architecture_double_width
+Module......: main
+Base name...: __CPROVER_architecture_double_width
+Mode........: C
+Type........: const signed int
+Value.......: 64
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 10
+
+Symbol......: __CPROVER_architecture_endianness
+Pretty name.: __CPROVER_architecture_endianness
+Module......: main
+Base name...: __CPROVER_architecture_endianness
+Mode........: C
+Type........: const signed int
+Value.......: 1
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 17
+
+Symbol......: __CPROVER_architecture_int_width
+Pretty name.: __CPROVER_architecture_int_width
+Module......: main
+Base name...: __CPROVER_architecture_int_width
+Mode........: C
+Type........: const signed int
+Value.......: 32
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 1
+
+Symbol......: __CPROVER_architecture_long_double_width
+Pretty name.: __CPROVER_architecture_long_double_width
+Module......: main
+Base name...: __CPROVER_architecture_long_double_width
+Mode........: C
+Type........: const signed int
+Value.......: 128
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 11
+
+Symbol......: __CPROVER_architecture_long_int_width
+Pretty name.: __CPROVER_architecture_long_int_width
+Module......: main
+Base name...: __CPROVER_architecture_long_int_width
+Mode........: C
+Type........: const signed int
+Value.......: 64
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 3
+
+Symbol......: __CPROVER_architecture_long_long_int_width
+Pretty name.: __CPROVER_architecture_long_long_int_width
+Module......: main
+Base name...: __CPROVER_architecture_long_long_int_width
+Mode........: C
+Type........: const signed int
+Value.......: 64
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 7
+
+Symbol......: __CPROVER_architecture_memory_operand_size
+Pretty name.: __CPROVER_architecture_memory_operand_size
+Module......: main
+Base name...: __CPROVER_architecture_memory_operand_size
+Mode........: C
+Type........: const signed int
+Value.......: 4
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 16
+
+Symbol......: __CPROVER_architecture_os
+Pretty name.: __CPROVER_architecture_os
+Module......: main
+Base name...: __CPROVER_architecture_os
+Mode........: C
+Type........: const char *
+Value.......: "linux"
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 19
+
+Symbol......: __CPROVER_architecture_pointer_width
+Pretty name.: __CPROVER_architecture_pointer_width
+Module......: main
+Base name...: __CPROVER_architecture_pointer_width
+Mode........: C
+Type........: const signed int
+Value.......: 64
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 8
+
+Symbol......: __CPROVER_architecture_short_int_width
+Pretty name.: __CPROVER_architecture_short_int_width
+Module......: main
+Base name...: __CPROVER_architecture_short_int_width
+Mode........: C
+Type........: const signed int
+Value.......: 16
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 6
+
+Symbol......: __CPROVER_architecture_single_width
+Pretty name.: __CPROVER_architecture_single_width
+Module......: main
+Base name...: __CPROVER_architecture_single_width
+Mode........: C
+Type........: const signed int
+Value.......: 32
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 9
+
+Symbol......: __CPROVER_architecture_wchar_t_is_unsigned
+Pretty name.: __CPROVER_architecture_wchar_t_is_unsigned
+Module......: main
+Base name...: __CPROVER_architecture_wchar_t_is_unsigned
+Mode........: C
+Type........: const signed int
+Value.......: 0
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 14
+
+Symbol......: __CPROVER_architecture_wchar_t_width
+Pretty name.: __CPROVER_architecture_wchar_t_width
+Module......: main
+Base name...: __CPROVER_architecture_wchar_t_width
+Mode........: C
+Type........: const signed int
+Value.......: 32
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 12
+
+Symbol......: __CPROVER_architecture_word_size
+Pretty name.: __CPROVER_architecture_word_size
+Module......: main
+Base name...: __CPROVER_architecture_word_size
+Mode........: C
+Type........: const signed int
+Value.......: 32
+Flags.......: lvalue static_lifetime
+Location....: file <builtin-architecture-strings> line 2
+
+Symbol......: __CPROVER_constant_infinity_uint
+Pretty name.: __CPROVER_constant_infinity_uint
+Module......: main
+Base name...: __CPROVER_constant_infinity_uint
+Mode........: C
+Type........: const unsigned int
+Value.......: 
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 3
+
+Symbol......: __CPROVER_dead_object
+Pretty name.: __CPROVER_dead_object
+Module......: main
+Base name...: __CPROVER_dead_object
+Mode........: C
+Type........: const void *
+Value.......: NULL
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 11
+
+Symbol......: __CPROVER_deallocated
+Pretty name.: __CPROVER_deallocated
+Module......: main
+Base name...: __CPROVER_deallocated
+Mode........: C
+Type........: const void *
+Value.......: NULL
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 10
+
+Symbol......: __CPROVER_initialize
+Pretty name.: __CPROVER_initialize
+Module......: main
+Base name...: __CPROVER_initialize
+Mode........: C
+Type........: void (void)
+Value.......: {
+
+__CPROVER_HIDE:
+  ;
+  __CPROVER_dead_object = NULL;
+  __CPROVER_deallocated = NULL;
+  __CPROVER_malloc_is_new_array = 0 != 0;
+  __CPROVER_malloc_object = NULL;
+  __CPROVER_malloc_size = 0ul;
+  __CPROVER_memory_leak = NULL;
+  __CPROVER_next_thread_id = (unsigned long int)0;
+  __CPROVER_pipe_count = (unsigned int)0;
+  __CPROVER_rounding_mode = 0;
+  __CPROVER_thread_id = (unsigned long int)0;
+  __CPROVER_threads_exited = ARRAY_OF(FALSE);
+}
+Flags.......: lvalue
+Location....: file <built-in-additions> line 31
+
+Symbol......: __CPROVER_malloc_is_new_array
+Pretty name.: __CPROVER_malloc_is_new_array
+Module......: main
+Base name...: __CPROVER_malloc_is_new_array
+Mode........: C
+Type........: __CPROVER_bool
+Value.......: 0 != 0
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 14
+
+Symbol......: __CPROVER_malloc_object
+Pretty name.: __CPROVER_malloc_object
+Module......: main
+Base name...: __CPROVER_malloc_object
+Mode........: C
+Type........: const void *
+Value.......: NULL
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 12
+
+Symbol......: __CPROVER_malloc_size
+Pretty name.: __CPROVER_malloc_size
+Module......: main
+Base name...: __CPROVER_malloc_size
+Mode........: C
+Type........: __CPROVER_size_t
+Value.......: 
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 13
+
+Symbol......: __CPROVER_memory
+Pretty name.: __CPROVER_memory
+Module......: main
+Base name...: __CPROVER_memory
+Mode........: C
+Type........: unsigned char [INFINITY()]
+Value.......: 
+Flags.......: lvalue static_lifetime extern
+Location....: file <built-in-additions> line 9
+
+Symbol......: __CPROVER_memory_leak
+Pretty name.: __CPROVER_memory_leak
+Module......: main
+Base name...: __CPROVER_memory_leak
+Mode........: C
+Type........: const void *
+Value.......: NULL
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 15
+
+Symbol......: __CPROVER_next_thread_id
+Pretty name.: __CPROVER_next_thread_id
+Module......: main
+Base name...: __CPROVER_next_thread_id
+Mode........: C
+Type........: unsigned long int
+Value.......: (unsigned long int)0
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 8
+
+Symbol......: __CPROVER_pipe_count
+Pretty name.: __CPROVER_pipe_count
+Module......: main
+Base name...: __CPROVER_pipe_count
+Mode........: C
+Type........: unsigned int
+Value.......: (unsigned int)0
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 29
+
+Symbol......: __CPROVER_rounding_mode
+Pretty name.: __CPROVER_rounding_mode
+Module......: main
+Base name...: __CPROVER_rounding_mode
+Mode........: C
+Type........: signed int
+Value.......: 0
+Flags.......: lvalue static_lifetime thread_local
+Location....: file <built-in-additions> line 20
+
+Symbol......: __CPROVER_size_t
+Pretty name.: __CPROVER_size_t
+Module......: main
+Base name...: __CPROVER_size_t
+Mode........: C
+Type........: __CPROVER_size_t
+Value.......: 
+Flags.......: thread_local file_local type macro
+Location....: file <built-in-additions> line 1
+
+Symbol......: __CPROVER_thread_id
+Pretty name.: __CPROVER_thread_id
+Module......: main
+Base name...: __CPROVER_thread_id
+Mode........: C
+Type........: unsigned long int
+Value.......: (unsigned long int)0
+Flags.......: lvalue static_lifetime thread_local
+Location....: file <built-in-additions> line 6
+
+Symbol......: __CPROVER_threads_exited
+Pretty name.: __CPROVER_threads_exited
+Module......: main
+Base name...: __CPROVER_threads_exited
+Mode........: C
+Type........: __CPROVER_bool [INFINITY()]
+Value.......: 
+Flags.......: lvalue static_lifetime
+Location....: file <built-in-additions> line 7
+
+Symbol......: assert
+Pretty name.: 
+Module......: main
+Base name...: assert
+Mode........: C
+Type........: signed int (void)
+Value.......: 
+Flags.......:
+Location....: file main.c line 11 function main
+
+Symbol......: f
+Pretty name.: f
+Module......: main
+Base name...: f
+Mode........: C
+Type........: signed int (signed int i)
+Value.......: {
+  return i + 1;
+}
+Flags.......: lvalue
+Location....: file main.c line 1
+
+Symbol......: f::i
+Pretty name.: 
+Module......: main
+Base name...: i
+Mode........: C
+Type........: signed int
+Value.......: 
+Flags.......: lvalue thread_local file_local parameter state_var
+Location....: file main.c line 1
+
+Symbol......: main
+Pretty name.: main
+Module......: main
+Base name...: main
+Mode........: C
+Type........: signed int ()
+Value.......: {
+  signed int y=10;
+  y = f(y);
+  assert(y == 11);
+  return 0;
+}
+Flags.......: lvalue
+Location....: file main.c line 8
+
+Symbol......: main::1::y
+Pretty name.: main::1::y
+Module......: main
+Base name...: y
+Mode........: C
+Type........: signed int
+Value.......: 10
+Flags.......: lvalue thread_local file_local
+Location....: file main.c line 9 function main
+
+Symbol......: return'
+Pretty name.: 
+Module......: 
+Base name...: return
+Mode........: C
+Type........: signed int
+Value.......: 
+Flags.......: lvalue thread_local file_local auxiliary state_var
+Location....: 
+
