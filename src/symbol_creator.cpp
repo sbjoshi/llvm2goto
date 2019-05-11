@@ -1355,7 +1355,6 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F) {
   FunctionType *ft = dyn_cast<FunctionType>(type);
   symbolt funct;
   funct.clear();
-  funct.is_static_lifetime = true;
   funct.is_thread_local = false;
 // const irep_idt funct_bname = "funct";
 // const irep_idt funct_name = "funct";

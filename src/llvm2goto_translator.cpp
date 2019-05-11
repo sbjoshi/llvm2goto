@@ -7101,12 +7101,11 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     symbolt cprover_rounding_mode;
     cprover_rounding_mode.name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
-    cprover_rounding_mode.type = signedbv_typet(32);
+    cprover_rounding_mode.type = signed_int_type();
 //    cprover_rounding_mode.type.set("__CPROVER_rounding_mode", 32);
 //    cprover_rounding_mode.type.set
-    cprover_rounding_mode.mode = ID_signedbv;
-    cprover_rounding_mode.value = from_integer(config.ansi_c.rounding_mode,
-                                               cprover_rounding_mode.type);
+    cprover_rounding_mode.mode = ID_C;
+    cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
     var_name_map.insert(
         std::pair<std::string, std::string>(
             cprover_rounding_mode.base_name.c_str(),
@@ -7141,6 +7140,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
         arg.name = F.getName().str() + "::" + arg_b->getName().str();
         arg.base_name = arg_b->getName().str();
         arg.is_lvalue = true;
+        arg.is_parameter = true;
+        arg.is_state_var = true;
+        arg.is_thread_local = true;
+        arg.is_file_local = true;
         symbol_table.add(arg);
         var_name_map.insert(
             std::pair<std::string, std::string>(arg.base_name.c_str(),
