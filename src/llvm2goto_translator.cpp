@@ -760,16 +760,16 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
       }
     }
     // typet op_type;
-    if (op2) if (exprt2.type().id() == ID_signedbv) {
+    if (exprt2.type().id() == ID_signedbv) {
       op_type = exprt2.type();
     }
-    if (op1) if (exprt1.type().id() == ID_signedbv) {
+    if (exprt1.type().id() == ID_signedbv) {
       op_type = exprt1.type();
     }
-    if (op2) if (exprt2.type().id() == ID_unsignedbv) {
+    if (exprt2.type().id() == ID_unsignedbv) {
       op_type = exprt2.type();
     }
-    if (op1) if (exprt1.type().id() == ID_unsignedbv) {
+    if (exprt1.type().id() == ID_unsignedbv) {
       op_type = exprt1.type();
     }
 //    if (op2) if (op2->type.id() == ID_pointer) {
@@ -809,6 +809,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
       std::pair<std::string, std::string>(symbol.base_name.c_str(),
                                           symbol.name.c_str()));
   symbol.type = op_type;
+//  symbol.value = from_integer(0, op_type);
   symbol_table.add(symbol);
   goto_programt::targett decl_add = gp.add_instruction();
   decl_add->make_decl();
@@ -1067,7 +1068,7 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
     f2 = 1;
   }
   if (f1 == 1 && f2 == 1) {
-    op_type = op1->type;
+    op_type = exprt1.type();
     errs() << "done!";
   }
   else if (I->getOperand(0)->getType()->isIntegerTy()
@@ -1094,23 +1095,23 @@ goto_programt llvm2goto_translator::trans_Sub(const Instruction *I,
       }
     }
 
-    if (op2) if (op2->type.id() == ID_signedbv) {
-      op_type = op2->type;
+    if (f2) if (exprt2.type().id() == ID_signedbv) {
+      op_type = exprt2.type();
     }
-    if (op1) if (op1->type.id() == ID_signedbv) {
-      op_type = op1->type;
+    if (f1) if (exprt1.type().id() == ID_signedbv) {
+      op_type = exprt1.type();
     }
-    if (op2) if (op2->type.id() == ID_unsignedbv) {
-      op_type = op2->type;
+    if (f2) if (exprt2.type().id() == ID_unsignedbv) {
+      op_type = exprt2.type();
     }
-    if (op1) if (op1->type.id() == ID_unsignedbv) {
-      op_type = op1->type;
+    if (f1) if (exprt1.type().id() == ID_unsignedbv) {
+      op_type = exprt1.type();
     }
-    if (op2) if (op2->type.id() == ID_pointer) {
-      op_type = op2->type.subtype();
+    if (f2) if (exprt2.type().id() == ID_pointer) {
+      op_type = exprt2.type().subtype();
     }
-    if (op1) if (op1->type.id() == ID_pointer) {
-      op_type = op1->type.subtype();
+    if (f1) if (exprt1.type().id() == ID_pointer) {
+      op_type = exprt1.type().subtype();
     }
     if (op_type.id() == ID_signedbv && flag == 1) {
       uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
@@ -2836,6 +2837,16 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
       return symbol_table.lookup(var_name)->symbol_expr();
     }
   }
+  else if (auto *CE = dyn_cast<ConstantExpr>(I->getOperand(0))) {
+    GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
+
+    typet dummy;
+    exprt value_to_store = trans_ConstGetElementPtr(GE, symbol_table, &dummy);
+
+    GE->deleteValue();
+
+    return value_to_store;
+  }
   else {
     errs() << "b\n";
     if (BitCastInst *bci = dyn_cast<BitCastInst>(I->getOperand(0))) {
@@ -3212,9 +3223,9 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     if (dyn_cast<GetElementPtrInst>(I->getOperand(1))) {
       i--;
     }
-    while (expr_type.id() == ID_pointer || expr_type.id() == ID_array) {
+    while (vts_type.id() == ID_pointer || vts_type.id() == ID_array) {
 //    while (expr_type.id() == ID_pointer) {
-      expr_type = expr_type.subtype();
+      vts_type = vts_type.subtype();
       i--;
     }
     errs() << "8 \n";
@@ -3594,7 +3605,8 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     }
     else {
       auto array = I->getOperand(0);
-      std::string array_name = var_name_map.find(array->getName().str())->second;
+      std::string array_name = scope_name_map.find(I->getDebugLoc()->getScope())
+          ->second + "::" + array->getName().str();
       array_symbol = symbol_table.lookup(array_name);
       array_expr = array_symbol->symbol_expr();
     }
@@ -5531,6 +5543,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
             var_name_map.find(ub->getName().str())->second)->symbol_expr();
       }
       call.arguments().push_back(expr);
+      ub++;
     }
     goto_programt::targett call_inst = gp.add_instruction();
     call_inst->make_function_call(call);
@@ -5544,6 +5557,10 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
             dyn_cast<Type>(dbgDeclareInst->getAddress()->getType()))
             ->getPointerElementType()));
     MDNode *mdn = dyn_cast<MDNode>(dbgDeclareInst->getVariable());
+//    std::string name_to_remove = scope_name_map.find(
+//        I->getDebugLoc()->getScope())->second + "::" + get_arg_name(I);
+//    for (auto a : var_name_map)
+//      errs() << a.first << "    " << a.second << '\n';
     std::string name_to_remove = get_arg_name(I);
     auto m = var_name_map.find(name_to_remove);
     for (auto arg = I->getFunction()->arg_begin();
@@ -5895,6 +5912,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       call.arguments().push_back(expr);
       assert(p_it->get_identifier() != irep_idt());
+      ub++;
     }
     goto_programt::targett call_inst = gp.add_instruction();
     call_inst->make_function_call(call);
@@ -6888,7 +6906,7 @@ goto_programt llvm2goto_translator::trans_instruction(
     default:
       errs() << "Invalid instruction type...\n ";
   }
-  gp.update();
+//  gp.update();
 //  gp.output(std::cout);
   errs() << "\t\t\tin trans_instruction";
   return gp;
