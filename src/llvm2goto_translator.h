@@ -11,6 +11,7 @@ class llvm2goto_translator : public llvm2goto_translatort {
  public:
   explicit llvm2goto_translator(Module *M);
   ~llvm2goto_translator();
+  std::string get_var(std::string str);
   goto_programt trans_Ret(const Instruction *I,
                           const symbol_tablet &symbol_table);
   goto_programt trans_Br(
