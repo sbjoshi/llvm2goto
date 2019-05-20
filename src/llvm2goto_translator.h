@@ -60,7 +60,7 @@ class llvm2goto_translator : public llvm2goto_translatort {
                                     symbol_tablet &symbol_table);
   exprt trans_ConstGetElementPtr(const GetElementPtrInst *I,
                                  const symbol_tablet &symbol_table,
-                                 typet *final_type);
+                                 typet *final_type, DILocalScope *DIScp);
   goto_programt trans_Trunc(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_ZExt(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_SExt(const Instruction *I, symbol_tablet &symbol_table);
@@ -74,6 +74,9 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_IntToPtr(const Instruction *I);
   goto_programt trans_PtrToInt(const Instruction *I);
   goto_programt trans_BitCast(const Instruction *I);
+  exprt trans_ConstBitCast(const Instruction *I,
+                           const symbol_tablet &symbol_table,
+                           DILocalScope *DIScp);
   goto_programt trans_AddrSpaceCast(const Instruction *I);
   exprt trans_Cmp(const Instruction *I, symbol_tablet *symbol_table);
   exprt trans_Inverse_Cmp(const Instruction *I, symbol_tablet *symbol_table);

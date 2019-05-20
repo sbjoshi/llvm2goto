@@ -22,6 +22,24 @@
 // TODO(Rasika) : Language-specificname.
 // TODO(Rasika) : 128-bit floating point type (112-bit mantissa) FP128Ty
 // TODO(Rasika) : 128-bit floating point type (two 64-bits, PowerPC) PPC_FP128Ty
+
+int get_encoding(const llvm::DIType *md) {
+  if (auto *temp = dyn_cast<DICompositeType>(md)) {
+    if (!temp->getBaseType()) return -10;
+    return get_encoding(dyn_cast<DIType>(temp->getBaseType()));
+  }
+  else if (auto *temp = dyn_cast<DIDerivedType>(md)) {
+    if (!temp->getBaseType()) return -10;
+    if (temp->getNumOperands()) return get_encoding(
+        dyn_cast<DIType>(temp->getBaseType()));
+  }
+  else if (auto *temp = dyn_cast<DIBasicType>(md)) {
+    if (!temp) return -10;
+    return temp->getEncoding();
+  }
+
+  return -1;
+}
 /*******************************************************************
  Function: symbol_creator::create_HalfTy
 
@@ -357,13 +375,33 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
           components.push_back(component);
           break;
         }
-
+//        encoding = get_encoding(md);
         switch (encoding) {
-          case dwarf::DW_ATE_signed:
-          case dwarf::DW_ATE_signed_char:
+          case dwarf::DW_ATE_signed: {
             component = struct_typet::componentt(
                 ele_name, signedbv_typet((*e)->getIntegerBitWidth()));
             break;
+          }
+          case dwarf::DW_ATE_unsigned: {
+            component = struct_typet::componentt(
+                ele_name, unsignedbv_typet((*e)->getIntegerBitWidth()));
+            break;
+          }
+          case dwarf::DW_ATE_signed_char: {
+            component = struct_typet::componentt(
+                ele_name, bitvector_typet(ID_char, (*e)->getIntegerBitWidth()));
+            break;
+          }
+          case -10: {
+            component = struct_typet::componentt(
+                ele_name, bitvector_typet(ID_void, (*e)->getIntegerBitWidth()));
+            break;
+          }
+          default: {
+            component = struct_typet::componentt(
+                ele_name, signedbv_typet((*e)->getIntegerBitWidth()));
+            break;
+          }
         }
         components.push_back(component);
         break;
@@ -534,11 +572,39 @@ struct_union_typet symbol_creator::create_struct_union_type(
           struct_union_typet::componentt component(ele_name, bool_typet());
           components.push_back(component);
         }
-        else {
-          struct_union_typet::componentt component(
-              ele_name, unsignedbv_typet((*e)->getIntegerBitWidth()));
-          components.push_back(component);
+        int encoding;
+        encoding = get_encoding(
+            dyn_cast<DIType*>(
+                dyn_cast<DIDerivedType>(Fields[i])->getBaseType()));
+        struct_union_typet::componentt component;
+        switch (encoding) {
+          case dwarf::DW_ATE_signed: {
+            component = struct_typet::componentt(
+                ele_name, signedbv_typet((*e)->getIntegerBitWidth()));
+            break;
+          }
+          case dwarf::DW_ATE_unsigned: {
+            component = struct_typet::componentt(
+                ele_name, unsignedbv_typet((*e)->getIntegerBitWidth()));
+            break;
+          }
+          case dwarf::DW_ATE_signed_char: {
+            component = struct_typet::componentt(
+                ele_name, bitvector_typet(ID_char, (*e)->getIntegerBitWidth()));
+            break;
+          }
+          case -10: {
+            component = struct_typet::componentt(
+                ele_name, bitvector_typet(ID_void, (*e)->getIntegerBitWidth()));
+            break;
+          }
+          default: {
+            component = struct_typet::componentt(
+                ele_name, signedbv_typet((*e)->getIntegerBitWidth()));
+            break;
+          }
         }
+        components.push_back(component);
         break;
       }
       case llvm::Type::TypeID::StructTyID: {
@@ -649,8 +715,7 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn) {
   errs() << "0\n";
   exprt size = from_integer(type->getArrayNumElements(), size_type());
   errs() << "1\n";
-  DICompositeType *md = dyn_cast<DICompositeType>(
-      dyn_cast<DIVariable>(mdn)->getType());
+  DIType *md = dyn_cast<DIType>(dyn_cast<DIVariable>(mdn)->getType());
   md->dump();
   errs() << "2\n";
   array_typet arrt(create_array_type(type, dyn_cast<DIType>(md)), size);
@@ -735,22 +800,50 @@ typet symbol_creator::create_array_type(Type *type, const llvm::DIType *md) {
                     ->getIntegerBitWidth());
         errs() << (md == NULL) << "\n";
         md->dump();
-        int encoding;
-        if (dyn_cast<DIBasicType>(md)) {
-          encoding = dyn_cast<DIBasicType>(md)->getEncoding();
-        }
-        else if (dyn_cast<DICompositeType>(md)) {
-          encoding = dyn_cast<DIBasicType>(
-              dyn_cast<DICompositeType>(md)->getBaseType())->getEncoding();
-        }
+        int encoding = get_encoding(md);
+//        auto temp = md;
+//        if (dyn_cast<DIBasicType>(md)) {
+//          encoding = dyn_cast<DIBasicType>(md)->getEncoding();
+//        }
+//        else if (dyn_cast<DICompositeType>(md)) {
+//          encoding = dyn_cast<DIBasicType>(
+//              dyn_cast<DICompositeType>(md)->getBaseType())->getEncoding();
+//        }
         switch (encoding) {
-          case dwarf::DW_ATE_signed:
-          case dwarf::DW_ATE_signed_char:
-            // case dwarf::DW_EH_PE_signed :
+          case dwarf::DW_ATE_signed: {
             ele_type = signedbv_typet(
                 dyn_cast<ArrayType>(type)->getArrayElementType()
                     ->getIntegerBitWidth());
             break;
+          }
+          case dwarf::DW_ATE_signed_char: {
+            // case dwarf::DW_EH_PE_signed :
+            ele_type = bitvector_typet(
+                ID_char,
+                dyn_cast<ArrayType>(type)->getArrayElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
+          case dwarf::DW_ATE_unsigned: {
+            // case dwarf::DW_EH_PE_signed :
+            ele_type = unsignedbv_typet(
+                dyn_cast<ArrayType>(type)->getArrayElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
+          case -10: {
+            ele_type = bitvector_typet(
+                ID_void,
+                dyn_cast<ArrayType>(type)->getArrayElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
+          default: {
+            ele_type = signedbv_typet(
+                dyn_cast<ArrayType>(type)->getArrayElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
         }
       }
       break;
@@ -921,10 +1014,10 @@ typet symbol_creator::create_pointer_type(Type *type, const llvm::DIType *md) {
         ele_type = bool_typet();
       }
       else {
-        ele_type = unsignedbv_typet(
-            dyn_cast<PointerType>(type)->getPointerElementType()
-                ->getIntegerBitWidth());
-        errs() << (md == NULL) << "\n";
+//        ele_type = unsignedbv_typet(
+//            dyn_cast<PointerType>(type)->getPointerElementType()
+//                ->getIntegerBitWidth());
+//        errs() << (md == NULL) << "\n";
         md->dump();
         int encoding;
 //        if (dyn_cast<DIBasicType>(md)) {
@@ -934,23 +1027,49 @@ typet symbol_creator::create_pointer_type(Type *type, const llvm::DIType *md) {
 //          encoding = dyn_cast<DIBasicType>(
 //              dyn_cast<DIDerivedType>(md)->getBaseType())->getEncoding();
 //      }
-        while (!(dyn_cast<DIBasicType>(md))) {
-          if (dyn_cast<DIDerivedType>(md)) {
-            md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
-          }
-          if (dyn_cast<DICompositeType>(md)) {
-            md = dyn_cast<DIType>(dyn_cast<DICompositeType>(md)->getBaseType());
-          }
-        }
-        encoding = dyn_cast<DIBasicType>(md)->getEncoding();
+//        while (!(dyn_cast<DIBasicType>(md))) {
+//          if (dyn_cast<DIDerivedType>(md)) {
+//            md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
+//          }
+//          if (dyn_cast<DICompositeType>(md)) {
+//            md = dyn_cast<DIType>(dyn_cast<DICompositeType>(md)->getBaseType());
+//          }
+//        }
+//        encoding = dyn_cast<DIBasicType>(md)->getEncoding();
+        encoding = get_encoding(md);
+
         switch (encoding) {
-          case dwarf::DW_ATE_signed:
-          case dwarf::DW_ATE_signed_char:
-            // case dwarf::DW_EH_PE_signed :
+          case dwarf::DW_ATE_signed: {
             ele_type = signedbv_typet(
                 dyn_cast<PointerType>(type)->getPointerElementType()
                     ->getIntegerBitWidth());
             break;
+          }
+          case dwarf::DW_ATE_signed_char: {
+            // case dwarf::DW_EH_PE_signed :
+            ele_type = bitvector_typet(
+                ID_char,
+                dyn_cast<PointerType>(type)->getPointerElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
+          case dwarf::DW_ATE_unsigned: {
+            // case dwarf::DW_EH_PE_signed :
+            ele_type = unsignedbv_typet(
+                dyn_cast<PointerType>(type)->getPointerElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
+          case -10: {
+            ele_type = void_typet();
+            break;
+          }
+          default: {
+            ele_type = signedbv_typet(
+                dyn_cast<PointerType>(type)->getPointerElementType()
+                    ->getIntegerBitWidth());
+            break;
+          }
         }
       }
       break;
@@ -1004,7 +1123,10 @@ typet symbol_creator::create_pointer_type(Type *type, const llvm::DIType *md) {
     case llvm::Type::TypeID::X86_MMXTyID: {
       break;
     }
-    case llvm::Type::TypeID::VoidTyID:
+    case llvm::Type::TypeID::VoidTyID: {
+      ele_type = void_typet();
+      break;
+    }
     case llvm::Type::TypeID::FunctionTyID: {
       if (dyn_cast<DICompositeType>(md)) {
         md = dyn_cast<DIType>(dyn_cast<DICompositeType>(md)->getBaseType());
@@ -1160,6 +1282,9 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
       if (type->getIntegerBitWidth() == 1) {
         ele_type = bool_typet();
       }
+      else if (type->getIntegerBitWidth() == 8) {
+        ele_type = void_typet();
+      }
       else {
         ele_type = unsignedbv_typet(type->getIntegerBitWidth());
       }
@@ -1282,6 +1407,9 @@ typet symbol_creator::create_type(Type *type) {
     case llvm::Type::TypeID::IntegerTyID: {
       if (type->getIntegerBitWidth() == 1) {
         ele_type = bool_typet();
+      }
+      else if (type->getIntegerBitWidth() == 8) {
+        ele_type = void_typet();
       }
       else {
         ele_type = signedbv_typet(type->getIntegerBitWidth());

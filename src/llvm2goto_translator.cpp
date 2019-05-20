@@ -57,6 +57,7 @@ std::string llvm2goto_translator::get_var(std::string str) {
     while (*i != ':' && i >= str.begin()) {
       i--;
     }
+    if (i < str.begin()) return str;
     str.erase(i);
     i--;
     str.erase(i);
@@ -3018,7 +3019,8 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
     GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
 
     typet dummy;
-    exprt value_to_store = trans_ConstGetElementPtr(GE, symbol_table, &dummy);
+    exprt value_to_store = trans_ConstGetElementPtr(
+        GE, symbol_table, &dummy, I->getDebugLoc()->getScope());
 
     GE->deleteValue();
 
@@ -3106,7 +3108,8 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
           CE->getAsInstruction());
 
       typet dummy;
-      exprt value_to_store = trans_ConstGetElementPtr(GE, symbol_table, &dummy);
+      exprt value_to_store = trans_ConstGetElementPtr(
+          GE, symbol_table, &dummy, I->getDebugLoc()->getScope());
 
       GE->deleteValue();
 
@@ -3203,7 +3206,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
           get_var(
               scope_name_map.find(ni->getDebugLoc()->getScope())->second + "::"
                   + GE->getOperand(0)->getName().str()));
-      expr = trans_ConstGetElementPtr(GE, symbol_table, &final_type);
+      expr = trans_ConstGetElementPtr(GE, symbol_table, &final_type,
+                                      ni->getDebugLoc()->getScope());
 
       GE->deleteValue();
     }
@@ -3212,7 +3216,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
           get_var(
               scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
                   + GE->getOperand(0)->getName().str()));
-      expr = trans_ConstGetElementPtr(GE, symbol_table, &final_type);
+      expr = trans_ConstGetElementPtr(GE, symbol_table, &final_type,
+                                      I->getDebugLoc()->getScope());
 
       GE->deleteValue();
     }
@@ -3325,9 +3330,8 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       }
       else {
         // I->dump();
-        if (dyn_cast<ConstantExpr>(I->getOperand(0))) {
-          Instruction *i = dyn_cast<ConstantExpr>(
-              dyn_cast<StoreInst>(I)->getOperand(0))->getAsInstruction();
+        if (Instruction *i = dyn_cast<ConstantExpr>(I->getOperand(0))
+            ->getAsInstruction()) {
           if (dyn_cast<GetElementPtrInst>(i)) {
             i->setName("___temp_getelementptr");
             i->setDebugLoc(I->getDebugLoc());
@@ -3356,6 +3360,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
               const symbolt *var = symbol_table.lookup(name_of_var);
               value_to_store = address_of_exprt(var->symbol_expr());
             }
+          }
+          else if (dyn_cast<BitCastInst>(i)) {
+            value_to_store = trans_ConstBitCast(i, symbol_table,
+                                                I->getDebugLoc()->getScope());
           }
           else {
             assert(false && "This constant type is not handled");
@@ -3397,7 +3405,9 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
         }
       }
       else {
-        assert(false && "bitcast found");
+        value_to_store = trans_ConstBitCast(
+            dyn_cast<Instruction>(I->getOperand(0)), symbol_table,
+            I->getDebugLoc()->getScope());
       }
       // symbol.show(std::cout);
       // value_to_store = typecast_exprt(value_to_store, symbol.type);
@@ -3594,7 +3604,7 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
  \*******************************************************************/
 exprt llvm2goto_translator::trans_ConstGetElementPtr(
     const GetElementPtrInst *I, const symbol_tablet &symbol_table,
-    typet *final_type) {
+    typet *final_type, DILocalScope * DIScp) {
   exprt op_expr;
   const symbolt *op_symbol = nullptr;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -3609,8 +3619,7 @@ exprt llvm2goto_translator::trans_ConstGetElementPtr(
   else {
     auto var = I->getOperand(0);
     std::string var_name = get_var(
-        scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-            + var->getName().str());
+        scope_name_map.find(DIScp)->second + "::" + var->getName().str());
     op_symbol = symbol_table.lookup(var_name);
     op_expr = op_symbol->symbol_expr();
   }
@@ -3644,7 +3653,7 @@ exprt llvm2goto_translator::trans_ConstGetElementPtr(
           }
           else {
             std::string index_op_name = get_var(
-                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                scope_name_map.find(DIScp)->second + "::"
                     + index_operand->getName().str());
             array_index_expr =
                 symbol_table.lookup(index_op_name)->symbol_expr();
@@ -3666,7 +3675,7 @@ exprt llvm2goto_translator::trans_ConstGetElementPtr(
       }
       else {
         std::string index_op_name = get_var(
-            scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+            scope_name_map.find(DIScp)->second + "::"
                 + index_operand->getName().str());
         array_index_expr = symbol_table.lookup(index_op_name)->symbol_expr();
       }
@@ -3735,7 +3744,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->dump();
     comp_expr = get_load(
         dyn_cast<LoadInst>(dyn_cast<GetElementPtrInst>(I)->getPointerOperand()),
-        symbol_table);
+        symbol_table, &comp);
     // assert(false && "unnamed operand in this instruction is not handled");
   }
   int index = 0;
@@ -3934,17 +3943,20 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
 //           << dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName()
 //           << '\n';
     symbol_exprt sym_exp;
-    if (!bit_cast_flag) sym_exp = symbol_table.lookup(
-        get_var(
-            scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                + dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->getName()
-                    .str()))->symbol_expr();
+    if (!bit_cast_flag
+        && dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName()) sym_exp =
+        symbol_table.lookup(
+            get_var(
+                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                    + dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
+                        ->getName().str()))->symbol_expr();
 //    const irep_idt &i_idt =
 //        (to_struct_type(temp).components())[index].get_name();
     const struct_typet struct_t = to_struct_type(temp);
     auto component = struct_t.components().at(index);
     member_exprt member;
-    if (bit_cast_flag)
+    if (bit_cast_flag
+        || !dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName())
       member = member_exprt(dereference_exprt(comp_expr), component);
     else if (gep_symbols.find(
         symbol_table.lookup(
@@ -5104,6 +5116,37 @@ goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
   goto_programt gp;
   assert(false && "PtrToInt is yet to be mapped \n");
   return gp;
+}/*******************************************************************
+ Function: llvm2goto_translator::trans_BitCast
+
+ Inputs:
+ I - Pointer to the llvm instruction.
+
+ Outputs: Object of goto_programt containing goto instruction corresponding to
+ llvm::Instruction::BitCast.
+
+ Purpose: Map llvm::Instruction::BitCast to corresponding goto instruction.
+
+ \*******************************************************************/
+exprt llvm2goto_translator::trans_ConstBitCast(
+    const Instruction *I, const symbol_tablet &symbol_table,
+    DILocalScope *DIScp) {
+  exprt expr;
+  auto *bci = dyn_cast<BitCastInst>(I);
+  typet out_type = symbol_creator::create_type(bci->getDestTy());
+//  const symbolt *symbol = nullptr;
+  if (I->getOperand(0)->hasName())
+    expr = symbol_table.lookup(
+        get_var(
+            scope_name_map.find(DIScp)->second + "::"
+                + I->getOperand(0)->getName().str()))->symbol_expr();
+  else if (auto *LI = dyn_cast<LoadInst>(I->getOperand(0)))
+    expr = get_load(LI, symbol_table);
+  else
+    assert(
+        false
+            && "Akash fix unhandled operand types, like maybe constgetelement ptr, etc");
+  return typecast_exprt(expr, out_type);
 }
 
 /*******************************************************************
@@ -5179,11 +5222,37 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     // }
     f1 = 1;
   }
+  else if (dyn_cast<ConstantExpr>(*ub)) {
+    llvm::User::value_op_iterator temp = const_cast<Instruction*>(I)
+        ->value_op_begin();
+    auto *CE = dyn_cast<ConstantExpr>(*temp);
+    GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
+
+    typet dummy;
+    opnd1 = trans_ConstGetElementPtr(GE, *symbol_table, &dummy,
+                                     I->getDebugLoc()->getScope());
+
+    GE->deleteValue();
+    f1 = 1;
+  }
   if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
     li->getOperand(0)->dump();
     // opnd2 = symbol_table->lookup(var_name_map.find(
     //   li->getOperand(0)->getName().str())->second).symbol_expr();
     opnd2 = get_load(li, *symbol_table);
+    f2 = 1;
+  }
+  else if (dyn_cast<ConstantExpr>(*(ub + 1))) {
+    llvm::User::value_op_iterator temp = const_cast<Instruction*>(I)
+        ->value_op_begin();
+    auto *CE = dyn_cast<ConstantExpr>(*(temp + 1));
+    GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
+
+    typet dummy;
+    opnd2 = trans_ConstGetElementPtr(GE, *symbol_table, &dummy,
+                                     I->getDebugLoc()->getScope());
+
+    GE->deleteValue();
     f2 = 1;
   }
   if (f1 == 1 && f2 == 1) {
