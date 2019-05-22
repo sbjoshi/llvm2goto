@@ -574,7 +574,7 @@ struct_union_typet symbol_creator::create_struct_union_type(
         }
         int encoding;
         encoding = get_encoding(
-            dyn_cast<DIType*>(
+            dyn_cast<DIType>(
                 dyn_cast<DIDerivedType>(Fields[i])->getBaseType()));
         struct_union_typet::componentt component;
         switch (encoding) {

@@ -3249,7 +3249,13 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   }
   if (!function_parameter_flag) {
     errs() << "3 \n";
-    if (dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0))) {
+    if (I->getOperand(0)->hasName()) {
+      value_to_store = symbol_table.lookup(
+          get_var(
+              scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                  + I->getOperand(0)->getName().str()))->symbol_expr();
+    }
+    else if (dyn_cast<Constant>(dyn_cast<StoreInst>(I)->getOperand(0))) {
       if (dyn_cast<ConstantInt>(dyn_cast<StoreInst>(I)->getOperand(0))) {
         uint64_t val = dyn_cast<ConstantInt>(
             dyn_cast<StoreInst>(I)->getOperand(0))->getZExtValue();
@@ -5136,10 +5142,11 @@ exprt llvm2goto_translator::trans_ConstBitCast(
   typet out_type = symbol_creator::create_type(bci->getDestTy());
 //  const symbolt *symbol = nullptr;
   if (I->getOperand(0)->hasName())
-    expr = symbol_table.lookup(
-        get_var(
-            scope_name_map.find(DIScp)->second + "::"
-                + I->getOperand(0)->getName().str()))->symbol_expr();
+    expr = address_of_exprt(
+        symbol_table.lookup(
+            get_var(
+                scope_name_map.find(DIScp)->second + "::"
+                    + I->getOperand(0)->getName().str()))->symbol_expr());
   else if (auto *LI = dyn_cast<LoadInst>(I->getOperand(0)))
     expr = get_load(LI, symbol_table);
   else
@@ -6352,6 +6359,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         symbol.type).parameters().begin();
         p_it != to_code_type(symbol.type).parameters().end(); p_it++) {
       exprt expr;
+      const symbolt *expr_symbol = nullptr;
       if (dyn_cast<ConstantInt>(*ub)) {
         uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
         // TODO(Rasika) : get type parameters.
@@ -6361,15 +6369,21 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       }
       else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
         li->getOperand(0)->dump();
-        expr = get_load(li, *symbol_table);
+        expr = get_load(li, *symbol_table, &expr_symbol);
         // expr = symbol_table->lookup(var_name_map.find(
         //          li->getOperand(0)->getName().str())->second).symbol_expr();
       }
       else {
-        expr = symbol_table->lookup(
+        expr_symbol = symbol_table->lookup(
             get_var(
                 scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                    + ub->getName().str()))->symbol_expr();
+                    + ub->getName().str()));
+        expr = expr_symbol->symbol_expr();
+      }
+      if (expr_symbol) {
+        if (gep_symbols.find(expr_symbol) != gep_symbols.end()) {
+          expr = dereference_exprt(expr);
+        }
       }
       call.arguments().push_back(expr);
       assert(p_it->get_identifier() != irep_idt());
