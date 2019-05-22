@@ -3339,17 +3339,10 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
         if (Instruction *i = dyn_cast<ConstantExpr>(I->getOperand(0))
             ->getAsInstruction()) {
           if (dyn_cast<GetElementPtrInst>(i)) {
-            i->setName("___temp_getelementptr");
-            i->setDebugLoc(I->getDebugLoc());
-            goto_programt gp_getelementptr = trans_GetElementPtr(i,
-                                                                 symbol_table);
-            gp_getelementptr.output(std::cout);
-            goto_programt::targett getele =
-                gp_getelementptr.instructions.begin();
-            getele++;
-            exprt geteleptr_expr = getele->code;
-            errs() << from_expr(geteleptr_expr.op1());
-            value_to_store = geteleptr_expr.op1();
+            typet dummy;
+            value_to_store = trans_ConstGetElementPtr(
+                dyn_cast<GetElementPtrInst>(i), symbol_table, &dummy,
+                I->getDebugLoc()->getScope());
           }
           else if (PtrToIntInst *ptr_to_int = dyn_cast<PtrToIntInst>(i)) {
             if (!I->hasMetadata()) {
@@ -3397,14 +3390,14 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
 
     else if (BitCastInst *bci = dyn_cast<BitCastInst>(
         dyn_cast<StoreInst>(I)->getOperand(0))) {
-      // bci->dump();
-      // bci->getOperand(0)->dump();
       if (bci->getOperand(0)->hasName()) {
-        symbol = symbol_table.lookup(
-            get_var(
-                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                    + bci->getOperand(0)->getName().str()));
-        value_to_store = symbol->symbol_expr();
+//        symbol = symbol_table.lookup(
+//            get_var(
+//                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+//                    + bci->getOperand(0)->getName().str()));
+//        value_to_store = symbol->symbol_expr();
+        value_to_store = trans_ConstBitCast(bci, symbol_table,
+                                            I->getDebugLoc()->getScope());
 
         if (gep_symbols.find(symbol) != gep_symbols.end()) {
           value_to_store = dereference_exprt(value_to_store);
@@ -3475,7 +3468,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     if (const Instruction *ins = dyn_cast<Instruction>(I->getOperand(0))) {
       while (!ins->hasName()) {
         ins = dyn_cast<Instruction>(ins->getOperand(0));
-        i--;
+//        i--;
       }
     }
     errs() << "7 \n";
@@ -4340,7 +4333,7 @@ goto_programt llvm2goto_translator::trans_SExt(const Instruction *I,
   typet dest_type = signedbv_typet(
       dyn_cast<SExtInst>(I)->getDestTy()->getIntegerBitWidth());
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
-  const symbolt *op1 = nullptr;    //  Akash reminder maybe no used of op1 here.
+  const symbolt *op1 = nullptr;  //  Akash reminder maybe no used of op1 here.
   exprt exprt1;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
@@ -6136,7 +6129,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
           + dyn_cast<DIVariable>(mdn)->getName().str();
       var_name_map.insert(
           std::pair<std::string, std::string>(symbol.name.c_str(),
-                                              name_to_remove));    //akash fixed
+                                              name_to_remove));  //akash fixed
     }
     symbol_table->add(symbol);
     goto_programt::targett decl_symbol = gp.add_instruction();
