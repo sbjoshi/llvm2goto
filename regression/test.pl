@@ -219,6 +219,7 @@ use Cwd qw(getcwd);
 my $cwd = getcwd;
 my $failures :shared = 0;
 my $skips :shared = 0;
+my $passed :shared = 0;
 my $pool :shared = undef;
 
 sub do_test($)
@@ -274,7 +275,9 @@ if($failures == 0) {
   print "Tests failed\n";
   print "  $failures of $count " . (1==$count?"test":"tests") . " failed";
 }
-print ", $skips " . (1==$skips?"test":"tests") . " skipped" if($skips > 0);
+print ", $skips " . (1==$skips?"test":"tests") . " skipped";
+$passed = ($count - $skips - $failures);
+print "\nPassed = $passed";
 print "\n";
 
 

@@ -23,6 +23,8 @@ int main()
 
   if(x>3)
   	d+=1;
-
+  double test = 2.0;
+  assert(d == test);
   assert(d == 2.0);
+  return 0;
 }

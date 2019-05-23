@@ -13,11 +13,21 @@ OBJ +=$(CBMC_SRC_PATH)/ansi-c/ansi-c$(LIBEXT) \
       $(CBMC_SRC_PATH)/pointer-analysis/value_set_domain_fi$(OBJEXT) \
       $(CBMC_SRC_PATH)/pointer-analysis/value_set_fi$(OBJEXT) \
       $(CBMC_SRC_PATH)/pointer-analysis/value_set_dereference$(OBJEXT) \
-      $(CBMC_SRC_PATH)/pointer-analysis/dereference_callback$(OBJEXT) \
       $(CBMC_SRC_PATH)/pointer-analysis/add_failed_symbols$(OBJEXT) \
       $(CBMC_SRC_PATH)/pointer-analysis/rewrite_index$(OBJEXT) \
       $(CBMC_SRC_PATH)/pointer-analysis/goto_program_dereference$(OBJEXT) \
       $(CBMC_SRC_PATH)/goto-cc/compile$(OBJEXT)\
+      $(CBMC_SRC_PATH)/goto-instrument/unwindset$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_basic_blocks$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_instrument_other$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_instrument_mcdc$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_instrument_branch$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_instrument_location$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_instrument_decision$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_instrument_condition$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_util$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/cover_filter$(OBJEXT) \
+      $(CBMC_SRC_PATH)/goto-instrument/reachability_slicer$(OBJEXT) \
       $(CBMC_SRC_PATH)/goto-instrument/full_slicer$(OBJEXT) \
       $(CBMC_SRC_PATH)/goto-instrument/nondet_static$(OBJEXT) \
       $(CBMC_SRC_PATH)/goto-instrument/cover$(OBJEXT) \
@@ -27,23 +37,26 @@ OBJ +=$(CBMC_SRC_PATH)/ansi-c/ansi-c$(LIBEXT) \
       $(CBMC_SRC_PATH)/assembler/assembler$(LIBEXT) \
       $(CBMC_SRC_PATH)/solvers/solvers$(LIBEXT) \
       $(CBMC_SRC_PATH)/util/util$(LIBEXT) \
-      $(CBMC_SRC_PATH)/miniz/miniz$(OBJEXT) \
+      $(JBMC_SRC_PATH)/miniz/miniz$(OBJEXT) \
       $(CBMC_SRC_PATH)/cbmc/all_properties$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/cbmc_languages$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/fault_localization$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/bmc_cover$(OBJEXT) \
-	  $(CBMC_SRC_PATH)/cbmc/show_vcc$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/goto-symex/show_vcc$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/bmc$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/cbmc_parse_options$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/symex_bmc$(OBJEXT) \
-	  $(CBMC_SRC_PATH)/cbmc/bv_cbmc$(OBJEXT) \
-	  $(CBMC_SRC_PATH)/cbmc/cbmc_solvers$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/solvers/flattening/bv_pointers$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/goto-checker/goto-checker$(LIBEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/symex_coverage$(OBJEXT) \
-	  $(CBMC_SRC_PATH)/cbmc/cbmc_dimacs$(OBJEXT) \
+	  $(CBMC_SRC_PATH)/solvers/flattening/bv_dimacs$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/counterexample_beautification$(OBJEXT) \
 	  $(CBMC_SRC_PATH)/cbmc/xml_interface$(OBJEXT) \
       $(CBMC_SRC_PATH)/json/json$(LIBEXT) \
-      $(CBMC_SRC_PATH)/java_bytecode/java_bytecode$(LIBEXT) \
+      $(JBMC_SRC_PATH)/java_bytecode/java_bytecode$(LIBEXT) \
+      $(CBMC_SRC_PATH)/json-symtab-language/json_symtab_language$(OBJEXT) \
+      $(CBMC_SRC_PATH)/json-symtab-language/json_symbol_table$(OBJEXT) \
+      $(CBMC_SRC_PATH)/json-symtab-language/json_symbol$(OBJEXT) \
       
 
 INCLUDES= -I $(CBMC_SRC_PATH)
@@ -54,8 +67,8 @@ BUILD_ENV_ := Unix
 LIBEXT = .a
 OBJEXT = .o
 EXEEXT =
-CFLAGS ?= -Wall -O2
-CXXFLAGS ?= -Wall -O2 -fno-rtti -O0 -g
+CFLAGS ?= -Wall -ggdb
+CXXFLAGS ?= -Wall -O0 -fno-rtti -ggdb -Wno-deprecated-declarations
 CP_CFLAGS = -MMD -MP
 CP_CXXFLAGS = -MMD -MP -std=c++11
 

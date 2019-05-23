@@ -5,6 +5,8 @@ Author : Rasika
 #include "llvm/IR/DebugInfoMetadata.h"
 // #include "llvm/IR/GlobalVariable.h"
 #include "util/source_location.h"
+#include "pointer-analysis/dereference_callback.h"
+
 using namespace llvm;
 #ifndef SRC_LOCATIONT_H_
 #define SRC_LOCATIONT_H_

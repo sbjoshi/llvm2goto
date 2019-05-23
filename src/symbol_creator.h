@@ -1,7 +1,7 @@
 /* Copyright
-Author : Rasika
+ Author : Rasika
 
-*/
+ */
 
 #include "util/symbol_table.h"
 #include <string.h>
@@ -10,11 +10,13 @@ Author : Rasika
 #include "llvm/IR/DebugInfoMetadata.h"
 
 #include "util/std_types.h"
+
+#include "pointer-analysis/dereference_callback.h"
+
 using namespace llvm;
 #ifndef SRC_SYMBOL_CREATOR_H_
 #define SRC_SYMBOL_CREATOR_H_
-class symbol_creator
-{
+class symbol_creator {
  public:
   static symbolt create_HalfTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_FloatTy(Type *type, llvm::MDNode *mdn);
@@ -25,14 +27,12 @@ class symbol_creator
   static symbolt create_X86_MMXTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_IntegerTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_StructTy(Type *type, const llvm::MDNode *mdn);
-  static struct_union_typet create_struct_union_type(Type *type,
-    const llvm::DICompositeType *digv);
+  static struct_union_typet create_struct_union_type(
+      Type *type, const llvm::DIType *digv);
   static symbolt create_ArrayTy(Type *type, llvm::MDNode *mdn);
-  static typet create_array_type(Type *type,
-    const llvm::DIType *md);
+  static typet create_array_type(Type *type, const llvm::DIType *md);
   static symbolt create_PointerTy(Type *type, llvm::MDNode *mdn);
-  static typet create_pointer_type(Type *type,
-    const llvm::DIDerivedType *md);
+  static typet create_pointer_type(Type *type, const llvm::DIType *md);
   static typet create_type(Type *type, llvm::DIType *mdn);
   static typet create_type(Type *type);
   static symbolt create_VectorTy(Type *type, llvm::MDNode *mdn);
@@ -41,5 +41,6 @@ class symbol_creator
   static symbolt create_TokenTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_LabelTy(Type *type, llvm::MDNode *mdn);
   static symbolt create_MetadataTy(Type *type, llvm::MDNode *mdn);
+  static typet create_Function_Ptr(FunctionType *type, const llvm::DIType *mdn);
 };
 #endif  // SRC_SYMBOL_CREATOR_H_"

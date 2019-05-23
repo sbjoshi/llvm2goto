@@ -16,6 +16,9 @@ Author : Rasika
 
 #include "goto-programs/goto_functions.h"
 
+#include "pointer-analysis/dereference_callback.h"
+
+
 using namespace llvm;
 
 int main(int argc, char **argv)
