@@ -1400,7 +1400,7 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
  Purpose: .
 
  \*******************************************************************/
-typet symbol_creator::create_type(Type *type) {
+typet symbol_creator::create_type(Type *type, bool is_void_type) {
   typet ele_type;
   switch (type->getTypeID()) {
     // 16-bit floating point type
@@ -1437,9 +1437,9 @@ typet symbol_creator::create_type(Type *type) {
       if (type->getIntegerBitWidth() == 1) {
         ele_type = bool_typet();
       }
-//      else if (type->getIntegerBitWidth() == 8) {
-//        ele_type = signedbv_typet(type->getIntegerBitWidth());
-//      }
+      else if (type->getIntegerBitWidth() == 8 && is_void_type) {
+        ele_type = void_typet();
+      }
       else {
         ele_type = signedbv_typet(type->getIntegerBitWidth());
       }
@@ -1469,7 +1469,8 @@ typet symbol_creator::create_type(Type *type) {
     }
     case llvm::Type::TypeID::PointerTyID: {
       ele_type = pointer_typet(
-          create_type(dyn_cast<PointerType>(type)->getPointerElementType()),
+          create_type(dyn_cast<PointerType>(type)->getPointerElementType(),
+                      is_void_type),
           config.ansi_c.pointer_width);
       break;
     }
