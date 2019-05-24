@@ -3153,8 +3153,13 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbolt *symbol = nullptr;
   exprt expr;
   I->getOperand(1)->dump();
-
+  bool load_inst_used = false;
   if (dyn_cast<StoreInst>(I)->getOperand(1)->hasName()) {
+    if (!dyn_cast<StoreInst>(I)->getOperand(1)->getName().str().compare(
+        "retval")) {
+      if (ni) ni->eraseFromParent();
+      return gp;
+    }
     if (I->hasMetadata()) {
       symbol = symbol_table.lookup(
           get_var(
@@ -3179,6 +3184,7 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     li->dump();
     expr = get_load(li, symbol_table, &symbol);
     expr = dereference_exprt(expr);
+    load_inst_used = true;
     // errs() << from_expr(expr) << "\n";
     // assert(false);
   }
@@ -3361,8 +3367,12 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
             }
           }
           else if (dyn_cast<BitCastInst>(i)) {
-            value_to_store = trans_ConstBitCast(i, symbol_table,
-                                                I->getDebugLoc()->getScope());
+            typet temp = expr.type();
+            while (temp.id() == ID_pointer || temp.id() == ID_array)
+              temp = temp.subtype();
+            value_to_store = trans_ConstBitCast(
+                i, symbol_table, I->getDebugLoc()->getScope(),
+                temp.id() == ID_empty ? true : false, &expr.type());
           }
           else {
             assert(false && "This constant type is not handled");
@@ -3390,23 +3400,28 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
 
     else if (BitCastInst *bci = dyn_cast<BitCastInst>(
         dyn_cast<StoreInst>(I)->getOperand(0))) {
+      typet temp = expr.type();
+      while (temp.id() == ID_pointer || temp.id() == ID_array)
+        temp = temp.subtype();
       if (bci->getOperand(0)->hasName()) {
 //        symbol = symbol_table.lookup(
 //            get_var(
 //                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
 //                    + bci->getOperand(0)->getName().str()));
 //        value_to_store = symbol->symbol_expr();
-        value_to_store = trans_ConstBitCast(bci, symbol_table,
-                                            I->getDebugLoc()->getScope());
+        value_to_store = trans_ConstBitCast(
+            bci, symbol_table, I->getDebugLoc()->getScope(),
+            temp.id() == ID_empty ? true : false, &expr.type());
 
-        if (gep_symbols.find(symbol) != gep_symbols.end()) {
-          value_to_store = dereference_exprt(value_to_store);
-        }
+//        if (gep_symbols.find(symbol) != gep_symbols.end()) {
+//          value_to_store = dereference_exprt(value_to_store);
+//        }
       }
       else {
         value_to_store = trans_ConstBitCast(
             dyn_cast<Instruction>(I->getOperand(0)), symbol_table,
-            I->getDebugLoc()->getScope());
+            I->getDebugLoc()->getScope(), temp.id() == ID_empty ? true : false,
+            &expr.type());
       }
       // symbol.show(std::cout);
       // value_to_store = typecast_exprt(value_to_store, symbol.type);
@@ -3425,25 +3440,26 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
                         + dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()))
                 ->first
             << "\n";
-        const symbolt *temp_sym;
+        const symbolt *temp_sym = nullptr;
         temp_sym = symbol_table.lookup(
             get_var(
                 scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
                     + dyn_cast<StoreInst>(I)->getOperand(0)->getName().str()));
         value_to_store = temp_sym->symbol_expr();
-
-        if (gep_symbols.find(temp_sym) != gep_symbols.end()) {
-          value_to_store = dereference_exprt(value_to_store);
-        }
       }
       else if (dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))) {
         // if(!dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))->hasName())
         // {
         // }
         dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))->dump();
+        const symbolt *temp_sym = nullptr;
         value_to_store = get_load(
             dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0)),
-            symbol_table);
+            symbol_table, &temp_sym);
+
+//        if (gep_symbols.find(temp_sym) != gep_symbols.end()) {
+//          value_to_store = dereference_exprt(value_to_store);
+//        }
         // std::string name = var_name_map.find(
         //   dyn_cast<LoadInst>(dyn_cast<StoreInst>(I)->getOperand(0))
         //   ->getOperand(0)->getName().str())->second;
@@ -5143,10 +5159,14 @@ goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
  \*******************************************************************/
 exprt llvm2goto_translator::trans_ConstBitCast(
     const Instruction *I, const symbol_tablet &symbol_table,
-    DILocalScope *DIScp) {
+    DILocalScope *DIScp, bool is_void_type, typet *in_type) {
   exprt expr;
   auto *bci = dyn_cast<BitCastInst>(I);
-  typet out_type = symbol_creator::create_type(bci->getDestTy());
+  typet out_type;
+  if (in_type)
+    out_type = *in_type;
+  else
+    out_type = symbol_creator::create_type(bci->getDestTy(), is_void_type);
 //  const symbolt *symbol = nullptr;
   if (I->getOperand(0)->hasName())
     expr = address_of_exprt(
@@ -5160,6 +5180,8 @@ exprt llvm2goto_translator::trans_ConstBitCast(
     assert(
         false
             && "Akash fix unhandled operand types, like maybe constgetelement ptr, etc");
+//  if (is_void_type) out_type = pointer_typet(void_typet(),
+//                                             config.ansi_c.pointer_width);
   return typecast_exprt(expr, out_type);
 }
 
@@ -5243,8 +5265,9 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
 
     typet dummy;
-    opnd1 = trans_ConstGetElementPtr(GE, *symbol_table, &dummy,
-                                     I->getDebugLoc()->getScope());
+    opnd1 = address_of_exprt(
+        trans_ConstGetElementPtr(GE, *symbol_table, &dummy,
+                                 I->getDebugLoc()->getScope()));
 
     GE->deleteValue();
     f1 = 1;
@@ -5263,8 +5286,9 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
     GetElementPtrInst *GE = dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
 
     typet dummy;
-    opnd2 = trans_ConstGetElementPtr(GE, *symbol_table, &dummy,
-                                     I->getDebugLoc()->getScope());
+    opnd2 = address_of_exprt(
+        trans_ConstGetElementPtr(GE, *symbol_table, &dummy,
+                                 I->getDebugLoc()->getScope()));
 
     GE->deleteValue();
     f2 = 1;
@@ -6137,13 +6161,17 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
                                               symbol.base_name.c_str()));  //akash fixed
     }
     else {
+//      symbol.name = scope_name_map.find(
+//          dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())
+//              ->getNonLexicalBlockFileScope())->second + "::"
+//          + dyn_cast<DIVariable>(mdn)->getName().str();
       symbol.name = scope_name_map.find(
           dyn_cast<DILocalScope>(I->getDebugLoc()->getScope())
-              ->getNonLexicalBlockFileScope())->second + "::"
-          + dyn_cast<DIVariable>(mdn)->getName().str();
+              ->getNonLexicalBlockFileScope())->second + "::" + name_to_remove;
+      symbol.base_name = dyn_cast<DIVariable>(mdn)->getName().str();
       var_name_map.insert(
           std::pair<std::string, std::string>(symbol.name.c_str(),
-                                              name_to_remove));  //akash fixed
+                                              symbol.base_name.c_str()));  //akash fixed
     }
     symbol_table->add(symbol);
     goto_programt::targett decl_symbol = gp.add_instruction();
@@ -6367,6 +6395,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         p_it != to_code_type(symbol.type).parameters().end(); p_it++) {
       exprt expr;
       const symbolt *expr_symbol = nullptr;
+      bool used_load_inst = false;
       if (dyn_cast<ConstantInt>(*ub)) {
         uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
         // TODO(Rasika) : get type parameters.
@@ -6377,6 +6406,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
         li->getOperand(0)->dump();
         expr = get_load(li, *symbol_table, &expr_symbol);
+        used_load_inst = true;
         // expr = symbol_table->lookup(var_name_map.find(
         //          li->getOperand(0)->getName().str())->second).symbol_expr();
       }
@@ -6387,7 +6417,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
                     + ub->getName().str()));
         expr = expr_symbol->symbol_expr();
       }
-      if (expr_symbol) {
+      if (expr_symbol && used_load_inst) {
         if (gep_symbols.find(expr_symbol) != gep_symbols.end()) {
           expr = dereference_exprt(expr);
         }

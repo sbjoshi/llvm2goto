@@ -76,7 +76,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_BitCast(const Instruction *I);
   exprt trans_ConstBitCast(const Instruction *I,
                            const symbol_tablet &symbol_table,
-                           DILocalScope *DIScp);
+                           DILocalScope *DIScp, bool is_void_type,
+                           typet *in_type = nullptr);
   goto_programt trans_AddrSpaceCast(const Instruction *I);
   exprt trans_Cmp(const Instruction *I, symbol_tablet *symbol_table);
   exprt trans_Inverse_Cmp(const Instruction *I, symbol_tablet *symbol_table);
