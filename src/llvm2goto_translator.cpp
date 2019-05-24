@@ -3153,7 +3153,6 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
   const symbolt *symbol = nullptr;
   exprt expr;
   I->getOperand(1)->dump();
-  bool load_inst_used = false;
   if (dyn_cast<StoreInst>(I)->getOperand(1)->hasName()) {
     if (!dyn_cast<StoreInst>(I)->getOperand(1)->getName().str().compare(
         "retval")) {
@@ -3184,7 +3183,6 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
     li->dump();
     expr = get_load(li, symbol_table, &symbol);
     expr = dereference_exprt(expr);
-    load_inst_used = true;
     // errs() << from_expr(expr) << "\n";
     // assert(false);
   }
@@ -7659,9 +7657,69 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
             cprover_rounding_mode.name.c_str(),
             cprover_rounding_mode.base_name.c_str()));    //akash fixed
     symbol_table.add(cprover_rounding_mode);
+
+    symbolt cprover_deallocated;
+    cprover_deallocated.name = "__CPROVER_deallocated";
+    cprover_deallocated.base_name = "__CPROVER_deallocated";
+    cprover_deallocated.type = pointer_typet(void_typet(),
+                                             config.ansi_c.pointer_width);
+    cprover_deallocated.value = null_pointer_exprt(
+        to_pointer_type(cprover_deallocated.type));
+    cprover_deallocated.mode = ID_C;
+    cprover_deallocated.is_lvalue = true;
+    cprover_deallocated.is_static_lifetime = true;
+    var_name_map.insert(
+        std::pair<std::string, std::string>(
+            cprover_deallocated.name.c_str(),
+            cprover_deallocated.base_name.c_str()));    //akash fixed
+    symbol_table.add(cprover_deallocated);
+
+    symbolt cprover_dead_object;
+    cprover_dead_object.name = "__CPROVER_dead_object";
+    cprover_dead_object.base_name = "__CPROVER_dead_object";
+    cprover_dead_object.type = pointer_typet(void_typet(),
+                                             config.ansi_c.pointer_width);
+    cprover_dead_object.value = null_pointer_exprt(
+        to_pointer_type(cprover_dead_object.type));
+    cprover_dead_object.mode = ID_C;
+    cprover_dead_object.is_lvalue = true;
+    cprover_dead_object.is_static_lifetime = true;
+    var_name_map.insert(
+        std::pair<std::string, std::string>(
+            cprover_dead_object.name.c_str(),
+            cprover_dead_object.base_name.c_str()));    //akash fixed
+    symbol_table.add(cprover_dead_object);
+
+    symbolt cprover_malloc_object;
+    cprover_malloc_object.name = "__CPROVER_malloc_object";
+    cprover_malloc_object.base_name = "__CPROVER_malloc_object";
+    cprover_malloc_object.type = pointer_typet(void_typet(),
+                                               config.ansi_c.pointer_width);
+    cprover_malloc_object.value = null_pointer_exprt(
+        to_pointer_type(cprover_malloc_object.type));
+    cprover_malloc_object.mode = ID_C;
+    cprover_malloc_object.is_lvalue = true;
+    cprover_malloc_object.is_static_lifetime = true;
+    var_name_map.insert(
+        std::pair<std::string, std::string>(
+            cprover_malloc_object.name.c_str(),
+            cprover_malloc_object.base_name.c_str()));    //akash fixed
+    symbol_table.add(cprover_malloc_object);
+
+    symbolt cprover_malloc_size;
+    cprover_malloc_size.name = "__CPROVER_malloc_size";
+    cprover_malloc_size.base_name = "__CPROVER_malloc_size";
+    cprover_malloc_size.type = unsignedbv_typet(config.ansi_c.int_width);
+    cprover_malloc_size.value = from_integer(0, cprover_malloc_size.type);
+    cprover_malloc_size.mode = ID_C;
+    cprover_malloc_size.is_lvalue = true;
+    cprover_malloc_size.is_static_lifetime = true;
+    var_name_map.insert(
+        std::pair<std::string, std::string>(
+            cprover_malloc_size.name.c_str(),
+            cprover_malloc_size.base_name.c_str()));    //akash fixed
+    symbol_table.add(cprover_malloc_size);
   }
-// symbol_table.show(std::cout);
-// exit(0);
 
   goto_programt gp;
   for (Function &F : *M) {
