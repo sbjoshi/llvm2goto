@@ -3939,9 +3939,9 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       temp = temp.subtype();
     if (temp.id() != ID_struct) assert(
         false && "Akash Trying to get struct out of a non struct pointer type");
-
-    errs()
-        << (to_struct_union_type(temp).components())[index].get_name().c_str();
+//    if (I->getNumOperands() <= 2) temp = comp->type;
+//    errs()
+//        << (to_struct_union_type(temp).components())[index].get_name().c_str();
     if (var_name_map.find(
         get_var(
             scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
@@ -3953,9 +3953,12 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       var_name_map.insert(
           std::pair<std::string, std::string>(symbol.name.c_str(),
                                               symbol.base_name.c_str()));  //akash fixed
-      symbol.type = pointer_typet(
-          (to_struct_union_type(temp).components())[index].type(),
-          config.ansi_c.pointer_width);
+      if (I->getNumOperands() > 2)
+        symbol.type = pointer_typet(
+            (to_struct_union_type(temp).components())[index].type(),
+            config.ansi_c.pointer_width);
+      else
+        symbol.type = comp->type;
 //      symbol.type = array_typet((to_struct_union_type(comp->type).components())[index].type(),
 //          from_integer(index, index_type()));
       symbol_table.add(symbol);
@@ -3979,32 +3982,80 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
                         ->getName().str()))->symbol_expr();
 //    const irep_idt &i_idt =
 //        (to_struct_type(temp).components())[index].get_name();
-    const struct_typet struct_t = to_struct_type(temp);
-    auto component = struct_t.components().at(index);
-    member_exprt member;
-    if (bit_cast_flag
-        || !dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName())
-      member = member_exprt(dereference_exprt(comp_expr), component);
-    else if (gep_symbols.find(
-        symbol_table.lookup(
-            get_var(
-                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                    + dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
-                        ->getName().str()))) != gep_symbols.end()) {
-      member = member_exprt(dereference_exprt(sym_exp), component);
+    if (I->getNumOperands() > 2) {
+      const struct_typet struct_t = to_struct_type(temp);
+      auto component = struct_t.components().at(index);
+      member_exprt member;
+      if (bit_cast_flag
+          || !dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName())
+        member = member_exprt(dereference_exprt(comp_expr), component);
+      else if (gep_symbols.find(
+          symbol_table.lookup(
+              get_var(
+                  scope_name_map.find(I->getDebugLoc()->getScope())->second
+                      + "::"
+                      + dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
+                          ->getName().str()))) != gep_symbols.end()) {
+        member = member_exprt(dereference_exprt(sym_exp), component);
+      }
+      else
+        member = member_exprt(sym_exp, component);
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      std::string full_name = get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + I->getName().str());
+      assgn_inst->code = code_assignt(
+          symbol_table.lookup(full_name)->symbol_expr(),
+          address_of_exprt(member));
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
     }
-    else
-      member = member_exprt(sym_exp, component);
-    goto_programt::targett assgn_inst = gp.add_instruction();
-    assgn_inst->make_assignment();
-    std::string full_name = get_var(
-        scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-            + I->getName().str());
-    assgn_inst->code = code_assignt(
-        symbol_table.lookup(full_name)->symbol_expr(),
-        address_of_exprt(member));
-    assgn_inst->function = irep_idt(I->getFunction()->getName().str());
-    assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+    else {
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      exprt lhs = symbol_table.lookup(
+          get_var(
+              scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                  + I->getName().str()))->symbol_expr();
+      exprt rhs = comp_expr;
+//      if (dyn_cast<LoadInst>(I->getOperand(0))) {
+//        rhs = get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table);
+//      }
+//      else if (I->getOperand(0)->hasName()) {
+//        rhs = symbol_table.lookup(
+//            get_var(
+//                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+//                    + I->getOperand(0)->getName().str()))->symbol_expr();
+//      }
+//      else {
+//        assert(false && "Akash Please handle this Operand Type");
+//      }
+      if (dyn_cast<LoadInst>(I->getOperand(1))) {
+        rhs = plus_exprt(
+            rhs, get_load(dyn_cast<LoadInst>(I->getOperand(1)), symbol_table));
+      }
+      else if (I->getOperand(1)->hasName()) {
+        rhs = plus_exprt(
+            rhs,
+            symbol_table.lookup(
+                get_var(
+                    scope_name_map.find(I->getDebugLoc()->getScope())->second
+                        + "::" + I->getOperand(1)->getName().str()))
+                ->symbol_expr());
+      }
+      else if (dyn_cast<ConstantInt>(I->getOperand(1))) {
+        unsigned index =
+            dyn_cast<ConstantInt>(I->getOperand(1))->getZExtValue();
+        rhs = plus_exprt(rhs, from_integer(index, index_type()));
+      }
+      else {
+        assert(false && "Akash Please handle this Operand Type");
+      }
+      assgn_inst->code = code_assignt(lhs, rhs);
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+    }
   }
   else if (dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isPointerTy()) {
     if (dyn_cast<GetElementPtrInst>(I)->getNumIndices() == 1) {

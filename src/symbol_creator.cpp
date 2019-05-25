@@ -875,13 +875,18 @@ typet symbol_creator::create_array_type(Type *type, llvm::DIType *md) {
       break;
     }
     case llvm::Type::TypeID::StructTyID: {
-
       if (dyn_cast<DICompositeType>(md)) {
         md = dyn_cast<DIType>(dyn_cast<DICompositeType>(md)->getBaseType());
       }
       else if (dyn_cast<DIDerivedType>(md)) {
         md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
       }
+      while (!dyn_cast<DICompositeType>(md))
+        if (dyn_cast<DIDerivedType>(md)) {
+          md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
+        }
+        else
+          assert(false && "Akash please fix me");
 
       ele_type = create_struct_union_type(
           dyn_cast<ArrayType>(type)->getArrayElementType(), md);
