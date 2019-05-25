@@ -655,10 +655,12 @@ struct_union_typet symbol_creator::create_struct_union_type(
       case llvm::Type::TypeID::ArrayTyID: {
         struct_union_typet::componentt component(
             ele_name,
-            create_array_type(
-                *e,
-                dyn_cast<DICompositeType>(
-                    dyn_cast<DIDerivedType>(Fields[i])->getBaseType())));
+            array_typet(
+                create_array_type(
+                    *e,
+                    dyn_cast<DICompositeType>(
+                        dyn_cast<DIDerivedType>(Fields[i])->getBaseType())),
+                from_integer((*e)->getArrayNumElements(), size_type())));
         components.push_back(component);
         break;
       }
