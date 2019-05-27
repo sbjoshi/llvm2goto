@@ -6267,10 +6267,10 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
     const Function *function = dyn_cast<Function>(
         called_val->stripPointerCasts());
-    if (function->getName().str() == "assume"
+    if (function->getName().str() == "__CPROVER_assume"
         || function->getName().str() == "assert") {
       goto_programt::targett ass_inst;
-      if (function->getName().str() == "assume") {
+      if (function->getName().str() == "__CPROVER_assume") {
         ass_inst = gp.add_instruction(ASSUME);
       }
       else {
