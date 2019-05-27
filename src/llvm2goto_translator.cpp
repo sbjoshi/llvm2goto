@@ -2547,7 +2547,7 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
     exprt2 = from_integer(val, unsignedbv_typet(config.ansi_c.int_width));
   }
   else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
 //      op2 = symbol_table.lookup(
 //          var_name_map.find(li->getOperand(0)->getName().str())->second);
@@ -2565,7 +2565,7 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
       op2 = symbol_table.lookup(
           get_var(
               scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                  + ub->getName().str()));
+                  + (ub + 1)->getName().str()));
       exprt2 = op2->symbol_expr();
     }
   }
@@ -2670,7 +2670,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
     exprt2 = from_integer(val, unsignedbv_typet(config.ansi_c.int_width));
   }
   else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
 //      op2 = symbol_table.lookup(
 //          var_name_map.find(li->getOperand(0)->getName().str())->second);
@@ -2688,7 +2688,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
       op2 = symbol_table.lookup(
           get_var(
               scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                  + ub->getName().str()));
+                  + (ub + 1)->getName().str()));
       exprt2 = op2->symbol_expr();
     }
   }
@@ -2793,7 +2793,7 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
     exprt2 = from_integer(val, unsignedbv_typet(config.ansi_c.int_width));
   }
   else {
-    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
       li->getOperand(0)->dump();
 //      op2 = symbol_table.lookup(
 //          var_name_map.find(li->getOperand(0)->getName().str())->second);
@@ -2811,7 +2811,7 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
       op2 = symbol_table.lookup(
           get_var(
               scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                  + ub->getName().str()));
+                  + (ub + 1)->getName().str()));
       exprt2 = op2->symbol_expr();
     }
   }
@@ -6557,8 +6557,7 @@ goto_programt llvm2goto_translator::trans_Shl(const Instruction *I,
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub + 1))) {
     uint64_t val;
     val = cint->getZExtValue();
-    exprt2 = from_integer(val,
-                          unsignedbv_typet(I->getType()->getIntegerBitWidth()));
+    exprt2 = from_integer(val, signed_int_type());
   }
   else {
     if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
@@ -6711,6 +6710,9 @@ goto_programt llvm2goto_translator::trans_LShr(const Instruction *I,
     symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
         + "::" + I->getName().str();
     symbol.type = exprt1.type();
+    var_name_map.insert(
+        std::pair<std::string, std::string>(symbol.name.c_str(),
+                                            symbol.base_name.c_str()));
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();
     decl_add->make_decl();
