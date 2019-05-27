@@ -961,10 +961,11 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
           dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
       ieee_floatt ieee_fl(float_type());
       ieee_fl.from_float(val);
-      exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
-          ->symbol_expr();
-      exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
-                                      float_type());
+//      exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+//          ->symbol_expr();
+//      exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
+//                                      float_type());
+      exprt2 = ieee_fl.to_expr();
     }
     else if (floattype->isDoubleTy()) {
       double val = dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF()
@@ -973,8 +974,8 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
       ieee_fl.from_double(val);
 //      exprt rounding = symbol_table.lookup(
 //          var_name_map.find("__CPROVER_rounding_mode")->second)->symbol_expr();
-      exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
-          ->symbol_expr();
+//      exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+//          ->symbol_expr();
 //      exprt2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
 //                                      double_type());
       exprt2 = ieee_fl.to_expr();
@@ -3038,6 +3039,16 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
         exprt value_to_store = symbol->symbol_expr();
         value_to_store = typecast_exprt(
             value_to_store, symbol_creator::create_type(bci->getType()));
+//        if (value_to_store.type().id() == ID_floatbv
+//            || value_to_store.type().id() == ID_float) {
+//          exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+//              ->symbol_expr();
+//          floatbv_typet temp = to_floatbv_type(value_to_store.type());
+//          if (temp.get_width() == 32) value_to_store = floatbv_typecast_exprt(
+//              value_to_store, rounding, float_type());
+//          if (temp.get_width() == 64) value_to_store = floatbv_typecast_exprt(
+//              value_to_store, rounding, double_type());
+//        }
         errs() << from_expr(value_to_store) << "\n";
         return value_to_store;
       }
@@ -3095,6 +3106,16 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
         value_to_store = typecast_exprt(
             value_to_store, symbol_creator::create_type(bci->getType()));
         value_to_store = dereference_exprt(value_to_store);
+//        if (value_to_store.type().id() == ID_floatbv
+//            || value_to_store.type().id() == ID_float) {
+//          exprt rounding = symbol_table.lookup("__CPROVER_rounding_mode")
+//              ->symbol_expr();
+//          floatbv_typet temp = to_floatbv_type(value_to_store.type());
+//          if (temp.get_width() == 32) value_to_store = floatbv_typecast_exprt(
+//              value_to_store, rounding, float_type());
+//          if (temp.get_width() == 64) value_to_store = floatbv_typecast_exprt(
+//              value_to_store, rounding, double_type());
+//        }
         errs() << from_expr(value_to_store) << "\n";
         return value_to_store;
       }
@@ -3925,9 +3946,9 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       temp = temp.subtype();
     if (temp.id() != ID_struct) assert(
         false && "Akash Trying to get struct out of a non struct pointer type");
-
-    errs()
-        << (to_struct_union_type(temp).components())[index].get_name().c_str();
+//    if (I->getNumOperands() <= 2) temp = comp->type;
+//    errs()
+//        << (to_struct_union_type(temp).components())[index].get_name().c_str();
     if (var_name_map.find(
         get_var(
             scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
@@ -3939,9 +3960,12 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       var_name_map.insert(
           std::pair<std::string, std::string>(symbol.name.c_str(),
                                               symbol.base_name.c_str()));  //akash fixed
-      symbol.type = pointer_typet(
-          (to_struct_union_type(temp).components())[index].type(),
-          config.ansi_c.pointer_width);
+      if (I->getNumOperands() > 2)
+        symbol.type = pointer_typet(
+            (to_struct_union_type(temp).components())[index].type(),
+            config.ansi_c.pointer_width);
+      else
+        symbol.type = comp->type;
 //      symbol.type = array_typet((to_struct_union_type(comp->type).components())[index].type(),
 //          from_integer(index, index_type()));
       symbol_table.add(symbol);
@@ -3965,32 +3989,80 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
                         ->getName().str()))->symbol_expr();
 //    const irep_idt &i_idt =
 //        (to_struct_type(temp).components())[index].get_name();
-    const struct_typet struct_t = to_struct_type(temp);
-    auto component = struct_t.components().at(index);
-    member_exprt member;
-    if (bit_cast_flag
-        || !dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName())
-      member = member_exprt(dereference_exprt(comp_expr), component);
-    else if (gep_symbols.find(
-        symbol_table.lookup(
-            get_var(
-                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                    + dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
-                        ->getName().str()))) != gep_symbols.end()) {
-      member = member_exprt(dereference_exprt(sym_exp), component);
+    if (I->getNumOperands() > 2) {
+      const struct_typet struct_t = to_struct_type(temp);
+      auto component = struct_t.components().at(index);
+      member_exprt member;
+      if (bit_cast_flag
+          || !dyn_cast<GetElementPtrInst>(I)->getPointerOperand()->hasName())
+        member = member_exprt(dereference_exprt(comp_expr), component);
+      else if (gep_symbols.find(
+          symbol_table.lookup(
+              get_var(
+                  scope_name_map.find(I->getDebugLoc()->getScope())->second
+                      + "::"
+                      + dyn_cast<GetElementPtrInst>(I)->getPointerOperand()
+                          ->getName().str()))) != gep_symbols.end()) {
+        member = member_exprt(dereference_exprt(sym_exp), component);
+      }
+      else
+        member = member_exprt(sym_exp, component);
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      std::string full_name = get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + I->getName().str());
+      assgn_inst->code = code_assignt(
+          symbol_table.lookup(full_name)->symbol_expr(),
+          address_of_exprt(member));
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
     }
-    else
-      member = member_exprt(sym_exp, component);
-    goto_programt::targett assgn_inst = gp.add_instruction();
-    assgn_inst->make_assignment();
-    std::string full_name = get_var(
-        scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-            + I->getName().str());
-    assgn_inst->code = code_assignt(
-        symbol_table.lookup(full_name)->symbol_expr(),
-        address_of_exprt(member));
-    assgn_inst->function = irep_idt(I->getFunction()->getName().str());
-    assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+    else {
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      exprt lhs = symbol_table.lookup(
+          get_var(
+              scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                  + I->getName().str()))->symbol_expr();
+      exprt rhs = comp_expr;
+//      if (dyn_cast<LoadInst>(I->getOperand(0))) {
+//        rhs = get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table);
+//      }
+//      else if (I->getOperand(0)->hasName()) {
+//        rhs = symbol_table.lookup(
+//            get_var(
+//                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+//                    + I->getOperand(0)->getName().str()))->symbol_expr();
+//      }
+//      else {
+//        assert(false && "Akash Please handle this Operand Type");
+//      }
+      if (dyn_cast<LoadInst>(I->getOperand(1))) {
+        rhs = plus_exprt(
+            rhs, get_load(dyn_cast<LoadInst>(I->getOperand(1)), symbol_table));
+      }
+      else if (I->getOperand(1)->hasName()) {
+        rhs = plus_exprt(
+            rhs,
+            symbol_table.lookup(
+                get_var(
+                    scope_name_map.find(I->getDebugLoc()->getScope())->second
+                        + "::" + I->getOperand(1)->getName().str()))
+                ->symbol_expr());
+      }
+      else if (dyn_cast<ConstantInt>(I->getOperand(1))) {
+        unsigned index =
+            dyn_cast<ConstantInt>(I->getOperand(1))->getZExtValue();
+        rhs = plus_exprt(rhs, from_integer(index, index_type()));
+      }
+      else {
+        assert(false && "Akash Please handle this Operand Type");
+      }
+      assgn_inst->code = code_assignt(lhs, rhs);
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+    }
   }
   else if (dyn_cast<GetElementPtrInst>(I)->getSourceElementType()->isPointerTy()) {
     if (dyn_cast<GetElementPtrInst>(I)->getNumIndices() == 1) {
@@ -5152,12 +5224,16 @@ exprt llvm2goto_translator::trans_ConstBitCast(
   else
     out_type = symbol_creator::create_type(bci->getDestTy(), is_void_type);
 //  const symbolt *symbol = nullptr;
-  if (I->getOperand(0)->hasName())
-    expr = address_of_exprt(
-        symbol_table.lookup(
-            get_var(
-                scope_name_map.find(DIScp)->second + "::"
-                    + I->getOperand(0)->getName().str()))->symbol_expr());
+  if (I->getOperand(0)->hasName()) {
+    const symbolt *symbol = symbol_table.lookup(
+        get_var(
+            scope_name_map.find(DIScp)->second + "::"
+                + I->getOperand(0)->getName().str()));
+    if (gep_symbols.find(symbol) != gep_symbols.end())
+      expr = symbol->symbol_expr();
+    else
+      expr = address_of_exprt(symbol->symbol_expr());
+  }
   else if (auto *LI = dyn_cast<LoadInst>(I->getOperand(0)))
     expr = get_load(LI, symbol_table);
   else
@@ -5364,9 +5440,7 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
           float val = dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
           ieee_floatt ieee_fl(float_type());
           ieee_fl.from_float(val);
-          ieee_fl.rounding_mode = ieee_floatt::ROUND_TO_ZERO;
-          ieee_fl.spec = ieee_float_spect::single_precision();
-          opnd1 = to_constant_expr(ieee_fl.to_expr());
+          opnd1 = ieee_fl.to_expr();
         }
       }
       if (f2 == 0) {
@@ -5375,9 +5449,11 @@ exprt llvm2goto_translator::trans_Cmp(const Instruction *I,
               .convertToFloat();
           ieee_floatt ieee_fl(float_type());
           ieee_fl.from_double(val);
-//          ieee_fl.rounding_mode = ieee_floatt::ROUND_TO_ZERO;
-//          ieee_fl.spec = ieee_float_spect::single_precision();
-          opnd2 = to_constant_expr(ieee_fl.to_expr());
+//          exprt rounding = symbol_table->lookup("__CPROVER_rounding_mode")
+//              ->symbol_expr();
+//          opnd2 = floatbv_typecast_exprt(ieee_fl.to_expr(), rounding,
+//                                         float_type());
+          opnd2 = ieee_fl.to_expr();
         }
       }
     }
@@ -6177,10 +6253,10 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     const Value *called_val = dyn_cast<CallInst>(I)->getCalledValue();
     const Function *function = dyn_cast<Function>(
         called_val->stripPointerCasts());
-    if (function->getName().str() == "assume"
+    if (function->getName().str() == "__CPROVER_assume"
         || function->getName().str() == "assert") {
       goto_programt::targett ass_inst;
-      if (function->getName().str() == "assume") {
+      if (function->getName().str() == "__CPROVER_assume") {
         ass_inst = gp.add_instruction(ASSUME);
       }
       else {
@@ -7619,10 +7695,10 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
   cmdlinet cmdline;
   config.set(cmdline);
   config.ansi_c.set_64();
-  config.ansi_c.double_width = 32;
   config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_EVEN;
   config.ansi_c.set_c11();
-  config.ansi_c.long_double_width = 64;
+  config.ansi_c.single_precision_constant = true;
+//  config.ansi_c.long_double_width = 64;
 //  config.ansi_c.
 // TODO(Rasika): check for presence of function body
   errs() << "in trans_Program\n";
@@ -7648,8 +7724,6 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     cprover_rounding_mode.name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
     cprover_rounding_mode.type = signed_int_type();
-//    cprover_rounding_mode.type.set("__CPROVER_rounding_mode", 32);
-//    cprover_rounding_mode.type.set
     cprover_rounding_mode.mode = ID_C;
     cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
     var_name_map.insert(
