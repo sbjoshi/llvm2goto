@@ -329,8 +329,15 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
   }
   struct_typet sut;
   struct_typet::componentst &components = sut.components();
-  DICompositeType *md = dyn_cast<DICompositeType>(
-      dyn_cast<DIVariable>(mdn)->getType());
+  DIType *temp = dyn_cast<DIType>(dyn_cast<DIVariable>(mdn)->getType());
+  while (!dyn_cast<DICompositeType>(temp)) {
+    if (dyn_cast<DIDerivedType>(temp))
+      temp = dyn_cast<DIType>(dyn_cast<DIDerivedType>(temp)->getBaseType());
+    else
+      assert(
+          false && "Akash Expected DICompositeType to be present for Struct!");
+  }
+  DICompositeType *md = dyn_cast<DICompositeType>(temp);
   DINodeArray Fields = md->getElements();
   int i = 0;
   for (StructType::element_iterator e = dyn_cast<StructType>(type)
