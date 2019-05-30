@@ -255,6 +255,9 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
   else if (type->getIntegerBitWidth() == 8) {
     variable.type = signed_char_type();
   }
+  else if (type->getIntegerBitWidth() == 64) {
+    variable.type = signed_long_int_type();
+  }
   else {
     variable.type = signed_int_type();
   }
@@ -1324,6 +1327,9 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
       }
       else if (type->getIntegerBitWidth() == 8) {
         ele_type = signed_char_type();
+      }
+      else if (type->getIntegerBitWidth() == 64) {
+        ele_type = signed_long_int_type();
       }
       else {
         ele_type = signed_int_type();

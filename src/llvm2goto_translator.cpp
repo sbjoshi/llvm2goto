@@ -4264,6 +4264,13 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
 //   exprt1 = op1.symbol_expr();
 // }
     }
+    else if (const PtrToIntInst *pi = dyn_cast<PtrToIntInst>(*ub)) {
+      auto name_of_var = get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + pi->getOperand(0)->getName().str());
+      exprt1 = address_of_exprt(
+          symbol_table.lookup(name_of_var)->symbol_expr());
+    }
     else {
       op1 = symbol_table.lookup(
           get_var(
@@ -5214,11 +5221,83 @@ goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
  Purpose: Map llvm::Instruction::PtrToInt to corresponding goto instruction.
 
  \*******************************************************************/
-goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_PtrToInt(
+    const Instruction *I, symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "PtrToInt is yet to be mapped \n");
+  const symbolt *op1;
+  exprt exprt1;
+  typet dest_type;
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    // default type unsigned.
+    exprt1 = from_integer(val, signedbv_typet(config.ansi_c.int_width));
+  }
+  else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      li->getOperand(0)->dump();
+      exprt1 = get_load(li, symbol_table, &op1);
+    }
+    else {
+      op1 = symbol_table.lookup(
+          get_var(
+              scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                  + ub->getName().str()));
+      if (gep_symbols.find(op1) != gep_symbols.end())
+        exprt1 = op1->symbol_expr();
+      else
+        exprt1 = address_of_exprt(op1->symbol_expr());
+    }
+  }
+
+  source_locationt location;
+  if (I->hasMetadata()) {
+    if (&(I->getDebugLoc()) != NULL) {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(
+          loc->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+  }
+
+  if (var_name_map.find(
+      get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + I->getName().str())) == var_name_map.end()) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+        + "::" + I->getName().str();
+    var_name_map.insert(
+        std::pair<std::string, std::string>(symbol.name.c_str(),
+                                            symbol.base_name.c_str()));  //akash fixed
+    symbol.type = unsigned_int_type();
+    dest_type = symbol.type;
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code = code_declt(symbol.symbol_expr());
+    decl_add->function = irep_idt(I->getFunction()->getName().str());
+    decl_add->source_location = location;
+  }
+  const symbolt *result = symbol_table.lookup(
+      get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + I->getName().str()));
+  goto_programt::targett sitofp_inst = gp.add_instruction();
+  sitofp_inst->make_assignment();
+  typecast_exprt tce(exprt1, dest_type);
+  sitofp_inst->code = code_assignt(result->symbol_expr(), tce);
+  sitofp_inst->function = irep_idt(I->getFunction()->getName().str());
+  sitofp_inst->source_location = location;
+  sitofp_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
-}/*******************************************************************
+}
+
+/*******************************************************************
  Function: llvm2goto_translator::trans_BitCast
 
  Inputs:
@@ -7519,7 +7598,7 @@ goto_programt llvm2goto_translator::trans_instruction(
       break;
     }
     case Instruction::PtrToInt: {
-      gp = trans_PtrToInt(Inst);
+      gp = trans_PtrToInt(Inst, *symbol_table);
       break;
     }
     case Instruction::BitCast: {
