@@ -4650,11 +4650,11 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
           && "This type conversion is lossy.");
   goto_programt gp;
   typet dest_type;
-  if (dyn_cast<FPTruncInst>(I)->getDestTy()->isFloatTy()) {
-    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+  if (dyn_cast<FPExtInst>(I)->getDestTy()->isFloatTy()) {
+    dest_type = float_type();
   }
-  else if (dyn_cast<FPTruncInst>(I)->getDestTy()->isDoubleTy()) {
-    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+  else if (dyn_cast<FPExtInst>(I)->getDestTy()->isDoubleTy()) {
+    dest_type = double_type();
   }
   else {
     assert(false && "This floattype is not handled");
@@ -6561,7 +6561,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
         li->getOperand(0)->dump();
         expr = get_load(li, *symbol_table, &expr_symbol);
-        used_load_inst = true;
         // expr = symbol_table->lookup(var_name_map.find(
         //          li->getOperand(0)->getName().str())->second).symbol_expr();
       }
@@ -7736,11 +7735,12 @@ void llvm2goto_translator::set_branches(
       goto_programt::targett then_part;
       exprt guard;
       if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
-        guard = not_exprt(
-            trans_Cmp(
-                dyn_cast<Instruction>(
-                    dyn_cast<BranchInst>((*i).first)->getCondition()),
-                symbol_table));
+        auto temp = dyn_cast<Instruction>(
+            dyn_cast<BranchInst>((*i).first)->getCondition());
+        if (dyn_cast<CmpInst>(temp))
+          guard = not_exprt(trans_Cmp(temp, symbol_table));
+        else if (auto phi = dyn_cast<PHINode>(temp)) guard = not_exprt(
+            get_PHI(phi, *symbol_table));
       }
       else {
         guard = true_exprt();
