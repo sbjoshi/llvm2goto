@@ -3883,7 +3883,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
             + I->getName().str());
     bool need_deref_flag = true;
     Value* index_operand;
-    if (dyn_cast<ConstantInt>(I->getOperand(1))->getZExtValue()) {
+    if (I->getNumOperands() == 2) {
       need_deref_flag = false;
       index_operand = I->getOperand(1);
     }
@@ -6551,7 +6551,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         p_it != to_code_type(symbol.type).parameters().end(); p_it++) {
       exprt expr;
       const symbolt *expr_symbol = nullptr;
-      bool used_load_inst = false;
       if (dyn_cast<ConstantInt>(*ub)) {
         uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
         // TODO(Rasika) : get type parameters.
