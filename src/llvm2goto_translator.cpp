@@ -8027,20 +8027,20 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
             dstringt(F.getName()), goto_functionst::goto_functiont()));
   }
 // symbol_table.show(std::cout);
-  for (Function &F : *M) {
-    unsigned i = 0;
-    for (BasicBlock &B : F) {
-      for (Instruction &I : B) {
-        if (I.getOpcode() == Instruction::PHI) {
-          if (!I.hasName()) {
-            I.setName("_phi_" + std::to_string(i));
-            i++;
-          }
-        }
-      }
-    }
-    // F.dump();
-  }
+//  for (Function &F : *M) {
+//    unsigned i = 0;
+//    for (BasicBlock &B : F) {
+//      for (Instruction &I : B) {
+//        if (I.getOpcode() == Instruction::PHI) {
+////          if (!I.hasName()) {
+////            I.setName("_phi_" + std::to_string(i));
+////            i++;
+////          }
+//        }
+//      }
+//    }
+//    // F.dump();
+//  }
 // assert(false);
   for (Function &F : *M) {
     if (!F.getName().str().compare("nondet_int")
