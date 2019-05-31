@@ -1631,10 +1631,10 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F) {
     ct.parameters() = para;
     if (&*md->getTypeArray()[0] != NULL) {
       DIType *mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
-      mdn = dyn_cast<DIType>(&*md->getTypeArray()[0]);
       ft->getReturnType();
-      DIType *ditype = dyn_cast<DIType>(mdn);
-      ct.return_type() = create_type(ft->getReturnType(), ditype);
+      while (mdn->getTag() == dwarf::DW_TAG_typedef)
+        mdn = dyn_cast<DIType>(dyn_cast<DIDerivedType>(mdn)->getBaseType());
+      ct.return_type() = create_type(ft->getReturnType(), mdn);
     }
     else {
       ct.return_type() = void_typet();
