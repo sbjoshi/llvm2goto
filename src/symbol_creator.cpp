@@ -262,6 +262,8 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
     variable.type = signed_int_type();
   }
   DIType *type1 = dyn_cast<DIType>(dyn_cast<DIVariable>(mdn)->getType());
+  while (type1->getTag() == dwarf::DW_TAG_typedef)
+    type1 = dyn_cast<DIType>(dyn_cast<DIDerivedType>(type1)->getBaseType());
 //  while (dyn_cast<DIDerivedType>(type1)) {
 //    type1 = dyn_cast<DIType>(
 //        &(*(dyn_cast<DIDerivedType>(type1)->getBaseType())));
@@ -333,13 +335,9 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
   struct_typet sut;
   struct_typet::componentst &components = sut.components();
   DIType *temp = dyn_cast<DIType>(dyn_cast<DIVariable>(mdn)->getType());
-  while (!dyn_cast<DICompositeType>(temp)) {
-    if (dyn_cast<DIDerivedType>(temp))
-      temp = dyn_cast<DIType>(dyn_cast<DIDerivedType>(temp)->getBaseType());
-    else
-      assert(
-          false && "Akash Expected DICompositeType to be present for Struct!");
-  }
+  while (temp->getTag() == dwarf::DW_TAG_typedef)
+    temp = dyn_cast<DIType>(dyn_cast<DIDerivedType>(temp)->getBaseType());
+
   DICompositeType *md = dyn_cast<DICompositeType>(temp);
   DINodeArray Fields = md->getElements();
   int i = 0;
@@ -556,6 +554,8 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
 struct_union_typet symbol_creator::create_struct_union_type(
     Type *type, const llvm::DIType *md) {
   struct_union_typet sut(ID_struct);
+  while (md->getTag() == dwarf::DW_TAG_typedef)
+    md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
   struct_union_typet::componentst &components = sut.components();
   DINodeArray Fields = dyn_cast<DICompositeType>(md)->getElements();
   int i = 0;
@@ -757,6 +757,8 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn) {
   exprt size = from_integer(type->getArrayNumElements(), size_type());
   errs() << "1\n";
   DIType *md = dyn_cast<DIType>(dyn_cast<DIVariable>(mdn)->getType());
+  while (md->getTag() == dwarf::DW_TAG_typedef)
+    md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
   md->dump();
   errs() << "2\n";
   array_typet arrt(create_array_type(type, dyn_cast<DIType>(md)), size);
@@ -790,6 +792,8 @@ symbolt symbol_creator::create_ArrayTy(Type *type, MDNode *mdn) {
 
  \*******************************************************************/
 typet symbol_creator::create_array_type(Type *type, llvm::DIType *md) {
+  while (md->getTag() == dwarf::DW_TAG_typedef)
+    md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
   md->dump();
   type->dump();
   dyn_cast<ArrayType>(type)->dump();
@@ -982,6 +986,8 @@ symbolt symbol_creator::create_PointerTy(Type *type, MDNode *mdn) {
   }
   DIDerivedType *md = dyn_cast<DIDerivedType>(
       dyn_cast<DIVariable>(mdn)->getType());
+  while (md->getTag() == dwarf::DW_TAG_typedef)
+    md = dyn_cast<DIDerivedType>(md->getBaseType());
   typet ele_type = create_pointer_type(type, dyn_cast<DIType>(md));
 
   pointer_typet pt(ele_type, config.ansi_c.pointer_width);  /// TODO(Rasika) : set proper value.
@@ -1007,7 +1013,11 @@ symbolt symbol_creator::create_PointerTy(Type *type, MDNode *mdn) {
 
  \*******************************************************************/
 typet symbol_creator::create_pointer_type(Type *type, llvm::DIType *md) {
+  while (md->getTag() == dwarf::DW_TAG_typedef)
+    md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
   md->dump();
+  while (md->getTag() == dwarf::DW_TAG_typedef)
+    md = dyn_cast<DIType>(dyn_cast<DIDerivedType>(md)->getBaseType());
   typet ele_type;
   switch (dyn_cast<PointerType>(type)->getPointerElementType()->getTypeID()) {
     // 16-bit floating point type
@@ -1246,6 +1256,8 @@ symbolt symbol_creator::create_VoidTy(Type *type, MDNode *mdn) {
 }
 
 typet symbol_creator::create_Function_Ptr(FunctionType *ft, const DIType *mdn) {
+  while (mdn->getTag() == dwarf::DW_TAG_typedef)
+    mdn = dyn_cast<DIType>(dyn_cast<DIDerivedType>(mdn)->getBaseType());
   code_typet ct = code_typet();
   code_typet::parameterst para;
   const DISubroutineType *md;
@@ -1289,6 +1301,8 @@ typet symbol_creator::create_Function_Ptr(FunctionType *ft, const DIType *mdn) {
 
  \*******************************************************************/
 typet symbol_creator::create_type(Type *type, DIType *mdn) {
+  while (mdn->getTag() == dwarf::DW_TAG_typedef)
+    mdn = dyn_cast<DIType>(dyn_cast<DIDerivedType>(mdn)->getBaseType());
   typet ele_type;
   switch (type->getTypeID()) {
     // 16-bit floating point type
@@ -1334,12 +1348,11 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
       else {
         ele_type = signed_int_type();
       }
-      DIType *type1 = mdn;
 //      while (dyn_cast<DIDerivedType>(type1)) {
 //        type1 = dyn_cast<DIType>(
 //            &(*(dyn_cast<DIDerivedType>(type1)->getBaseType())));
 //      }
-      int encoding = get_encoding(type1);
+      int encoding = get_encoding(mdn);
       switch (encoding) {
         case dwarf::DW_ATE_signed: {
           ele_type = signed_int_type();
