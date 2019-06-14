@@ -6223,14 +6223,17 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
 
   if (auto load_func = dyn_cast<LoadInst>(
       I->getOperand(I->getNumOperands() - 1))) {
-    code_function_callt call;
-    const symbolt *symbol = nullptr;
-    exprt func = get_load(load_func, *symbol_table, &symbol);
-    call.function() = symbol->symbol_expr();
-    code_typet func__code_type = to_code_type(
-        to_pointer_type(symbol->type).subtype());
+    exprt func = get_load(load_func, *symbol_table);
+
+    std::set<const symbolt *> actual_symbols;
+    std::set<code_function_callt> func_calls;
+    for (auto a : *symbol_table)
+      if (a.second.type == func.type().subtype()) {
+        actual_symbols.insert(symbol_table->lookup(a.second.name));
+      }
+    code_typet func__code_type = to_code_type((*actual_symbols.begin())->type);
+    symbolt ret;
     if (func__code_type.return_type() != empty_typet()) {
-      symbolt ret;
       ret.base_name = I->getName().str();
       ret.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
           + "::" + I->getName().str();
@@ -6242,39 +6245,67 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       goto_programt::targett decl_ret = gp.add_instruction();
       decl_ret->make_decl();
       decl_ret->code = code_declt(ret.symbol_expr());
-      call.lhs() = ret.symbol_expr();
     }
-    llvm::User::const_value_op_iterator ub = I->value_op_begin();
-    for (code_typet::parameterst::const_iterator p_it = func__code_type
-        .parameters().begin(); p_it != func__code_type.parameters().end();
-        p_it++) {
-      exprt expr;
-      if (dyn_cast<ConstantInt>(*ub)) {
-        uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
-        // TODO(Rasika) : get type parameters.
-        typet type = unsignedbv_typet(config.ansi_c.int_width);
-        dyn_cast<ConstantInt>(*ub)->getType()->dump();
-        expr = from_integer(val, type);
+
+    for (auto func_sym : actual_symbols) {
+      code_function_callt call;
+      call.function() = func_sym->symbol_expr();
+      call.lhs() = symbol_table->lookup(ret.name)->symbol_expr();
+      llvm::User::const_value_op_iterator ub = I->value_op_begin();
+      for (code_typet::parameterst::const_iterator p_it = func__code_type
+          .parameters().begin(); p_it != func__code_type.parameters().end();
+          p_it++) {
+        exprt expr;
+        if (dyn_cast<ConstantInt>(*ub)) {
+          uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
+          // TODO(Rasika) : get type parameters.
+          typet type = unsignedbv_typet(config.ansi_c.int_width);
+          dyn_cast<ConstantInt>(*ub)->getType()->dump();
+          expr = from_integer(val, type);
+        }
+        else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+          li->getOperand(0)->dump();
+          expr = get_load(li, *symbol_table);
+          // expr = symbol_table->lookup(var_name_map.find(
+          //          li->getOperand(0)->getName().str())->second).symbol_expr();
+        }
+        else {
+          expr = symbol_table->lookup(
+              get_var(
+                  scope_name_map.find(I->getDebugLoc()->getScope())->second
+                      + "::" + ub->getName().str()))->symbol_expr();
+        }
+        call.arguments().push_back(expr);
+        ub++;
       }
-      else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
-        li->getOperand(0)->dump();
-        expr = get_load(li, *symbol_table);
-        // expr = symbol_table->lookup(var_name_map.find(
-        //          li->getOperand(0)->getName().str())->second).symbol_expr();
-      }
-      else {
-        expr = symbol_table->lookup(
-            get_var(
-                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                    + ub->getName().str()))->symbol_expr();
-      }
-      call.arguments().push_back(expr);
-      ub++;
+      func_calls.insert(call);
+      errs() << "Akash here\n";
     }
-    goto_programt::targett call_inst = gp.add_instruction();
-    call_inst->make_function_call(call);
+    std::vector<goto_programt::targett> cond_targets;
+    std::vector<goto_programt::targett> func_targets;
+    std::vector<goto_programt::targett> goto_end_targets;
+    for (auto actual_func_call : func_calls) {
+      goto_programt::targett temp = gp.add_instruction();
+      cond_targets.push_back(temp);
+    }
+    for (auto actual_func_call : func_calls) {
+      goto_programt::targett temp = gp.add_instruction();
+      func_targets.push_back(temp);
+      goto_programt::targett temp2 = gp.add_instruction();
+      goto_end_targets.push_back(temp2);
+    }
+    goto_programt::targett end = gp.add_instruction();
+    end->make_skip();
+    int i = 0;
+    for (auto actual_func_call : func_calls) {
+      func_targets[i]->make_function_call(actual_func_call);
+      cond_targets[i]->make_goto(
+          func_targets[i],
+          equal_exprt(func, address_of_exprt(actual_func_call.function())));
+      goto_end_targets[i]->make_goto(end, true_exprt());
+      i++;
+    }
     return gp;
-    errs() << "Akash here\n";
   }
 
   if (const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I)) {
