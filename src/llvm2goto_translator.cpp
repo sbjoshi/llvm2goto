@@ -3756,7 +3756,6 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
       comp_var_full_name = var_name_map.find(name_of_composite_var)->first;
     }
     comp = symbol_table.lookup(comp_var_full_name);
-    comp_expr = comp->symbol_expr();
   }
   else if (const BitCastInst *bci = dyn_cast<BitCastInst>(
       dyn_cast<GetElementPtrInst>(I)->getPointerOperand())) {
@@ -3836,7 +3835,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
         }
       }
       else {
-        if (comp->type.id() == ID_pointer && I->getNumOperands() > 2) {
+        if (comp->type.id() == ID_pointer) {
           symbol.type = pointer_typet(comp->type.subtype().subtype(),
                                       config.ansi_c.pointer_width);
         }
@@ -3881,6 +3880,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     std::string full_name = get_var(
         scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
             + I->getName().str());
+
     bool need_deref_flag = true;
     Value* index_operand;
     if (I->getNumOperands() == 2) {
@@ -3889,6 +3889,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
     }
     else
       index_operand = I->getOperand(2);
+
     exprt array_index_expr;
     if (dyn_cast<ConstantInt>(index_operand)) {
       unsigned index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
@@ -3928,22 +3929,15 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
           address_of_exprt(index_exprt(array_expr, array_index_expr)));
     }
     else {
-      exprt expr_temp_1;
-      if (!need_deref_flag) {
-        expr_temp_1 = plus_exprt(array_expr, array_index_expr);
-        assgn_inst->code = code_assignt(
-            symbol_table.lookup(full_name)->symbol_expr(), expr_temp_1);
-      }
-      else {
-        expr_temp_1 = dereference_exprt(array_expr);
 
-        exprt expr_temp_2 = index_exprt(expr_temp_1, array_index_expr);
+      exprt expr_temp_1 = dereference_exprt(array_expr);
 
-        exprt expr_temp_3 = address_of_exprt(expr_temp_2);
+      exprt expr_temp_2 = index_exprt(expr_temp_1, array_index_expr);
 
-        assgn_inst->code = code_assignt(
-            symbol_table.lookup(full_name)->symbol_expr(), expr_temp_3);
-      }
+      exprt expr_temp_3 = address_of_exprt(expr_temp_2);
+
+      assgn_inst->code = code_assignt(
+          symbol_table.lookup(full_name)->symbol_expr(), expr_temp_3);
     }
 
     if (!(I->getName().str().compare("___temp_getelementptr"))) {
@@ -7933,9 +7927,6 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     cprover_rounding_mode.type = signed_int_type();
     cprover_rounding_mode.mode = ID_C;
     cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
-    cprover_rounding_mode.is_thread_local = true;
-    cprover_rounding_mode.is_static_lifetime = true;
-    cprover_rounding_mode.is_lvalue = true;
     var_name_map.insert(
         std::pair<std::string, std::string>(
             cprover_rounding_mode.name.c_str(),
