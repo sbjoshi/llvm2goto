@@ -1,3 +1,4 @@
+#define N 5
 void insertionSort(int arr[], int n)
 {
    int i, key, j;
@@ -17,8 +18,7 @@ void insertionSort(int arr[], int n)
 
 int main()
 {
-  int N  = 5 ;
-  int arr[N];
+  int arr[5];
 
   insertionSort(arr, N);
 
