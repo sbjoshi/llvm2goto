@@ -113,7 +113,8 @@ class llvm2goto_translatort {
   virtual goto_programt trans_SIToFP(const Instruction *I,
                                      symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_IntToPtr(const Instruction *I) = 0;
-  virtual goto_programt trans_PtrToInt(const Instruction *I) = 0;
+  virtual goto_programt trans_PtrToInt(const Instruction *I,
+                                       symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_BitCast(const Instruction *I) = 0;
   virtual goto_programt trans_AddrSpaceCast(const Instruction *I) = 0;
   virtual exprt trans_Cmp(const Instruction *I,
@@ -124,10 +125,8 @@ class llvm2goto_translatort {
                                    symbol_tablet *symbol_table) = 0;
   virtual goto_programt trans_FCmp(const Instruction *I,
                                    symbol_tablet *symbol_table) = 0;
-  virtual goto_programt trans_PHI(
-      const Instruction *I, symbol_tablet *symbol_table,
-      std::map<const BasicBlock*, goto_programt::targett> block_target_map,
-      goto_programt &g_prog) = 0;
+  virtual goto_programt get_PHI(const PHINode *I,
+                                symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_Select(const Instruction *I) = 0;
   virtual goto_programt trans_Call(const Instruction *I,
                                    symbol_tablet *symbol_table) = 0;
