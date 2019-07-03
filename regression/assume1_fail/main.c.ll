@@ -11,7 +11,7 @@ entry:
   %0 = load i32, i32* %x, align 4, !dbg !13
   %cmp = icmp sge i32 %0, 0, !dbg !14
   %conv = zext i1 %cmp to i32, !dbg !14
-  %call = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv), !dbg !15
+  %call = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv), !dbg !15
   %1 = load i32, i32* %x, align 4, !dbg !16
   %cmp1 = icmp sle i32 %1, -1, !dbg !17
   %conv2 = zext i1 %cmp1 to i32, !dbg !17
@@ -19,7 +19,7 @@ entry:
   %2 = load i32, i32* %x, align 4, !dbg !19
   %cmp4 = icmp eq i32 %2, 1, !dbg !20
   %conv5 = zext i1 %cmp4 to i32, !dbg !20
-  %call6 = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv5), !dbg !21
+  %call6 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv5), !dbg !21
   %3 = load i32, i32* %x, align 4, !dbg !22
   %cmp7 = icmp ne i32 %3, 1, !dbg !23
   %conv8 = zext i1 %cmp7 to i32, !dbg !23
@@ -30,7 +30,7 @@ entry:
 ; Function Attrs: nounwind readnone speculatable
 declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
-declare dso_local i32 @assume(...) #2
+declare dso_local i32 @__CPROVER_assume(...) #2
 
 declare dso_local i32 @assert(...) #2
 
@@ -55,14 +55,14 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !10 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
 !11 = !DILocalVariable(name: "x", scope: !7, file: !1, line: 3, type: !10)
 !12 = !DILocation(line: 3, column: 7, scope: !7)
-!13 = !DILocation(line: 5, column: 10, scope: !7)
-!14 = !DILocation(line: 5, column: 11, scope: !7)
+!13 = !DILocation(line: 5, column: 20, scope: !7)
+!14 = !DILocation(line: 5, column: 21, scope: !7)
 !15 = !DILocation(line: 5, column: 3, scope: !7)
 !16 = !DILocation(line: 6, column: 10, scope: !7)
 !17 = !DILocation(line: 6, column: 11, scope: !7)
 !18 = !DILocation(line: 6, column: 3, scope: !7)
-!19 = !DILocation(line: 11, column: 10, scope: !7)
-!20 = !DILocation(line: 11, column: 11, scope: !7)
+!19 = !DILocation(line: 11, column: 20, scope: !7)
+!20 = !DILocation(line: 11, column: 21, scope: !7)
 !21 = !DILocation(line: 11, column: 3, scope: !7)
 !22 = !DILocation(line: 12, column: 10, scope: !7)
 !23 = !DILocation(line: 12, column: 11, scope: !7)

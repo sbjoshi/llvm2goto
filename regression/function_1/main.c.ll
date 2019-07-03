@@ -17,7 +17,6 @@ define dso_local i32 @main() #0 !dbg !16 {
 entry:
   %retval = alloca i32, align 4
   %x = alloca i32, align 4
-  %test = alloca double, align 8
   store i32 0, i32* %retval, align 4
   call void @llvm.dbg.declare(metadata i32* %x, metadata !20, metadata !DIExpression()), !dbg !21
   store i32 2, i32* %x, align 4, !dbg !21
@@ -53,18 +52,11 @@ if.then4:                                         ; preds = %if.end2
   br label %if.end6, !dbg !39
 
 if.end6:                                          ; preds = %if.then4, %if.end2
-  call void @llvm.dbg.declare(metadata double* %test, metadata !40, metadata !DIExpression()), !dbg !41
-  store double 2.000000e+00, double* %test, align 8, !dbg !41
-  %4 = load double, double* @d, align 8, !dbg !42
-  %5 = load double, double* %test, align 8, !dbg !43
-  %cmp7 = fcmp oeq double %4, %5, !dbg !44
-  %conv = zext i1 %cmp7 to i32, !dbg !44
-  %call8 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv), !dbg !45
-  %6 = load double, double* @d, align 8, !dbg !46
-  %cmp9 = fcmp oeq double %6, 2.000000e+00, !dbg !47
-  %conv10 = zext i1 %cmp9 to i32, !dbg !47
-  %call11 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv10), !dbg !48
-  ret i32 0, !dbg !49
+  %4 = load double, double* @d, align 8, !dbg !40
+  %cmp7 = fcmp oeq double %4, 2.000000e+00, !dbg !41
+  %conv = zext i1 %cmp7 to i32, !dbg !41
+  %call8 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv), !dbg !42
+  ret i32 0, !dbg !43
 }
 
 ; Function Attrs: nounwind readnone speculatable
@@ -122,13 +114,7 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !37 = !DILocation(line: 24, column: 6, scope: !16)
 !38 = !DILocation(line: 25, column: 5, scope: !35)
 !39 = !DILocation(line: 25, column: 4, scope: !35)
-!40 = !DILocalVariable(name: "test", scope: !16, file: !3, line: 26, type: !6)
-!41 = !DILocation(line: 26, column: 10, scope: !16)
-!42 = !DILocation(line: 27, column: 10, scope: !16)
-!43 = !DILocation(line: 27, column: 15, scope: !16)
-!44 = !DILocation(line: 27, column: 12, scope: !16)
-!45 = !DILocation(line: 27, column: 3, scope: !16)
-!46 = !DILocation(line: 28, column: 10, scope: !16)
-!47 = !DILocation(line: 28, column: 12, scope: !16)
-!48 = !DILocation(line: 28, column: 3, scope: !16)
-!49 = !DILocation(line: 29, column: 3, scope: !16)
+!40 = !DILocation(line: 26, column: 10, scope: !16)
+!41 = !DILocation(line: 26, column: 12, scope: !16)
+!42 = !DILocation(line: 26, column: 3, scope: !16)
+!43 = !DILocation(line: 27, column: 3, scope: !16)

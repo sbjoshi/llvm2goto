@@ -1,5 +1,5 @@
-; ModuleID = 'akash_test2/main.c'
-source_filename = "akash_test2/main.c"
+; ModuleID = 'equality_through_array3/main.c'
+source_filename = "equality_through_array3/main.c"
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
@@ -59,43 +59,53 @@ entry:
   call void @llvm.dbg.declare(metadata i32* %x, metadata !46, metadata !DIExpression()), !dbg !47
   call void @llvm.dbg.declare(metadata i32* %y, metadata !48, metadata !DIExpression()), !dbg !49
   %0 = load i32, i32* %x, align 4, !dbg !50
-  %cmp = icmp sge i32 %0, 0, !dbg !51
-  %conv = zext i1 %cmp to i32, !dbg !51
-  %call = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv), !dbg !52
+  %cmp = icmp sle i32 0, %0, !dbg !51
+  br i1 %cmp, label %land.rhs, label %land.end, !dbg !52
+
+land.rhs:                                         ; preds = %entry
   %1 = load i32, i32* %x, align 4, !dbg !53
   %cmp1 = icmp slt i32 %1, 10, !dbg !54
-  %conv2 = zext i1 %cmp1 to i32, !dbg !54
-  %call3 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv2), !dbg !55
-  %2 = load i32, i32* %y, align 4, !dbg !56
-  %cmp4 = icmp sle i32 0, %2, !dbg !57
-  %conv5 = zext i1 %cmp4 to i32, !dbg !57
-  %call6 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv5), !dbg !58
-  %3 = load i32, i32* %y, align 4, !dbg !59
-  %cmp7 = icmp slt i32 %3, 10, !dbg !60
-  %conv8 = zext i1 %cmp7 to i32, !dbg !60
-  %call9 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv8), !dbg !61
-  %4 = load i32, i32* %x, align 4, !dbg !62
-  %5 = load i32, i32* %y, align 4, !dbg !63
-  %add = add nsw i32 %4, %5, !dbg !64
-  %cmp10 = icmp slt i32 %add, 10, !dbg !65
-  %conv11 = zext i1 %cmp10 to i32, !dbg !65
-  %call12 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv11), !dbg !66
-  %6 = load i32, i32* %x, align 4, !dbg !67
-  %idxprom = sext i32 %6 to i64, !dbg !68
-  %arrayidx = getelementptr inbounds [10 x i32], [10 x i32]* %a, i64 0, i64 %idxprom, !dbg !68
-  %7 = load i32, i32* %arrayidx, align 4, !dbg !68
-  %8 = load i32, i32* %y, align 4, !dbg !69
-  %idxprom13 = sext i32 %8 to i64, !dbg !70
-  %arrayidx14 = getelementptr inbounds [10 x i32], [10 x i32]* %a, i64 0, i64 %idxprom13, !dbg !70
-  %9 = load i32, i32* %arrayidx14, align 4, !dbg !70
-  %add15 = add nsw i32 %7, %9, !dbg !71
-  %10 = load i32, i32* %x, align 4, !dbg !72
-  %11 = load i32, i32* %y, align 4, !dbg !73
-  %add16 = add nsw i32 %10, %11, !dbg !74
-  %cmp17 = icmp eq i32 %add15, %add16, !dbg !75
-  %conv18 = zext i1 %cmp17 to i32, !dbg !75
-  %call19 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv18), !dbg !76
-  ret i32 1, !dbg !77
+  br label %land.end
+
+land.end:                                         ; preds = %land.rhs, %entry
+  %2 = phi i1 [ false, %entry ], [ %cmp1, %land.rhs ], !dbg !55
+  %land.ext = zext i1 %2 to i32, !dbg !52
+  %call = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %land.ext), !dbg !56
+  %3 = load i32, i32* %y, align 4, !dbg !57
+  %cmp2 = icmp sle i32 0, %3, !dbg !58
+  br i1 %cmp2, label %land.rhs3, label %land.end5, !dbg !59
+
+land.rhs3:                                        ; preds = %land.end
+  %4 = load i32, i32* %y, align 4, !dbg !60
+  %cmp4 = icmp slt i32 %4, 10, !dbg !61
+  br label %land.end5
+
+land.end5:                                        ; preds = %land.rhs3, %land.end
+  %5 = phi i1 [ false, %land.end ], [ %cmp4, %land.rhs3 ], !dbg !55
+  %land.ext6 = zext i1 %5 to i32, !dbg !59
+  %call7 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %land.ext6), !dbg !62
+  %6 = load i32, i32* %x, align 4, !dbg !63
+  %7 = load i32, i32* %y, align 4, !dbg !64
+  %add = add nsw i32 %6, %7, !dbg !65
+  %cmp8 = icmp slt i32 %add, 10, !dbg !66
+  %conv = zext i1 %cmp8 to i32, !dbg !66
+  %call9 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv), !dbg !67
+  %8 = load i32, i32* %x, align 4, !dbg !68
+  %idxprom = sext i32 %8 to i64, !dbg !69
+  %arrayidx = getelementptr inbounds [10 x i32], [10 x i32]* %a, i64 0, i64 %idxprom, !dbg !69
+  %9 = load i32, i32* %arrayidx, align 4, !dbg !69
+  %10 = load i32, i32* %y, align 4, !dbg !70
+  %idxprom10 = sext i32 %10 to i64, !dbg !71
+  %arrayidx11 = getelementptr inbounds [10 x i32], [10 x i32]* %a, i64 0, i64 %idxprom10, !dbg !71
+  %11 = load i32, i32* %arrayidx11, align 4, !dbg !71
+  %add12 = add nsw i32 %9, %11, !dbg !72
+  %12 = load i32, i32* %x, align 4, !dbg !73
+  %13 = load i32, i32* %y, align 4, !dbg !74
+  %add13 = add nsw i32 %12, %13, !dbg !75
+  %cmp14 = icmp eq i32 %add12, %add13, !dbg !76
+  %conv15 = zext i1 %cmp14 to i32, !dbg !76
+  %call16 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv15), !dbg !77
+  ret i32 1, !dbg !78
 }
 
 declare dso_local i32 @__CPROVER_assume(...) #2
@@ -111,7 +121,7 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !llvm.ident = !{!6}
 
 !0 = distinct !DICompileUnit(language: DW_LANG_C99, file: !1, producer: "clang version 8.0.0 ", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !2, nameTableKind: None)
-!1 = !DIFile(filename: "akash_test2/main.c", directory: "/home/akash/Documents/CBMC/cbmc/src/llvm2goto/regression")
+!1 = !DIFile(filename: "equality_through_array3/main.c", directory: "/home/akash/Documents/CBMC/cbmc/src/llvm2goto/regression")
 !2 = !{}
 !3 = !{i32 2, !"Dwarf Version", i32 4}
 !4 = !{i32 2, !"Debug Info Version", i32 3}
@@ -160,31 +170,32 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !47 = !DILocation(line: 16, column: 7, scope: !36)
 !48 = !DILocalVariable(name: "y", scope: !36, file: !1, line: 17, type: !11)
 !49 = !DILocation(line: 17, column: 7, scope: !36)
-!50 = !DILocation(line: 19, column: 20, scope: !36)
+!50 = !DILocation(line: 19, column: 25, scope: !36)
 !51 = !DILocation(line: 19, column: 22, scope: !36)
-!52 = !DILocation(line: 19, column: 3, scope: !36)
-!53 = !DILocation(line: 20, column: 20, scope: !36)
-!54 = !DILocation(line: 20, column: 22, scope: !36)
-!55 = !DILocation(line: 20, column: 3, scope: !36)
-!56 = !DILocation(line: 21, column: 25, scope: !36)
-!57 = !DILocation(line: 21, column: 22, scope: !36)
-!58 = !DILocation(line: 21, column: 3, scope: !36)
-!59 = !DILocation(line: 22, column: 20, scope: !36)
-!60 = !DILocation(line: 22, column: 22, scope: !36)
-!61 = !DILocation(line: 22, column: 3, scope: !36)
-!62 = !DILocation(line: 23, column: 21, scope: !36)
-!63 = !DILocation(line: 23, column: 25, scope: !36)
-!64 = !DILocation(line: 23, column: 23, scope: !36)
-!65 = !DILocation(line: 23, column: 28, scope: !36)
-!66 = !DILocation(line: 23, column: 3, scope: !36)
-!67 = !DILocation(line: 25, column: 12, scope: !36)
-!68 = !DILocation(line: 25, column: 10, scope: !36)
-!69 = !DILocation(line: 25, column: 19, scope: !36)
-!70 = !DILocation(line: 25, column: 17, scope: !36)
-!71 = !DILocation(line: 25, column: 15, scope: !36)
-!72 = !DILocation(line: 25, column: 25, scope: !36)
-!73 = !DILocation(line: 25, column: 29, scope: !36)
-!74 = !DILocation(line: 25, column: 27, scope: !36)
-!75 = !DILocation(line: 25, column: 22, scope: !36)
-!76 = !DILocation(line: 25, column: 3, scope: !36)
-!77 = !DILocation(line: 27, column: 3, scope: !36)
+!52 = !DILocation(line: 19, column: 27, scope: !36)
+!53 = !DILocation(line: 19, column: 30, scope: !36)
+!54 = !DILocation(line: 19, column: 32, scope: !36)
+!55 = !DILocation(line: 0, scope: !36)
+!56 = !DILocation(line: 19, column: 3, scope: !36)
+!57 = !DILocation(line: 20, column: 25, scope: !36)
+!58 = !DILocation(line: 20, column: 22, scope: !36)
+!59 = !DILocation(line: 20, column: 27, scope: !36)
+!60 = !DILocation(line: 20, column: 30, scope: !36)
+!61 = !DILocation(line: 20, column: 32, scope: !36)
+!62 = !DILocation(line: 20, column: 3, scope: !36)
+!63 = !DILocation(line: 21, column: 20, scope: !36)
+!64 = !DILocation(line: 21, column: 24, scope: !36)
+!65 = !DILocation(line: 21, column: 22, scope: !36)
+!66 = !DILocation(line: 21, column: 26, scope: !36)
+!67 = !DILocation(line: 21, column: 3, scope: !36)
+!68 = !DILocation(line: 23, column: 12, scope: !36)
+!69 = !DILocation(line: 23, column: 10, scope: !36)
+!70 = !DILocation(line: 23, column: 19, scope: !36)
+!71 = !DILocation(line: 23, column: 17, scope: !36)
+!72 = !DILocation(line: 23, column: 15, scope: !36)
+!73 = !DILocation(line: 23, column: 25, scope: !36)
+!74 = !DILocation(line: 23, column: 29, scope: !36)
+!75 = !DILocation(line: 23, column: 27, scope: !36)
+!76 = !DILocation(line: 23, column: 22, scope: !36)
+!77 = !DILocation(line: 23, column: 3, scope: !36)
+!78 = !DILocation(line: 25, column: 3, scope: !36)

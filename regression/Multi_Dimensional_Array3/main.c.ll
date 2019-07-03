@@ -139,8 +139,7 @@ for.end16:                                        ; preds = %for.cond
   %cmp40 = icmp eq i32 %21, 1, !dbg !106
   %conv41 = zext i1 %cmp40 to i32, !dbg !106
   %call42 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv41), !dbg !107
-  %22 = load i32, i32* %retval, align 4, !dbg !108
-  ret i32 %22, !dbg !108
+  ret i32 0, !dbg !108
 }
 
 ; Function Attrs: nounwind readnone speculatable
@@ -268,4 +267,4 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !105 = !DILocation(line: 44, column: 10, scope: !15)
 !106 = !DILocation(line: 44, column: 11, scope: !15)
 !107 = !DILocation(line: 44, column: 3, scope: !15)
-!108 = !DILocation(line: 45, column: 1, scope: !15)
+!108 = !DILocation(line: 45, column: 3, scope: !15)
