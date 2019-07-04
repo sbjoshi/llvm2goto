@@ -6228,7 +6228,7 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     std::set<const symbolt *> actual_symbols;
     std::set<code_function_callt> func_calls;
     for (auto a : *symbol_table)
-      if (a.second.type == func.type().subtype()) {
+      if (a.second.type == func.type().subtype() && std::string("main").compare(a.second.name.c_str())) {
         actual_symbols.insert(symbol_table->lookup(a.second.name));
       }
     code_typet func__code_type = to_code_type((*actual_symbols.begin())->type);
