@@ -59,27 +59,27 @@ entry:
   call void @llvm.dbg.declare(metadata i32* %x, metadata !46, metadata !DIExpression()), !dbg !47
   call void @llvm.dbg.declare(metadata i32* %y, metadata !48, metadata !DIExpression()), !dbg !49
   %0 = load i32, i32* %x, align 4, !dbg !50
-  %cmp = icmp sle i32 0, %0, !dbg !51
+  %cmp = icmp sge i32 %0, 0, !dbg !51
   %conv = zext i1 %cmp to i32, !dbg !51
-  %call = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv), !dbg !52
+  %call = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv), !dbg !52
   %1 = load i32, i32* %x, align 4, !dbg !53
   %cmp1 = icmp slt i32 %1, 10, !dbg !54
   %conv2 = zext i1 %cmp1 to i32, !dbg !54
-  %call3 = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv2), !dbg !55
+  %call3 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv2), !dbg !55
   %2 = load i32, i32* %y, align 4, !dbg !56
   %cmp4 = icmp sle i32 0, %2, !dbg !57
   %conv5 = zext i1 %cmp4 to i32, !dbg !57
-  %call6 = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv5), !dbg !58
+  %call6 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv5), !dbg !58
   %3 = load i32, i32* %y, align 4, !dbg !59
   %cmp7 = icmp slt i32 %3, 10, !dbg !60
   %conv8 = zext i1 %cmp7 to i32, !dbg !60
-  %call9 = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv8), !dbg !61
+  %call9 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv8), !dbg !61
   %4 = load i32, i32* %x, align 4, !dbg !62
   %5 = load i32, i32* %y, align 4, !dbg !63
   %add = add nsw i32 %4, %5, !dbg !64
   %cmp10 = icmp slt i32 %add, 10, !dbg !65
   %conv11 = zext i1 %cmp10 to i32, !dbg !65
-  %call12 = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %conv11), !dbg !66
+  %call12 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv11), !dbg !66
   %6 = load i32, i32* %x, align 4, !dbg !67
   %idxprom = sext i32 %6 to i64, !dbg !68
   %arrayidx = getelementptr inbounds [10 x i32], [10 x i32]* %a, i64 0, i64 %idxprom, !dbg !68
@@ -98,7 +98,7 @@ entry:
   ret i32 1, !dbg !77
 }
 
-declare dso_local i32 @assume(...) #2
+declare dso_local i32 @__CPROVER_assume(...) #2
 
 declare dso_local i32 @assert(...) #2
 
@@ -160,22 +160,22 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !47 = !DILocation(line: 16, column: 7, scope: !36)
 !48 = !DILocalVariable(name: "y", scope: !36, file: !1, line: 17, type: !11)
 !49 = !DILocation(line: 17, column: 7, scope: !36)
-!50 = !DILocation(line: 19, column: 15, scope: !36)
-!51 = !DILocation(line: 19, column: 12, scope: !36)
+!50 = !DILocation(line: 19, column: 20, scope: !36)
+!51 = !DILocation(line: 19, column: 22, scope: !36)
 !52 = !DILocation(line: 19, column: 3, scope: !36)
-!53 = !DILocation(line: 20, column: 10, scope: !36)
-!54 = !DILocation(line: 20, column: 12, scope: !36)
+!53 = !DILocation(line: 20, column: 20, scope: !36)
+!54 = !DILocation(line: 20, column: 22, scope: !36)
 !55 = !DILocation(line: 20, column: 3, scope: !36)
-!56 = !DILocation(line: 21, column: 15, scope: !36)
-!57 = !DILocation(line: 21, column: 12, scope: !36)
+!56 = !DILocation(line: 21, column: 25, scope: !36)
+!57 = !DILocation(line: 21, column: 22, scope: !36)
 !58 = !DILocation(line: 21, column: 3, scope: !36)
-!59 = !DILocation(line: 22, column: 10, scope: !36)
-!60 = !DILocation(line: 22, column: 12, scope: !36)
+!59 = !DILocation(line: 22, column: 20, scope: !36)
+!60 = !DILocation(line: 22, column: 22, scope: !36)
 !61 = !DILocation(line: 22, column: 3, scope: !36)
-!62 = !DILocation(line: 23, column: 11, scope: !36)
-!63 = !DILocation(line: 23, column: 15, scope: !36)
-!64 = !DILocation(line: 23, column: 13, scope: !36)
-!65 = !DILocation(line: 23, column: 18, scope: !36)
+!62 = !DILocation(line: 23, column: 21, scope: !36)
+!63 = !DILocation(line: 23, column: 25, scope: !36)
+!64 = !DILocation(line: 23, column: 23, scope: !36)
+!65 = !DILocation(line: 23, column: 28, scope: !36)
 !66 = !DILocation(line: 23, column: 3, scope: !36)
 !67 = !DILocation(line: 25, column: 12, scope: !36)
 !68 = !DILocation(line: 25, column: 10, scope: !36)

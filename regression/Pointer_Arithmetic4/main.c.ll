@@ -23,81 +23,76 @@ entry:
   store i32 %1, i32* %i, align 4, !dbg !24
   %2 = load i32, i32* %i, align 4, !dbg !25
   %cmp = icmp sge i32 %2, 0, !dbg !26
-  br i1 %cmp, label %land.rhs, label %land.end, !dbg !27
-
-land.rhs:                                         ; preds = %entry
+  %conv = zext i1 %cmp to i32, !dbg !26
+  %call = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv), !dbg !27
   %3 = load i32, i32* %i, align 4, !dbg !28
   %cmp1 = icmp slt i32 %3, 4, !dbg !29
-  br label %land.end
+  %conv2 = zext i1 %cmp1 to i32, !dbg !29
+  %call3 = call i32 (i32, ...) bitcast (i32 (...)* @__CPROVER_assume to i32 (i32, ...)*)(i32 %conv2), !dbg !30
+  %4 = load i8*, i8** %p, align 8, !dbg !31
+  %5 = load i32, i32* %i, align 4, !dbg !32
+  %idxprom = sext i32 %5 to i64, !dbg !31
+  %arrayidx = getelementptr inbounds i8, i8* %4, i64 %idxprom, !dbg !31
+  %6 = load i8, i8* %arrayidx, align 1, !dbg !33
+  %inc = add i8 %6, 1, !dbg !33
+  store i8 %inc, i8* %arrayidx, align 1, !dbg !33
+  %7 = load i32, i32* %i, align 4, !dbg !34
+  %cmp4 = icmp eq i32 %7, 0, !dbg !36
+  br i1 %cmp4, label %if.then, label %if.else, !dbg !37
 
-land.end:                                         ; preds = %land.rhs, %entry
-  %4 = phi i1 [ false, %entry ], [ %cmp1, %land.rhs ], !dbg !30
-  %land.ext = zext i1 %4 to i32, !dbg !27
-  %call = call i32 (i32, ...) bitcast (i32 (...)* @assume to i32 (i32, ...)*)(i32 %land.ext), !dbg !31
-  %5 = load i8*, i8** %p, align 8, !dbg !32
-  %6 = load i32, i32* %i, align 4, !dbg !33
-  %idxprom = sext i32 %6 to i64, !dbg !32
-  %arrayidx = getelementptr inbounds i8, i8* %5, i64 %idxprom, !dbg !32
-  %7 = load i8, i8* %arrayidx, align 1, !dbg !34
-  %inc = add i8 %7, 1, !dbg !34
-  store i8 %inc, i8* %arrayidx, align 1, !dbg !34
-  %8 = load i32, i32* %i, align 4, !dbg !35
-  %cmp2 = icmp eq i32 %8, 0, !dbg !37
-  br i1 %cmp2, label %if.then, label %if.else, !dbg !38
+if.then:                                          ; preds = %entry
+  %8 = load i32, i32* %data, align 4, !dbg !38
+  %cmp6 = icmp eq i32 %8, 1, !dbg !39
+  %conv7 = zext i1 %cmp6 to i32, !dbg !39
+  %call8 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv7), !dbg !40
+  br label %if.end27, !dbg !40
 
-if.then:                                          ; preds = %land.end
-  %9 = load i32, i32* %data, align 4, !dbg !39
-  %cmp3 = icmp eq i32 %9, 1, !dbg !40
-  %conv = zext i1 %cmp3 to i32, !dbg !40
-  %call4 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv), !dbg !41
-  br label %if.end23, !dbg !41
+if.else:                                          ; preds = %entry
+  %9 = load i32, i32* %i, align 4, !dbg !41
+  %cmp9 = icmp eq i32 %9, 1, !dbg !43
+  br i1 %cmp9, label %if.then11, label %if.else15, !dbg !44
 
-if.else:                                          ; preds = %land.end
-  %10 = load i32, i32* %i, align 4, !dbg !42
-  %cmp5 = icmp eq i32 %10, 1, !dbg !44
-  br i1 %cmp5, label %if.then7, label %if.else11, !dbg !45
+if.then11:                                        ; preds = %if.else
+  %10 = load i32, i32* %data, align 4, !dbg !45
+  %cmp12 = icmp eq i32 %10, 256, !dbg !46
+  %conv13 = zext i1 %cmp12 to i32, !dbg !46
+  %call14 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv13), !dbg !47
+  br label %if.end26, !dbg !47
 
-if.then7:                                         ; preds = %if.else
-  %11 = load i32, i32* %data, align 4, !dbg !46
-  %cmp8 = icmp eq i32 %11, 256, !dbg !47
-  %conv9 = zext i1 %cmp8 to i32, !dbg !47
-  %call10 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv9), !dbg !48
-  br label %if.end22, !dbg !48
+if.else15:                                        ; preds = %if.else
+  %11 = load i32, i32* %i, align 4, !dbg !48
+  %cmp16 = icmp eq i32 %11, 2, !dbg !50
+  br i1 %cmp16, label %if.then18, label %if.else22, !dbg !51
 
-if.else11:                                        ; preds = %if.else
-  %12 = load i32, i32* %i, align 4, !dbg !49
-  %cmp12 = icmp eq i32 %12, 2, !dbg !51
-  br i1 %cmp12, label %if.then14, label %if.else18, !dbg !52
+if.then18:                                        ; preds = %if.else15
+  %12 = load i32, i32* %data, align 4, !dbg !52
+  %cmp19 = icmp eq i32 %12, 65536, !dbg !53
+  %conv20 = zext i1 %cmp19 to i32, !dbg !53
+  %call21 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv20), !dbg !54
+  br label %if.end, !dbg !54
 
-if.then14:                                        ; preds = %if.else11
-  %13 = load i32, i32* %data, align 4, !dbg !53
-  %cmp15 = icmp eq i32 %13, 65536, !dbg !54
-  %conv16 = zext i1 %cmp15 to i32, !dbg !54
-  %call17 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv16), !dbg !55
-  br label %if.end, !dbg !55
-
-if.else18:                                        ; preds = %if.else11
-  %14 = load i32, i32* %data, align 4, !dbg !56
-  %cmp19 = icmp eq i32 %14, 16777216, !dbg !57
-  %conv20 = zext i1 %cmp19 to i32, !dbg !57
-  %call21 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv20), !dbg !58
+if.else22:                                        ; preds = %if.else15
+  %13 = load i32, i32* %data, align 4, !dbg !55
+  %cmp23 = icmp eq i32 %13, 16777216, !dbg !56
+  %conv24 = zext i1 %cmp23 to i32, !dbg !56
+  %call25 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv24), !dbg !57
   br label %if.end
 
-if.end:                                           ; preds = %if.else18, %if.then14
-  br label %if.end22
+if.end:                                           ; preds = %if.else22, %if.then18
+  br label %if.end26
 
-if.end22:                                         ; preds = %if.end, %if.then7
-  br label %if.end23
+if.end26:                                         ; preds = %if.end, %if.then11
+  br label %if.end27
 
-if.end23:                                         ; preds = %if.end22, %if.then
-  %15 = load i32, i32* %retval, align 4, !dbg !59
-  ret i32 %15, !dbg !59
+if.end27:                                         ; preds = %if.end26, %if.then
+  %14 = load i32, i32* %retval, align 4, !dbg !58
+  ret i32 %14, !dbg !58
 }
 
 ; Function Attrs: nounwind readnone speculatable
 declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
-declare dso_local i32 @assume(...) #2
+declare dso_local i32 @__CPROVER_assume(...) #2
 
 declare dso_local i32 @assert(...) #2
 
@@ -134,38 +129,37 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !22 = !DILocation(line: 5, column: 11, scope: !10)
 !23 = !DILocation(line: 6, column: 5, scope: !10)
 !24 = !DILocation(line: 6, column: 4, scope: !10)
-!25 = !DILocation(line: 8, column: 10, scope: !10)
-!26 = !DILocation(line: 8, column: 11, scope: !10)
-!27 = !DILocation(line: 8, column: 15, scope: !10)
-!28 = !DILocation(line: 8, column: 18, scope: !10)
-!29 = !DILocation(line: 8, column: 19, scope: !10)
-!30 = !DILocation(line: 0, scope: !10)
-!31 = !DILocation(line: 8, column: 3, scope: !10)
-!32 = !DILocation(line: 10, column: 3, scope: !10)
-!33 = !DILocation(line: 10, column: 5, scope: !10)
-!34 = !DILocation(line: 10, column: 7, scope: !10)
-!35 = !DILocation(line: 12, column: 6, scope: !36)
-!36 = distinct !DILexicalBlock(scope: !10, file: !1, line: 12, column: 6)
-!37 = !DILocation(line: 12, column: 7, scope: !36)
-!38 = !DILocation(line: 12, column: 6, scope: !10)
-!39 = !DILocation(line: 13, column: 12, scope: !36)
-!40 = !DILocation(line: 13, column: 16, scope: !36)
-!41 = !DILocation(line: 13, column: 5, scope: !36)
-!42 = !DILocation(line: 14, column: 11, scope: !43)
-!43 = distinct !DILexicalBlock(scope: !36, file: !1, line: 14, column: 11)
-!44 = !DILocation(line: 14, column: 12, scope: !43)
-!45 = !DILocation(line: 14, column: 11, scope: !36)
-!46 = !DILocation(line: 15, column: 12, scope: !43)
-!47 = !DILocation(line: 15, column: 16, scope: !43)
-!48 = !DILocation(line: 15, column: 5, scope: !43)
-!49 = !DILocation(line: 16, column: 11, scope: !50)
-!50 = distinct !DILexicalBlock(scope: !43, file: !1, line: 16, column: 11)
-!51 = !DILocation(line: 16, column: 12, scope: !50)
-!52 = !DILocation(line: 16, column: 11, scope: !43)
-!53 = !DILocation(line: 17, column: 12, scope: !50)
-!54 = !DILocation(line: 17, column: 16, scope: !50)
-!55 = !DILocation(line: 17, column: 5, scope: !50)
-!56 = !DILocation(line: 19, column: 12, scope: !50)
-!57 = !DILocation(line: 19, column: 16, scope: !50)
-!58 = !DILocation(line: 19, column: 5, scope: !50)
-!59 = !DILocation(line: 20, column: 1, scope: !10)
+!25 = !DILocation(line: 8, column: 20, scope: !10)
+!26 = !DILocation(line: 8, column: 21, scope: !10)
+!27 = !DILocation(line: 8, column: 3, scope: !10)
+!28 = !DILocation(line: 9, column: 20, scope: !10)
+!29 = !DILocation(line: 9, column: 21, scope: !10)
+!30 = !DILocation(line: 9, column: 3, scope: !10)
+!31 = !DILocation(line: 10, column: 3, scope: !10)
+!32 = !DILocation(line: 10, column: 5, scope: !10)
+!33 = !DILocation(line: 10, column: 7, scope: !10)
+!34 = !DILocation(line: 12, column: 6, scope: !35)
+!35 = distinct !DILexicalBlock(scope: !10, file: !1, line: 12, column: 6)
+!36 = !DILocation(line: 12, column: 7, scope: !35)
+!37 = !DILocation(line: 12, column: 6, scope: !10)
+!38 = !DILocation(line: 13, column: 12, scope: !35)
+!39 = !DILocation(line: 13, column: 16, scope: !35)
+!40 = !DILocation(line: 13, column: 5, scope: !35)
+!41 = !DILocation(line: 14, column: 11, scope: !42)
+!42 = distinct !DILexicalBlock(scope: !35, file: !1, line: 14, column: 11)
+!43 = !DILocation(line: 14, column: 12, scope: !42)
+!44 = !DILocation(line: 14, column: 11, scope: !35)
+!45 = !DILocation(line: 15, column: 12, scope: !42)
+!46 = !DILocation(line: 15, column: 16, scope: !42)
+!47 = !DILocation(line: 15, column: 5, scope: !42)
+!48 = !DILocation(line: 16, column: 11, scope: !49)
+!49 = distinct !DILexicalBlock(scope: !42, file: !1, line: 16, column: 11)
+!50 = !DILocation(line: 16, column: 12, scope: !49)
+!51 = !DILocation(line: 16, column: 11, scope: !42)
+!52 = !DILocation(line: 17, column: 12, scope: !49)
+!53 = !DILocation(line: 17, column: 16, scope: !49)
+!54 = !DILocation(line: 17, column: 5, scope: !49)
+!55 = !DILocation(line: 19, column: 12, scope: !49)
+!56 = !DILocation(line: 19, column: 16, scope: !49)
+!57 = !DILocation(line: 19, column: 5, scope: !49)
+!58 = !DILocation(line: 20, column: 1, scope: !10)

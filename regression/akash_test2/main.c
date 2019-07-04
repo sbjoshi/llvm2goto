@@ -16,11 +16,11 @@ int main ()
   int x;
   int y;
 
-  assume(0 <= x);
-  assume(x < LIMIT);
-  assume(0 <= y);
-  assume(y < LIMIT);
-  assume((x + y) < LIMIT);
+  __CPROVER_assume(x >= 0);
+  __CPROVER_assume(x < LIMIT);
+  __CPROVER_assume(0 <= y);
+  __CPROVER_assume(y < LIMIT);
+  __CPROVER_assume((x + y) < LIMIT);
 
   assert(a[x] + a[y] == x + y);
 

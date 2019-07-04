@@ -3881,7 +3881,15 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
         scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
             + I->getName().str());
 
-    auto index_operand = I->getOperand(2);
+    bool need_deref_flag = true;
+    Value* index_operand;
+    if (I->getNumOperands() == 2) {
+      need_deref_flag = false;
+      index_operand = I->getOperand(1);
+    }
+    else
+      index_operand = I->getOperand(2);
+
     exprt array_index_expr;
     if (dyn_cast<ConstantInt>(index_operand)) {
       unsigned index = dyn_cast<ConstantInt>(index_operand)->getZExtValue();
@@ -4249,6 +4257,13 @@ goto_programt llvm2goto_translator::trans_Trunc(const Instruction *I,
 // {
 //   exprt1 = op1.symbol_expr();
 // }
+    }
+    else if (const PtrToIntInst *pi = dyn_cast<PtrToIntInst>(*ub)) {
+      auto name_of_var = get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + pi->getOperand(0)->getName().str());
+      exprt1 = address_of_exprt(
+          symbol_table.lookup(name_of_var)->symbol_expr());
     }
     else {
       op1 = symbol_table.lookup(
@@ -4636,11 +4651,11 @@ goto_programt llvm2goto_translator::trans_FPExt(const Instruction *I,
           && "This type conversion is lossy.");
   goto_programt gp;
   typet dest_type;
-  if (dyn_cast<FPTruncInst>(I)->getDestTy()->isFloatTy()) {
-    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 32));
+  if (dyn_cast<FPExtInst>(I)->getDestTy()->isFloatTy()) {
+    dest_type = float_type();
   }
-  else if (dyn_cast<FPTruncInst>(I)->getDestTy()->isDoubleTy()) {
-    dest_type = to_floatbv_type(bitvector_typet(ID_floatbv, 64));
+  else if (dyn_cast<FPExtInst>(I)->getDestTy()->isDoubleTy()) {
+    dest_type = double_type();
   }
   else {
     assert(false && "This floattype is not handled");
@@ -5200,11 +5215,83 @@ goto_programt llvm2goto_translator::trans_IntToPtr(const Instruction *I) {
  Purpose: Map llvm::Instruction::PtrToInt to corresponding goto instruction.
 
  \*******************************************************************/
-goto_programt llvm2goto_translator::trans_PtrToInt(const Instruction *I) {
+goto_programt llvm2goto_translator::trans_PtrToInt(
+    const Instruction *I, symbol_tablet &symbol_table) {
   goto_programt gp;
-  assert(false && "PtrToInt is yet to be mapped \n");
+  const symbolt *op1;
+  exprt exprt1;
+  typet dest_type;
+  llvm::User::const_value_op_iterator ub = I->value_op_begin();
+  if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
+    uint64_t val;
+    val = cint->getZExtValue();
+    // default type unsigned.
+    exprt1 = from_integer(val, signedbv_typet(config.ansi_c.int_width));
+  }
+  else {
+    if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+      li->getOperand(0)->dump();
+      exprt1 = get_load(li, symbol_table, &op1);
+    }
+    else {
+      op1 = symbol_table.lookup(
+          get_var(
+              scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                  + ub->getName().str()));
+      if (gep_symbols.find(op1) != gep_symbols.end())
+        exprt1 = op1->symbol_expr();
+      else
+        exprt1 = address_of_exprt(op1->symbol_expr());
+    }
+  }
+
+  source_locationt location;
+  if (I->hasMetadata()) {
+    if (&(I->getDebugLoc()) != NULL) {
+      const DebugLoc loc = I->getDebugLoc();
+      location.set_file(loc->getScope()->getFile()->getFilename().str());
+      location.set_working_directory(
+          loc->getScope()->getFile()->getDirectory().str());
+      location.set_line(loc->getLine());
+      location.set_column(loc->getColumn());
+    }
+  }
+
+  if (var_name_map.find(
+      get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + I->getName().str())) == var_name_map.end()) {
+    symbolt symbol;
+    symbol.base_name = I->getName().str();
+    symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
+        + "::" + I->getName().str();
+    var_name_map.insert(
+        std::pair<std::string, std::string>(symbol.name.c_str(),
+                                            symbol.base_name.c_str()));  //akash fixed
+    symbol.type = unsigned_int_type();
+    dest_type = symbol.type;
+    symbol_table.add(symbol);
+    goto_programt::targett decl_add = gp.add_instruction();
+    decl_add->make_decl();
+    decl_add->code = code_declt(symbol.symbol_expr());
+    decl_add->function = irep_idt(I->getFunction()->getName().str());
+    decl_add->source_location = location;
+  }
+  const symbolt *result = symbol_table.lookup(
+      get_var(
+          scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+              + I->getName().str()));
+  goto_programt::targett sitofp_inst = gp.add_instruction();
+  sitofp_inst->make_assignment();
+  typecast_exprt tce(exprt1, dest_type);
+  sitofp_inst->code = code_assignt(result->symbol_expr(), tce);
+  sitofp_inst->function = irep_idt(I->getFunction()->getName().str());
+  sitofp_inst->source_location = location;
+  sitofp_inst->type = goto_program_instruction_typet::ASSIGN;
   return gp;
-}/*******************************************************************
+}
+
+/*******************************************************************
  Function: llvm2goto_translator::trans_BitCast
 
  Inputs:
@@ -6130,14 +6217,17 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
 
   if (auto load_func = dyn_cast<LoadInst>(
       I->getOperand(I->getNumOperands() - 1))) {
-    code_function_callt call;
-    const symbolt *symbol = nullptr;
-    exprt func = get_load(load_func, *symbol_table, &symbol);
-    call.function() = symbol->symbol_expr();
-    code_typet func__code_type = to_code_type(
-        to_pointer_type(symbol->type).subtype());
+    exprt func = get_load(load_func, *symbol_table);
+
+    std::set<const symbolt *> actual_symbols;
+    std::set<code_function_callt> func_calls;
+    for (auto a : *symbol_table)
+      if (a.second.type == func.type().subtype() && std::string("main").compare(a.second.name.c_str())) {
+        actual_symbols.insert(symbol_table->lookup(a.second.name));
+      }
+    code_typet func__code_type = to_code_type((*actual_symbols.begin())->type);
+    symbolt ret;
     if (func__code_type.return_type() != empty_typet()) {
-      symbolt ret;
       ret.base_name = I->getName().str();
       ret.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
           + "::" + I->getName().str();
@@ -6149,39 +6239,67 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       goto_programt::targett decl_ret = gp.add_instruction();
       decl_ret->make_decl();
       decl_ret->code = code_declt(ret.symbol_expr());
-      call.lhs() = ret.symbol_expr();
     }
-    llvm::User::const_value_op_iterator ub = I->value_op_begin();
-    for (code_typet::parameterst::const_iterator p_it = func__code_type
-        .parameters().begin(); p_it != func__code_type.parameters().end();
-        p_it++) {
-      exprt expr;
-      if (dyn_cast<ConstantInt>(*ub)) {
-        uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
-        // TODO(Rasika) : get type parameters.
-        typet type = unsignedbv_typet(config.ansi_c.int_width);
-        dyn_cast<ConstantInt>(*ub)->getType()->dump();
-        expr = from_integer(val, type);
+
+    for (auto func_sym : actual_symbols) {
+      code_function_callt call;
+      call.function() = func_sym->symbol_expr();
+      call.lhs() = symbol_table->lookup(ret.name)->symbol_expr();
+      llvm::User::const_value_op_iterator ub = I->value_op_begin();
+      for (code_typet::parameterst::const_iterator p_it = func__code_type
+          .parameters().begin(); p_it != func__code_type.parameters().end();
+          p_it++) {
+        exprt expr;
+        if (dyn_cast<ConstantInt>(*ub)) {
+          uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
+          // TODO(Rasika) : get type parameters.
+          typet type = unsignedbv_typet(config.ansi_c.int_width);
+          dyn_cast<ConstantInt>(*ub)->getType()->dump();
+          expr = from_integer(val, type);
+        }
+        else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
+          li->getOperand(0)->dump();
+          expr = get_load(li, *symbol_table);
+          // expr = symbol_table->lookup(var_name_map.find(
+          //          li->getOperand(0)->getName().str())->second).symbol_expr();
+        }
+        else {
+          expr = symbol_table->lookup(
+              get_var(
+                  scope_name_map.find(I->getDebugLoc()->getScope())->second
+                      + "::" + ub->getName().str()))->symbol_expr();
+        }
+        call.arguments().push_back(expr);
+        ub++;
       }
-      else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
-        li->getOperand(0)->dump();
-        expr = get_load(li, *symbol_table);
-        // expr = symbol_table->lookup(var_name_map.find(
-        //          li->getOperand(0)->getName().str())->second).symbol_expr();
-      }
-      else {
-        expr = symbol_table->lookup(
-            get_var(
-                scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
-                    + ub->getName().str()))->symbol_expr();
-      }
-      call.arguments().push_back(expr);
-      ub++;
+      func_calls.insert(call);
+      errs() << "Akash here\n";
     }
-    goto_programt::targett call_inst = gp.add_instruction();
-    call_inst->make_function_call(call);
+    std::vector<goto_programt::targett> cond_targets;
+    std::vector<goto_programt::targett> func_targets;
+    std::vector<goto_programt::targett> goto_end_targets;
+    for (auto actual_func_call : func_calls) {
+      goto_programt::targett temp = gp.add_instruction();
+      cond_targets.push_back(temp);
+    }
+    for (auto actual_func_call : func_calls) {
+      goto_programt::targett temp = gp.add_instruction();
+      func_targets.push_back(temp);
+      goto_programt::targett temp2 = gp.add_instruction();
+      goto_end_targets.push_back(temp2);
+    }
+    goto_programt::targett end = gp.add_instruction();
+    end->make_skip();
+    int i = 0;
+    for (auto actual_func_call : func_calls) {
+      func_targets[i]->make_function_call(actual_func_call);
+      cond_targets[i]->make_goto(
+          func_targets[i],
+          equal_exprt(func, address_of_exprt(actual_func_call.function())));
+      goto_end_targets[i]->make_goto(end, true_exprt());
+      i++;
+    }
     return gp;
-    errs() << "Akash here\n";
   }
 
   if (const DbgDeclareInst *dbgDeclareInst = dyn_cast<DbgDeclareInst>(&*I)) {
@@ -6537,7 +6655,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
         p_it != to_code_type(symbol.type).parameters().end(); p_it++) {
       exprt expr;
       const symbolt *expr_symbol = nullptr;
-      bool used_load_inst = false;
       if (dyn_cast<ConstantInt>(*ub)) {
         uint64_t val = dyn_cast<ConstantInt>(*ub)->getZExtValue();
         // TODO(Rasika) : get type parameters.
@@ -6548,7 +6665,6 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
       else if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
         li->getOperand(0)->dump();
         expr = get_load(li, *symbol_table, &expr_symbol);
-        used_load_inst = true;
         // expr = symbol_table->lookup(var_name_map.find(
         //          li->getOperand(0)->getName().str())->second).symbol_expr();
       }
@@ -7507,7 +7623,7 @@ goto_programt llvm2goto_translator::trans_instruction(
       break;
     }
     case Instruction::PtrToInt: {
-      gp = trans_PtrToInt(Inst);
+      gp = trans_PtrToInt(Inst, *symbol_table);
       break;
     }
     case Instruction::BitCast: {
@@ -7723,11 +7839,12 @@ void llvm2goto_translator::set_branches(
       goto_programt::targett then_part;
       exprt guard;
       if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
-        guard = not_exprt(
-            trans_Cmp(
-                dyn_cast<Instruction>(
-                    dyn_cast<BranchInst>((*i).first)->getCondition()),
-                symbol_table));
+        auto temp = dyn_cast<Instruction>(
+            dyn_cast<BranchInst>((*i).first)->getCondition());
+        if (dyn_cast<CmpInst>(temp))
+          guard = not_exprt(trans_Cmp(temp, symbol_table));
+        else if (auto phi = dyn_cast<PHINode>(temp)) guard = not_exprt(
+            get_PHI(phi, *symbol_table));
       }
       else {
         guard = true_exprt();
@@ -7932,20 +8049,20 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
             dstringt(F.getName()), goto_functionst::goto_functiont()));
   }
 // symbol_table.show(std::cout);
-  for (Function &F : *M) {
-    unsigned i = 0;
-    for (BasicBlock &B : F) {
-      for (Instruction &I : B) {
-        if (I.getOpcode() == Instruction::PHI) {
-          if (!I.hasName()) {
-            I.setName("_phi_" + std::to_string(i));
-            i++;
-          }
-        }
-      }
-    }
-    // F.dump();
-  }
+//  for (Function &F : *M) {
+//    unsigned i = 0;
+//    for (BasicBlock &B : F) {
+//      for (Instruction &I : B) {
+//        if (I.getOpcode() == Instruction::PHI) {
+////          if (!I.hasName()) {
+////            I.setName("_phi_" + std::to_string(i));
+////            i++;
+////          }
+//        }
+//      }
+//    }
+//    // F.dump();
+//  }
 // assert(false);
   for (Function &F : *M) {
     if (!F.getName().str().compare("nondet_int")

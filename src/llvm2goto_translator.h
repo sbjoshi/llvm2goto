@@ -72,7 +72,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_UIToFP(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_SIToFP(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_IntToPtr(const Instruction *I);
-  goto_programt trans_PtrToInt(const Instruction *I);
+  goto_programt trans_PtrToInt(const Instruction *I,
+                               symbol_tablet &symbol_table);
   goto_programt trans_BitCast(const Instruction *I);
   exprt trans_ConstBitCast(const Instruction *I,
                            const symbol_tablet &symbol_table,
