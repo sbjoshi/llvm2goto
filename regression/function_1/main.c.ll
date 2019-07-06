@@ -56,7 +56,8 @@ if.end6:                                          ; preds = %if.then4, %if.end2
   %cmp7 = fcmp oeq double %4, 2.000000e+00, !dbg !41
   %conv = zext i1 %cmp7 to i32, !dbg !41
   %call8 = call i32 (i32, ...) bitcast (i32 (...)* @assert to i32 (i32, ...)*)(i32 %conv), !dbg !42
-  ret i32 0, !dbg !43
+  %5 = load i32, i32* %retval, align 4, !dbg !43
+  ret i32 %5, !dbg !43
 }
 
 ; Function Attrs: nounwind readnone speculatable
@@ -114,7 +115,7 @@ attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !37 = !DILocation(line: 24, column: 6, scope: !16)
 !38 = !DILocation(line: 25, column: 5, scope: !35)
 !39 = !DILocation(line: 25, column: 4, scope: !35)
-!40 = !DILocation(line: 26, column: 10, scope: !16)
-!41 = !DILocation(line: 26, column: 12, scope: !16)
-!42 = !DILocation(line: 26, column: 3, scope: !16)
-!43 = !DILocation(line: 27, column: 3, scope: !16)
+!40 = !DILocation(line: 27, column: 10, scope: !16)
+!41 = !DILocation(line: 27, column: 12, scope: !16)
+!42 = !DILocation(line: 27, column: 3, scope: !16)
+!43 = !DILocation(line: 28, column: 1, scope: !16)

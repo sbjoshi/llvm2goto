@@ -9,8 +9,6 @@ target triple = "x86_64-unknown-linux-gnu"
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local i32 @main() #0 !dbg !17 {
 entry:
-  %retval = alloca i32, align 4
-  store i32 0, i32* %retval, align 4
   store i32 1, i32* getelementptr inbounds ([2 x i32], [2 x i32]* @nums, i64 0, i64 1), align 4, !dbg !20
   store i32* getelementptr inbounds ([2 x i32], [2 x i32]* @nums, i64 0, i64 0), i32** @p, align 8, !dbg !21
   %0 = load i32*, i32** @p, align 8, !dbg !22
@@ -60,4 +58,4 @@ attributes #1 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-
 !24 = !DILocation(line: 9, column: 10, scope: !17)
 !25 = !DILocation(line: 9, column: 13, scope: !17)
 !26 = !DILocation(line: 9, column: 3, scope: !17)
-!27 = !DILocation(line: 10, column: 3, scope: !17)
+!27 = !DILocation(line: 10, column: 1, scope: !17)
