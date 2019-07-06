@@ -98,7 +98,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_InsertValue(const Instruction *I);
   goto_programt trans_LandingPad(const Instruction *I);
   goto_programt trans_CleanupPad(const Instruction *I);
-
+  exprt get_initializer_list_exprt(Constant* llvm_list_val, typet array_type,
+                                   symbol_tablet & symbol_table);
   symbol_tablet trans_Globals(const Module *Mod);
 
   goto_programt trans_instruction(

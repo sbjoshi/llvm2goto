@@ -6228,7 +6228,8 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     std::set<const symbolt *> actual_symbols;
     std::set<code_function_callt> func_calls;
     for (auto a : *symbol_table)
-      if (a.second.type == func.type().subtype() && std::string("main").compare(a.second.name.c_str())) {
+      if (a.second.type == func.type().subtype()
+          && std::string("main").compare(a.second.name.c_str())) {
         actual_symbols.insert(symbol_table->lookup(a.second.name));
       }
     code_typet func__code_type = to_code_type((*actual_symbols.begin())->type);
@@ -7198,6 +7199,57 @@ goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
   return gp;
 }
 
+exprt llvm2goto_translator::get_initializer_list_exprt(
+    Constant* llvm_list_val, typet array_type, symbol_tablet & symbol_table) {
+  array_exprt array_list(to_array_type(array_type));
+  if (auto temp = dyn_cast<ConstantArray>(llvm_list_val)) {
+    for (unsigned i = 0; i < temp->getNumOperands(); i++) {
+      auto val = temp->getAggregateElement(i);
+      if (val->hasName()) {
+        array_list.add_to_operands(
+            address_of_exprt(
+                symbol_table.lookup(val->getName().str())->symbol_expr()));
+      }
+      else
+        array_list.add_to_operands(
+            get_initializer_list_exprt(val, array_type.subtype(),
+                                       symbol_table));
+    }
+  }
+  else if (auto temp = dyn_cast<ConstantAggregateZero>(llvm_list_val)) {
+    for (unsigned i = 0; i < temp->getNumElements(); i++) {
+      array_list.add_to_operands(from_integer(0, array_type.subtype()));
+    }
+
+  }
+  else if (auto element = dyn_cast<ConstantDataArray>(llvm_list_val)) {
+    for (unsigned i = 0; i < element->getNumElements(); i++) {
+      auto val = element->getAggregateElement(i);
+      if (auto temp = dyn_cast<ConstantInt>(val)) {
+        array_list.add_to_operands(
+            from_integer(temp->getZExtValue(), array_type.subtype()));
+      }
+      else if (auto cfp = dyn_cast<ConstantFP>(val)) {
+        Type *floattype = dyn_cast<Type>(element->getElementType());
+        if (floattype->isFloatTy()) {
+          float float_val = cfp->getValueAPF().convertToFloat();
+          ieee_floatt ieee_fl(float_type());
+          ieee_fl.from_float(float_val);
+          array_list.add_to_operands(ieee_fl.to_expr());
+        }
+        else if (floattype->isDoubleTy()) {
+          double double_val = cfp->getValueAPF().convertToDouble();
+          ieee_floatt ieee_fl(double_type());
+          ieee_fl.from_double(double_val);
+          array_list.add_to_operands(ieee_fl.to_expr());
+        }
+      }
+    }
+  }
+
+  return array_list;
+}
+
 /*******************************************************************
  Function: llvm2goto_translator::trans_Globals
 
@@ -7304,6 +7356,12 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_IntegerTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
+                  if (auto temp = dyn_cast<ConstantInt>(GV.getOperand(0)))
+                    symbol.value = from_integer(temp->getZExtValue(),
+                                                symbol.type);
+                  else
+                    errs()
+                        << "Akash: Global init_value type could not be determined!\n";
                   var_name_map.insert(
                       std::pair<std::string, std::string>(
                           symbol.name.c_str(), symbol.base_name.c_str()));  //akash fixed
@@ -7326,11 +7384,10 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                 case llvm::Type::TypeID::ArrayTyID: {
                   symbolt symbol = symbol_creator::create_ArrayTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
-
-//                  symbol.base_name = I->getName().str();
-//                  symbol.name = scope_name_map.find(I->getDebugLoc()->getScope())->second
-//                      + "::" + I->getName().str();
                   symbol.name = symbol.base_name;
+                  symbol.value = get_initializer_list_exprt(
+                      dyn_cast<Constant>(GV.getOperand(0)), symbol.type,
+                      symbol_table);
                   var_name_map.insert(
                       std::pair<std::string, std::string>(
                           symbol.name.c_str(), symbol.base_name.c_str()));  //akash fixed
@@ -7342,7 +7399,14 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_PointerTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
-                  ;
+
+                  if (GV.getOperand(0)->hasName())
+                    symbol.value = address_of_exprt(
+                        symbol_table.lookup(GV.getOperand(0)->getName().str())
+                            ->symbol_expr());
+                  else
+                    errs()
+                        << "Akash: Global init_value type could not be determined!\n";
                   var_name_map.insert(
                       std::pair<std::string, std::string>(
                           symbol.name.c_str(), symbol.base_name.c_str()));  //akash fixed
