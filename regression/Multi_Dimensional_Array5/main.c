@@ -7,9 +7,9 @@ int *g_374[1][1] = {{&g_134}};
 
 void func_79(int * p_80)
 {
-   *p_80 = 0;
-   assert(*p_80==0);
-   assert(g_134==0);
+   *p_80 = 2;
+   assert(*p_80==2);
+   assert(g_134==2);
 }
 
 int main ()
