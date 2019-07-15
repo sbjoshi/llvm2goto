@@ -7218,7 +7218,12 @@ exprt llvm2goto_translator::get_initializer_list_exprt(
   }
   else if (auto temp = dyn_cast<ConstantAggregateZero>(llvm_list_val)) {
     for (unsigned i = 0; i < temp->getNumElements(); i++) {
-      array_list.add_to_operands(from_integer(0, array_type.subtype()));
+      if (array_type.subtype().has_subtype())
+        array_list.add_to_operands(
+            get_initializer_list_exprt(llvm_list_val, array_type.subtype(),
+                                       symbol_table));
+      else
+        array_list.add_to_operands(from_integer(0, array_type.subtype()));
     }
 
   }
@@ -7385,9 +7390,14 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
                   symbolt symbol = symbol_creator::create_ArrayTy(
                       GV.getValueType(), dyn_cast<MDNode>(*mmd));
                   symbol.name = symbol.base_name;
-                  symbol.value = get_initializer_list_exprt(
-                      dyn_cast<Constant>(GV.getOperand(0)), symbol.type,
-                      symbol_table);
+                  auto temp_type = symbol.type;
+                  while (temp_type.has_subtype() && temp_type.id() != ID_struct) {
+                    temp_type = temp_type.subtype();
+                  }
+                  if (temp_type.id() != ID_struct) symbol.value =
+                      get_initializer_list_exprt(
+                          dyn_cast<Constant>(GV.getOperand(0)), symbol.type,
+                          symbol_table);
                   var_name_map.insert(
                       std::pair<std::string, std::string>(
                           symbol.name.c_str(), symbol.base_name.c_str()));  //akash fixed
