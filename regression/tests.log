@@ -9,7 +9,7 @@ Test '1d_array'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -30,7 +30,7 @@ Test '2d_array'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -51,7 +51,7 @@ Test '2d_array2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -72,7 +72,7 @@ Test '2d_array3'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -93,7 +93,7 @@ Test '2d_array_addition'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -114,7 +114,7 @@ Test '3d_array'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 134
   Signal: 0
   Core: 0
@@ -135,7 +135,7 @@ Test '3d_array1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -156,7 +156,7 @@ Test '3d_array2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -177,7 +177,7 @@ Test '3d_array4'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -198,7 +198,7 @@ Test '3d_array_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 134
   Signal: 0
   Core: 0
@@ -219,7 +219,7 @@ Test '7d_array'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -240,14 +240,14 @@ Test 'Function10'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Function11'
@@ -261,14 +261,14 @@ Test 'Function11'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Function11_fail'
@@ -282,14 +282,14 @@ Test 'Function11_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Function12'
@@ -302,14 +302,14 @@ Test 'Function12'
     ^SIGNAL=0$
     ^VERIFICATION SUCCESSFUL$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 
 Test 'Function13'
   Level: CORE
@@ -321,7 +321,7 @@ Test 'Function13'
     ^SIGNAL=0$
     ^VERIFICATION SUCCESSFUL$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -340,7 +340,7 @@ Test 'Function14'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -359,7 +359,7 @@ Test 'Function15'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -378,7 +378,7 @@ Test 'Function2'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -398,14 +398,14 @@ Test 'Function7'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Multi_Dimensional_Array3'
@@ -414,20 +414,18 @@ Test 'Multi_Dimensional_Array3'
   Output: main.c.out
   Options: 
   Results:
-    ^EXIT=0$
+    ^EXIT=10$
     ^SIGNAL=0$
-    ^VERIFICATION SUCCESSFUL$
+    ^VERIFICATION FAILED$
     --
-    ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
-^warning: ignoring [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
 
 Test 'Multi_Dimensional_Array5'
   Level: CORE
@@ -440,14 +438,14 @@ Test 'Multi_Dimensional_Array5'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_Arithmetic10'
@@ -461,14 +459,14 @@ Test 'Pointer_Arithmetic10'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --pointer-check main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --pointer-check main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_Arithmetic2'
@@ -482,14 +480,14 @@ Test 'Pointer_Arithmetic2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --pointer-check main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --pointer-check main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_Arithmetic3'
@@ -503,14 +501,14 @@ Test 'Pointer_Arithmetic3'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --pointer-check main.c.i >main.c.out 2>&1
-  Exit: 134
+Running cbmc --pointer-check main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_Arithmetic4'
@@ -524,14 +522,14 @@ Test 'Pointer_Arithmetic4'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_Arithmetic5'
@@ -545,14 +543,14 @@ Test 'Pointer_Arithmetic5'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_Assume1'
@@ -578,8 +576,8 @@ Test 'Pointer_array3'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --pointer-check --no-assertions main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --pointer-check --no-assertions main.c.i >main.c.out 2>&1
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]
@@ -599,14 +597,14 @@ Test 'Pointer_byte_extract6'
     --
     ^warning: ignoring
     ^CONVERSION ERROR$
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
 ^EXIT=0\r\\?$ [FAILED]
 ^SIGNAL=0\r\\?$ [OK]
-^warning: ignoring [OK]
+^warning: ignoring [FAILED]
 ^CONVERSION ERROR\r\\?$ [OK]
 
 Test 'Pointer_byte_extract7'
@@ -620,14 +618,14 @@ Test 'Pointer_byte_extract7'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --big-endian main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --big-endian main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_diff'
@@ -654,7 +652,7 @@ Test 'akash_struct_1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -675,7 +673,110 @@ Test 'akash_struct_2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'akash_struct_3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'akash_struct_4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --unwind 15 --unwinding-assertions
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc --unwind 15 --unwinding-assertions main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'akash_struct_5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --unwind 16
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+Running cbmc --unwind 16 main.c.i >main.c.out 2>&1
+  Exit: 10
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
+
+Test 'akash_struct_6'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'akash_test'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --unwind 5 --unwinding-assertions
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -696,7 +797,7 @@ Test 'assume1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -717,7 +818,7 @@ Test 'assume1_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -738,14 +839,14 @@ Test 'binary_search_c'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'binary_search_c_fail'
@@ -759,8 +860,8 @@ Test 'binary_search_c_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
@@ -780,7 +881,7 @@ Test 'bitwise3_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -801,14 +902,14 @@ Test 'bitwise_1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_1_fail'
@@ -822,14 +923,14 @@ Test 'bitwise_1_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_2'
@@ -843,14 +944,14 @@ Test 'bitwise_2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_2_fail'
@@ -864,14 +965,14 @@ Test 'bitwise_2_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_3'
@@ -885,14 +986,14 @@ Test 'bitwise_3'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_4'
@@ -906,14 +1007,14 @@ Test 'bitwise_4'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'bitwise_4_fail'
@@ -927,7 +1028,7 @@ Test 'bitwise_4_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -948,14 +1049,14 @@ Test 'equality_through_array3'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'equality_through_array3_fail'
@@ -969,14 +1070,14 @@ Test 'equality_through_array3_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'equality_through_struct4'
@@ -990,14 +1091,14 @@ Test 'equality_through_struct4'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'equality_through_struct4_fail'
@@ -1011,14 +1112,14 @@ Test 'equality_through_struct4_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'float_argc_argv'
@@ -1032,7 +1133,7 @@ Test 'float_argc_argv'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 6
   Signal: 0
   Core: 0
@@ -1053,14 +1154,14 @@ Test 'for-loop'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'for-loop_fail'
@@ -1074,14 +1175,14 @@ Test 'for-loop_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'functino_1_fail'
@@ -1095,7 +1196,7 @@ Test 'functino_1_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -1116,14 +1217,14 @@ Test 'function_1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_2'
@@ -1137,14 +1238,14 @@ Test 'function_2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_2_fail'
@@ -1158,7 +1259,7 @@ Test 'function_2_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -1179,7 +1280,7 @@ Test 'function_3'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1200,7 +1301,7 @@ Test 'function_4'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1221,7 +1322,7 @@ Test 'function_5'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1294,14 +1395,14 @@ Test 'function_pointer1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_pointer2'
@@ -1315,14 +1416,14 @@ Test 'function_pointer2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'function_struct'
@@ -1336,7 +1437,7 @@ Test 'function_struct'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 6
   Signal: 0
   Core: 0
@@ -1356,7 +1457,7 @@ Test 'function_struct_fail'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 6
   Signal: 0
   Core: 0
@@ -1364,6 +1465,27 @@ Execution [OK]
 ^EXIT=10\r\\?$ [FAILED]
 ^SIGNAL=0\r\\?$ [OK]
 ^VERIFICATION FAILED\r\\?$ [FAILED]
+
+Test 'global_variable'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
 
 Test 'if1'
   Level: CORE
@@ -1376,7 +1498,7 @@ Test 'if1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1397,7 +1519,7 @@ Test 'if2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1417,14 +1539,14 @@ Test 'if3_switch'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 
 Test 'if3_switch_fail'
   Level: CORE
@@ -1436,14 +1558,14 @@ Test 'if3_switch_fail'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 
 Test 'if4'
   Level: CORE
@@ -1456,14 +1578,14 @@ Test 'if4'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'if5_dangling'
@@ -1477,7 +1599,7 @@ Test 'if5_dangling'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1498,7 +1620,7 @@ Test 'if5_dangling_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -1519,14 +1641,14 @@ Test 'if6'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'if6_fail'
@@ -1540,14 +1662,14 @@ Test 'if6_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'if_bitwise'
@@ -1561,7 +1683,7 @@ Test 'if_bitwise'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1582,14 +1704,14 @@ Test 'insertion_sort_c'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'insertion_sort_fail'
@@ -1603,14 +1725,14 @@ Test 'insertion_sort_fail'
     ^VERIFICATION FAILED$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'nested_struct'
@@ -1624,14 +1746,14 @@ Test 'nested_struct'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'nested_struct_pointer'
@@ -1671,15 +1793,15 @@ Test 'pointer_difference'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
 ^EXIT=0\r\\?$ [FAILED]
 ^SIGNAL=0\r\\?$ [OK]
 ^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
-^warning: ignoring [OK]
+^warning: ignoring [FAILED]
 
 Test 'pointer_to_pointer'
   Level: CORE
@@ -1692,7 +1814,7 @@ Test 'pointer_to_pointer'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1713,14 +1835,35 @@ Test 'pointer_to_struct_of_pointers'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'simple_function'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'statement_expr'
@@ -1734,14 +1877,14 @@ Test 'statement_expr'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'struct_1'
@@ -1755,7 +1898,7 @@ Test 'struct_1'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1776,14 +1919,14 @@ Test 'struct_2'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'struct_3'
@@ -1797,14 +1940,14 @@ Test 'struct_3'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --unwind 15 --unwinding-assertions main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --unwind 15 --unwinding-assertions main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'struct_3_fail'
@@ -1817,14 +1960,14 @@ Test 'struct_3_fail'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc --unwind 16 main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc --unwind 16 main.c.i >main.c.out 2>&1
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 
 Test 'switch_default'
   Level: CORE
@@ -1836,7 +1979,7 @@ Test 'switch_default'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -1856,7 +1999,7 @@ Test 'switch_expr'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1876,7 +2019,7 @@ Test 'switch_expr_fail'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -1896,7 +2039,7 @@ Test 'switch_fallthrough'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0
@@ -1916,7 +2059,7 @@ Test 'switch_fallthrough_fail'
     ^SIGNAL=0$
     ^VERIFICATION FAILED$
     --
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 10
   Signal: 0
   Core: 0
@@ -1936,14 +2079,14 @@ Test 'typecheck'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'variable_scopes'
@@ -1957,7 +2100,7 @@ Test 'variable_scopes'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Running /home/akash/Documents/CBMC/cbmc/src/cbmc/cbmc  main.c.i >main.c.out 2>&1
+Running cbmc  main.c.i >main.c.out 2>&1
   Exit: 0
   Signal: 0
   Core: 0

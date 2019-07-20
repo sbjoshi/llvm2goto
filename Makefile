@@ -103,7 +103,7 @@ LLVM_LDFLAGS := `$(LLVM_BIN_PATH)/llvm-config --ldflags --libs --system-libs`
 LLVM_LDFLAGS_NOLIBS := `$(LLVM_BIN_PATH)/llvm-config --ldflags`
 PLUGIN_LDFLAGS := -shared
 CLANG_INCLUDES := \
-	-I$(LLVM_SRC_PATH)/tools/clang/include \
+	-I$(LLVM_SRC_PATH)../clang/include \
 	-I$(LLVM_BUILD_PATH)/tools/clang/include
 	CLANG_LIBS := \
 		-Wl,--start-group \

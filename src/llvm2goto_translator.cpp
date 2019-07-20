@@ -3,9 +3,11 @@
 
  */
 
+#include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm2goto_translator.h"
 
 #include <llvm/IR/Type.h>
+#include "llvm-c/Core.h"
 #include "llvm/ADT/APFloat.h"
 
 #include <utility>
@@ -7972,6 +7974,7 @@ void llvm2goto_translator::set_branches(
 
  \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
+  auto pass_manager = LLVMCreatePassManager();
   register_language(new_ansi_c_language);
   cmdlinet cmdline;
   config.set(cmdline);
