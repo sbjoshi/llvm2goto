@@ -32,7 +32,8 @@ class llvm2goto_translatort {
   virtual goto_programt trans_Br(
       const Instruction *I,
       symbol_tablet *symbol_table,
-      std::map<const Instruction*, goto_programt::targett> &instruction_target_map) = 0;
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map) = 0;
   virtual goto_programt trans_Switch(
       const Instruction *I,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
@@ -91,9 +92,10 @@ class llvm2goto_translatort {
   virtual goto_programt trans_Fence(const Instruction *I) = 0;
   virtual goto_programt trans_GetElementPtr(const Instruction *I,
                                             symbol_tablet &symbol_table) = 0;
-//  virtual exprt trans_ConstGetElementPtr(const GetElementPtrInst *I,
-//                                         const symbol_tablet &symbol_table,
-//                                         typet *final_type) = 0;
+  virtual exprt trans_ConstGetElementPtr(const GetElementPtrInst *I,
+                                         const symbol_tablet &symbol_table,
+                                         typet *final_type,
+                                         DILocalScope *DIScp) = 0;
   virtual goto_programt trans_Trunc(const Instruction *I,
                                     symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_ZExt(const Instruction *I,
@@ -123,6 +125,7 @@ class llvm2goto_translatort {
                                    symbol_tablet *symbol_table) = 0;
   virtual goto_programt trans_FCmp(const Instruction *I,
                                    symbol_tablet *symbol_table) = 0;
+  virtual exprt get_PHI(const PHINode *I, symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_Select(const Instruction *I) = 0;
   virtual goto_programt trans_Call(const Instruction *I,
                                    symbol_tablet *symbol_table) = 0;
@@ -144,13 +147,15 @@ class llvm2goto_translatort {
   virtual goto_programt trans_instruction(
       const Instruction &I,
       symbol_tablet *symbol_table,
-      std::map<const Instruction*, goto_programt::targett> &instruction_target_map,
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
       std::map<const BasicBlock*, goto_programt::targett> &block_target_map) = 0;
   virtual goto_programt trans_Block(
       const BasicBlock &b,
       symbol_tablet *symbol_table,
-      std::map<const Instruction*, goto_programt::targett> &instruction_target_map,
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
       std::map<const BasicBlock*, goto_programt::targett> block_target_map) = 0;
   virtual goto_programt trans_Function(const Function &F,
@@ -158,7 +163,8 @@ class llvm2goto_translatort {
   virtual void set_branches(
       symbol_tablet *symbol_table,
       std::map<const BasicBlock*, goto_programt::targett> block_target_map,
-      std::map<const Instruction*, goto_programt::targett> instruction_target_map)
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map)
       = 0;
   virtual goto_functionst trans_Program(std::string filename) = 0;
 };

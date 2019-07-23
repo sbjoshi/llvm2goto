@@ -17,7 +17,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_Br(
       const Instruction *I,
       symbol_tablet *symbol_tablet,
-      std::map<const Instruction*, goto_programt::targett> &instruction_target_map);
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map);
   goto_programt trans_Switch(
       const Instruction *I,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
@@ -105,14 +106,16 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_instruction(
       const Instruction &I,
       symbol_tablet *symbol_table,
-      std::map<const Instruction*, goto_programt::targett> &instruction_target_map,
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
       std::map<const BasicBlock*, goto_programt::targett> &block_target_map);
 
   goto_programt trans_Block(
       const BasicBlock &b,
       symbol_tablet *symbol_table,
-      std::map<const Instruction*, goto_programt::targett> &instruction_target_map,
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
       std::map<const BasicBlock*, goto_programt::targett> block_target_map);
 
@@ -121,7 +124,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   void set_branches(
       symbol_tablet *symbol_table,
       std::map<const BasicBlock*, goto_programt::targett> block_target_map,
-      std::map<const Instruction*, goto_programt::targett> instruction_target_map);
+      std::map<const Instruction*,
+          std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map);
 
   std::string get_arg_name(const Instruction*);
 

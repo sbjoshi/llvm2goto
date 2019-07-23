@@ -4,10 +4,14 @@
  */
 
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "llvm/Analysis/BasicAliasAnalysis.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm2goto_translator.h"
 
 #include <llvm/IR/Type.h>
 #include "llvm-c/Core.h"
+#include "llvm/Pass.h"
 #include "llvm/ADT/APFloat.h"
 
 #include <utility>
@@ -204,19 +208,21 @@ goto_programt llvm2goto_translator::trans_Ret(
 goto_programt llvm2goto_translator::trans_Br(
     const Instruction *I,
     symbol_tablet *symbol_table,
-    std::map<const Instruction*, goto_programt::targett> &instruction_target_map) {
+    std::map<const Instruction*,
+        std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map) {
   goto_programt gp;
   I->dump();
   if (dyn_cast<BranchInst>(I)->getNumSuccessors() == 2) {
-    goto_programt::targett br_ins = gp.add_instruction();
-    instruction_target_map.insert(
-        std::pair<const Instruction*, goto_programt::targett>(I, br_ins));
+    goto_programt::targett cond_true = gp.add_instruction();
+    goto_programt::targett cond_false = gp.add_instruction();
+    instruction_target_map[I] = std::pair<goto_programt::targett,
+        goto_programt::targett>(cond_true, cond_false);
     gp.update();
   }
   else {
     goto_programt::targett br_ins = gp.add_instruction();
-    instruction_target_map.insert(
-        std::pair<const Instruction*, goto_programt::targett>(I, br_ins));
+    instruction_target_map[I] = std::pair<goto_programt::targett,
+        goto_programt::targett>(br_ins, br_ins);
     gp.update();
   }
   gp.update();
@@ -7479,7 +7485,8 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
 goto_programt llvm2goto_translator::trans_instruction(
     const Instruction &I,
     symbol_tablet *symbol_table,
-    std::map<const Instruction*, goto_programt::targett> &instruction_target_map,
+    std::map<const Instruction*,
+        std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
     std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
     std::map<const BasicBlock*, goto_programt::targett> &block_target_map) {
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
@@ -7814,7 +7821,8 @@ goto_programt llvm2goto_translator::trans_instruction(
 goto_programt llvm2goto_translator::trans_Block(
     const BasicBlock &b,
     symbol_tablet *symbol_table,
-    std::map<const Instruction*, goto_programt::targett> &instruction_target_map,
+    std::map<const Instruction*,
+        std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
     std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
     std::map<const BasicBlock*, goto_programt::targett> block_target_map) {
   errs() << "\t\tin trans_Block\n";
@@ -7860,7 +7868,8 @@ goto_programt llvm2goto_translator::trans_Function(
   st.get_scope_name_map(F, &scope_name_map);
   std::map<const BasicBlock*, goto_programt::targett> block_target_map;
   std::map<goto_programt::targett, const BasicBlock*> branch_dest_block_map_switch;
-  std::map<const Instruction*, goto_programt::targett> instruction_target_map;
+  std::map<const Instruction*,
+      std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map;
   errs() << "\tin trans_Function\n";
   symbolt symbol = namespacet(*symbol_table).lookup(
       dstringt(F.getName().str()));
@@ -7914,11 +7923,13 @@ goto_programt llvm2goto_translator::trans_Function(
 void llvm2goto_translator::set_branches(
     symbol_tablet *symbol_table,
     std::map<const BasicBlock*, goto_programt::targett> block_target_map,
-    std::map<const Instruction*, goto_programt::targett> instruction_target_map) {
+    std::map<const Instruction*,
+        std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map) {
   for (auto i = instruction_target_map.begin(), ie =
       instruction_target_map.end(); i != ie; i++) {
     if (dyn_cast<BranchInst>((*i).first)->getNumSuccessors() == 2) {
       goto_programt::targett then_part;
+      goto_programt::targett else_part;
       exprt guard;
       if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
         auto temp = dyn_cast<Instruction>(
@@ -7936,7 +7947,10 @@ void llvm2goto_translator::set_branches(
               dyn_cast<BasicBlock>(
                   dyn_cast<BranchInst>((*i).first)->getSuccessor(1)));
       then_part = (*then_pair).second;
-      (*i).second->make_goto(then_part, guard);
+      else_part = block_target_map[dyn_cast<BasicBlock>(
+          dyn_cast<BranchInst>((*i).first)->getSuccessor(0))];
+      (*i).second.first->make_goto(then_part, guard);
+      (*i).second.second->make_goto(else_part, true_exprt());
     }
     else {
       goto_programt::targett then_part;
@@ -7955,7 +7969,7 @@ void llvm2goto_translator::set_branches(
               dyn_cast<BasicBlock>(
                   dyn_cast<BranchInst>((*i).first)->getSuccessor(0)));
       then_part = (*then_pair).second;
-      (*i).second->make_goto(then_part, guard);
+      (*i).second.first->make_goto(then_part, guard);
     }
   }
 }
@@ -7974,7 +7988,11 @@ void llvm2goto_translator::set_branches(
 
  \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
-  auto pass_manager = LLVMCreatePassManager();
+//  PassBuilder PB;
+//  auto mod_manager = llvm::ModuleAnalysisManager { };
+//  PB.registerModuleAnalyses(mod_manager);
+//  AAResults& AAR = mod_manager.getResult<AAManager>(*M);
+
   register_language(new_ansi_c_language);
   cmdlinet cmdline;
   config.set(cmdline);
