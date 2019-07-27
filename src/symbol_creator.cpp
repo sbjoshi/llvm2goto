@@ -1612,8 +1612,17 @@ symbolt symbol_creator::create_FunctionTy(Type *type, const Function &F) {
     // errs() << F.getName() << " = ";
     for (auto it = ft->params().begin(); it < ft->params().end(); it++) {
       // errs() << "arg ";
-      DIType *t = dyn_cast<DIType>(&*md->getTypeArray()[i]);
-      typet tt = create_type(*it, t);
+      typet tt;
+      if (i < md->getTypeArray().size()) {
+        DIType *t = dyn_cast<DIType>(&*md->getTypeArray()[i]);
+        if (t->getTag() == dwarf::DW_TAG_structure_type) {
+          tt = create_type(*it);
+        }
+        else
+          tt = create_type(*it, t);
+      }
+      else
+        tt = create_type(*it);
       i++;
       code_typet::parametert p(tt);
       p.set_identifier(F.getName().str() + "::" + arg->getName().str());

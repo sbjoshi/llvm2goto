@@ -4,9 +4,9 @@
  */
 
 #include "llvm/Analysis/AliasAnalysis.h"
-#include "llvm/Analysis/BasicAliasAnalysis.h"
-#include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
+//#include "llvm/Support/CommandLine.h"
+#include "llvm/IR/PassManager.h"
 #include "llvm2goto_translator.h"
 
 #include <llvm/IR/Type.h>
@@ -7974,6 +7974,44 @@ void llvm2goto_translator::set_branches(
   }
 }
 
+static cl::opt<bool> DebugPM(
+    "debug-pass-manager", cl::Hidden,
+    cl::desc("Print pass management debugging information"));
+static cl::opt<std::string> AAPipeline(
+    "aa-pipeline", cl::desc("A textual description of the alias analysis "
+                            "pipeline for handling managed aliasing queries"),
+    cl::Hidden);
+bool run_Alias_Analysis(Module &M, AAResults *AAR) {
+  PassBuilder PB;
+  StringRef Arg0;
+  AAManager AA;
+  if (auto Err = PB.parseAAPipeline(AA, AAPipeline)) {
+    errs() << Arg0 << ": " << toString(std::move(Err)) << "\n";
+    return false;
+  }
+
+  LoopAnalysisManager LAM(DebugPM);
+  FunctionAnalysisManager FAM(DebugPM);
+  CGSCCAnalysisManager CGAM(DebugPM);
+  static ModuleAnalysisManager MAM(DebugPM);
+
+  FAM.registerPass([&] {return std::move(AA);});
+
+  PB.registerModuleAnalyses(MAM);
+  PB.registerCGSCCAnalyses(CGAM);
+  PB.registerFunctionAnalyses(FAM);
+  PB.registerLoopAnalyses(LAM);
+  PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+  StringRef PassPipeline("");
+  ModulePassManager MPM(DebugPM);
+  if (auto Err = PB.parsePassPipeline(MPM, PassPipeline, false, DebugPM)) {
+    errs() << Arg0 << ": " << toString(std::move(Err)) << "\n";
+    return false;
+  }
+  auto result = MPM.run(M, MAM);
+  AAR = &FAM.getResult<AAManager>(*(M.getFunction("main")));
+  return true;
+}
 /*******************************************************************
  Function: llvm2goto_translator::trans_Program
 
@@ -7988,11 +8026,10 @@ void llvm2goto_translator::set_branches(
 
  \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
-//  PassBuilder PB;
-//  auto mod_manager = llvm::ModuleAnalysisManager { };
-//  PB.registerModuleAnalyses(mod_manager);
-//  AAResults& AAR = mod_manager.getResult<AAManager>(*M);
-
+  AAResults *ARR;
+  if (!run_Alias_Analysis(*M, ARR)) {
+    errs() << "Could not get Alias Analysis results!";
+  }
   register_language(new_ansi_c_language);
   cmdlinet cmdline;
   config.set(cmdline);
@@ -8119,8 +8156,18 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
           arg_b != arg_e; arg_b++) {
         symbolt arg;
         // TODO(Rasika) : get type from metadata.
-        arg.type = symbol_creator::create_type(
-            arg_b->getType(), dyn_cast<DIType>(&*md->getTypeArray()[i]));
+
+        if (i < md->getTypeArray().size()) {
+          if (dyn_cast<DIType>(&*md->getTypeArray()[i])->getTag()
+              == dwarf::DW_TAG_structure_type) {
+            arg.type = symbol_creator::create_type(arg_b->getType());
+          }
+          else
+            arg.type = symbol_creator::create_type(
+                arg_b->getType(), dyn_cast<DIType>(&*md->getTypeArray()[i]));
+        }
+        else
+          arg.type = symbol_creator::create_type(arg_b->getType());
         i++;
         if (!arg_b->getName().str().compare("argc"))
           arg.name = "argc'";
