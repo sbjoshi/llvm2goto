@@ -87,7 +87,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_FCmp(const Instruction *I, symbol_tablet *symbol_table);
   exprt get_PHI(const PHINode *I, symbol_tablet &symbol_table);
   goto_programt trans_Select(const Instruction *I);
-  goto_programt trans_Call(const Instruction *I, symbol_tablet *symbol_table);
+  goto_programt trans_Call(const Instruction *I, symbol_tablet *symbol_table,
+                           FunctionAnalysisManager *FAM = nullptr);
   goto_programt trans_Shl(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_LShr(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_AShr(const Instruction *I, symbol_tablet &symbol_table);
@@ -109,7 +110,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
       std::map<const Instruction*,
           std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
-      std::map<const BasicBlock*, goto_programt::targett> &block_target_map);
+      std::map<const BasicBlock*, goto_programt::targett> &block_target_map,
+      FunctionAnalysisManager &FAM);
 
   goto_programt trans_Block(
       const BasicBlock &b,
@@ -117,10 +119,12 @@ class llvm2goto_translator : public llvm2goto_translatort {
       std::map<const Instruction*,
           std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
       std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
-      std::map<const BasicBlock*, goto_programt::targett> block_target_map);
+      std::map<const BasicBlock*, goto_programt::targett> block_target_map,
+      FunctionAnalysisManager &FAM);
 
-  goto_programt trans_Function(const Function &F, symbol_tablet *symbol_table);
-
+  goto_programt trans_Function(const Function &F, symbol_tablet *symbol_table,
+                               FunctionAnalysisManager &FAM);
+  bool run_Alias_Analysis(Module &mod, FunctionAnalysisManager &FAM);
   void set_branches(
       symbol_tablet *symbol_table,
       std::map<const BasicBlock*, goto_programt::targett> block_target_map,

@@ -5,6 +5,7 @@
 
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Passes/PassBuilder.h"
+#include "llvm/Analysis/AliasSetTracker.h"
 //#include "llvm/Support/CommandLine.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm2goto_translator.h"
@@ -6225,12 +6226,28 @@ std::string llvm2goto_translator::get_arg_name(const Instruction *I) {
 
  \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
-                                               symbol_tablet *symbol_table) {
+                                               symbol_tablet *symbol_table,
+                                               FunctionAnalysisManager *FAM) {
   goto_programt gp;
   unsigned flag = 0;
 
   if (auto load_func = dyn_cast<LoadInst>(
       I->getOperand(I->getNumOperands() - 1))) {
+    AliasAnalysis *AA = &FAM->getResult<AAManager>(
+        *(M->getFunction(I->getFunction()->getName())));
+    for (auto f_it = M->begin(); f_it != M->end(); f_it++) {
+      auto result = AA->alias(I->getOperand(I->getNumOperands() - 1),
+                              dyn_cast<Value>(&*f_it));
+      if (result == MayAlias || result == MustAlias) {
+        errs() << "\nFunction " << f_it->getName().str() << " is Aliasing\n";
+      }
+
+    }
+//    auto AST = AliasSetTracker( *AA);
+//    AST.add(load_func);
+//    for (auto a : AST) {
+//      a.print(llvm::errs());
+//    }
     exprt func = get_load(load_func, *symbol_table);
 
     std::set<const symbolt *> actual_symbols;
@@ -7488,7 +7505,8 @@ goto_programt llvm2goto_translator::trans_instruction(
     std::map<const Instruction*,
         std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
     std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
-    std::map<const BasicBlock*, goto_programt::targett> &block_target_map) {
+    std::map<const BasicBlock*, goto_programt::targett> &block_target_map,
+    FunctionAnalysisManager &FAM) {
   errs() << "\n\t\t\tin trans_instruction\n\t\t\t\t";
   I.dump();
   const Instruction *Inst = &I;
@@ -7744,7 +7762,7 @@ goto_programt llvm2goto_translator::trans_instruction(
       break;
     }
     case Instruction::Call: {
-      goto_programt Call_Inst = trans_Call(Inst, symbol_table);
+      goto_programt Call_Inst = trans_Call(Inst, symbol_table, &FAM);
       gp.destructive_append(Call_Inst);
       break;
     }
@@ -7824,14 +7842,15 @@ goto_programt llvm2goto_translator::trans_Block(
     std::map<const Instruction*,
         std::pair<goto_programt::targett, goto_programt::targett>> &instruction_target_map,
     std::map<goto_programt::targett, const BasicBlock*> &branch_dest_block_map_switch,
-    std::map<const BasicBlock*, goto_programt::targett> block_target_map) {
+    std::map<const BasicBlock*, goto_programt::targett> block_target_map,
+    FunctionAnalysisManager &FAM) {
   errs() << "\t\tin trans_Block\n";
   goto_programt gp;
   for (BasicBlock::const_iterator i = b.begin(), ie = b.end(); i != ie; ++i) {
     goto_programt goto_instr = trans_instruction(*i, symbol_table,
                                                  instruction_target_map,
                                                  branch_dest_block_map_switch,
-                                                 block_target_map);
+                                                 block_target_map, FAM);
     gp.destructive_append(goto_instr);
     gp.update();
     errs() << "";
@@ -7853,7 +7872,8 @@ goto_programt llvm2goto_translator::trans_Block(
 
  \*******************************************************************/
 goto_programt llvm2goto_translator::trans_Function(
-    const Function &F, symbol_tablet *symbol_table) {
+    const Function &F, symbol_tablet *symbol_table,
+    FunctionAnalysisManager &FAM) {
 // TODO(Rasika): check if definition
 //  is available or not, in built functions...
 
@@ -7879,7 +7899,7 @@ goto_programt llvm2goto_translator::trans_Function(
     goto_programt goto_block = trans_Block(B, symbol_table,
                                            instruction_target_map,
                                            branch_dest_block_map_switch,
-                                           block_target_map);
+                                           block_target_map, FAM);
     register_language(new_ansi_c_language);
     goto_programt::targett target = goto_block.instructions.begin();
     gp.destructive_append(goto_block);
@@ -7981,7 +8001,9 @@ static cl::opt<std::string> AAPipeline(
     "aa-pipeline", cl::desc("A textual description of the alias analysis "
                             "pipeline for handling managed aliasing queries"),
     cl::Hidden);
-bool run_Alias_Analysis(Module &M, AAResults *AAR) {
+
+bool llvm2goto_translator::run_Alias_Analysis(Module &mod,
+                                              FunctionAnalysisManager &FAM) {
   PassBuilder PB;
   StringRef Arg0;
   AAManager AA;
@@ -7991,7 +8013,7 @@ bool run_Alias_Analysis(Module &M, AAResults *AAR) {
   }
 
   LoopAnalysisManager LAM(DebugPM);
-  FunctionAnalysisManager FAM(DebugPM);
+//  FunctionAnalysisManager FAM(DebugPM);
   CGSCCAnalysisManager CGAM(DebugPM);
   static ModuleAnalysisManager MAM(DebugPM);
 
@@ -8008,8 +8030,7 @@ bool run_Alias_Analysis(Module &M, AAResults *AAR) {
     errs() << Arg0 << ": " << toString(std::move(Err)) << "\n";
     return false;
   }
-  auto result = MPM.run(M, MAM);
-  AAR = &FAM.getResult<AAManager>(*(M.getFunction("main")));
+  MPM.run(mod, MAM);
   return true;
 }
 /*******************************************************************
@@ -8026,8 +8047,8 @@ bool run_Alias_Analysis(Module &M, AAResults *AAR) {
 
  \*******************************************************************/
 goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
-  AAResults *ARR;
-  if (!run_Alias_Analysis(*M, ARR)) {
+  FunctionAnalysisManager FAM(DebugPM);
+  if (!run_Alias_Analysis(*M, FAM)) {
     errs() << "Could not get Alias Analysis results!";
   }
   register_language(new_ansi_c_language);
@@ -8221,7 +8242,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
       continue;
     }
     const symbolt *fn = symbol_table.lookup(F.getName().str());
-    goto_programt func_gp = trans_Function(F, &symbol_table);
+    goto_programt func_gp = trans_Function(F, &symbol_table, FAM);
     gp.destructive_append(func_gp);
     (*goto_functions.function_map.find(dstringt(F.getName()))).second.body.swap(
         gp);
