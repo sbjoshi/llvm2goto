@@ -50,6 +50,12 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_Xor(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_Alloca(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_Load(const Instruction *I);
+  std::set<const symbolt *> get_reaching_values(const LoadInst *load_inst,
+                                                symbol_tablet &symbol_table);
+  void get_incoming_block_defs(const BasicBlock *BB, const Value *fnc_ptr,
+                               std::set<const symbolt *> &reaching_defs,
+                               const symbol_tablet &symbol_table);
+  Value* get_llvm_value(const LoadInst *I);
   exprt get_load(const LoadInst *I, const symbol_tablet &symbol_table);
   exprt get_load(const LoadInst *I, const symbol_tablet &symbol_table,
                  const symbolt **ret_symbol);

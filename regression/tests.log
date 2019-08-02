@@ -792,19 +792,40 @@ Test 'akash_test'
   Output: main.c.out
   Options: --unwind 5 --unwinding-assertions
   Results:
-    ^EXIT=0$
+    ^EXIT=10$
     ^SIGNAL=0$
-    ^VERIFICATION SUCCESSFUL$
+    ^VERIFICATION FAILED$
     --
     ^warning: ignoring
 Running cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
-  Exit: 0
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [OK]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'akash_test2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --unwind 5 --unwinding-assertions
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+    ^warning: ignoring
+Running cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
+  Exit: 10
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'assume1'

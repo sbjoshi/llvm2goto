@@ -100,7 +100,7 @@ goto_programt llvm2goto_translator::trans_Ret(
     return gp;
   }
 //  symbolt op1;
-  const symbolt* op1 = nullptr;  //akash
+  const symbolt *op1 = nullptr;  //akash
   exprt exprt1;
 // TODO(Rasika): handle other constant type.
   if (dyn_cast<Constant>(ub)) {
@@ -250,7 +250,7 @@ goto_programt llvm2goto_translator::trans_Switch(
   goto_programt gp;
   Value *ub = dyn_cast<SwitchInst>(I)->getCondition();
 //  symbolt var;
-  const symbolt* var = nullptr;  //akash
+  const symbolt *var = nullptr;  //akash
   exprt var_expr;
   if (const LoadInst *li = dyn_cast<LoadInst>(ub)) {
 //    var = symbol_table.lookup(
@@ -482,7 +482,7 @@ exprt llvm2goto_translator::get_Arith_exprt(const Instruction *I,
 // goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
 //  symbolt op1, op2;
-  const symbolt* op1 = nullptr, *op2 = nullptr;  //akash
+  const symbolt *op1 = nullptr, *op2 = nullptr;  //akash
   exprt exprt1, exprt2;
   typet op_type;
   int flag = 2, f1 = 0, f2 = 0;
@@ -727,7 +727,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
 //  symbolt op1, op2;
-  const symbolt* op1 = nullptr, *op2 = nullptr;  //akash
+  const symbolt *op1 = nullptr, *op2 = nullptr;  //akash
   exprt exprt1, exprt2;
   typet op_type;
   int flag = 2, f1 = 0, f2 = 0;
@@ -860,7 +860,7 @@ goto_programt llvm2goto_translator::trans_Add(const Instruction *I,
 //  }
 //  symbolt result = symbol_table.lookup(var_name_map.find(
 //    I->getName().str())->second);
-  const symbolt* result = symbol_table.lookup(
+  const symbolt *result = symbol_table.lookup(
       get_var(
           scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
               + I->getName().str()));  //akash
@@ -1042,7 +1042,7 @@ goto_programt llvm2goto_translator::trans_FAdd(const Instruction *I,
   }
 //  symbolt result = symbol_table.lookup(var_name_map.find(
 //    I->getName().str())->second);
-  const symbolt* result = symbol_table.lookup(
+  const symbolt *result = symbol_table.lookup(
       get_var(
           scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
               + I->getName().str()));  //akash
@@ -1934,7 +1934,7 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     decl_add->make_decl();
     decl_add->code = code_declt(symbol.symbol_expr());
   }
-  const symbolt* result = symbol_table.lookup(
+  const symbolt *result = symbol_table.lookup(
       get_var(
           scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
               + I->getName().str()));
@@ -2598,7 +2598,7 @@ goto_programt llvm2goto_translator::trans_And(const Instruction *I,
     decl_add->make_decl();
     decl_add->code = code_declt(symbol.symbol_expr());
   }
-  const symbolt*result = symbol_table.lookup(
+  const symbolt *result = symbol_table.lookup(
       get_var(
           scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
               + I->getName().str()));
@@ -2643,7 +2643,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
 // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
-  const symbolt*op1 = nullptr, *op2 = nullptr;
+  const symbolt *op1 = nullptr, *op2 = nullptr;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
@@ -2721,7 +2721,7 @@ goto_programt llvm2goto_translator::trans_Or(const Instruction *I,
     decl_add->make_decl();
     decl_add->code = code_declt(symbol.symbol_expr());
   }
-  const symbolt*result = symbol_table.lookup(
+  const symbolt *result = symbol_table.lookup(
       get_var(
           scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
               + I->getName().str()));
@@ -2766,7 +2766,7 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
 // Operands can be constant integer or a load instruction.
   goto_programt gp;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
-  const symbolt*op1 = nullptr, *op2 = nullptr;
+  const symbolt *op1 = nullptr, *op2 = nullptr;
   exprt exprt1, exprt2;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
     uint64_t val;
@@ -2844,7 +2844,7 @@ goto_programt llvm2goto_translator::trans_Xor(const Instruction *I,
     decl_add->make_decl();
     decl_add->code = code_declt(symbol.symbol_expr());
   }
-  const symbolt*result = symbol_table.lookup(
+  const symbolt *result = symbol_table.lookup(
       get_var(
           scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
               + I->getName().str()));
@@ -3070,6 +3070,30 @@ exprt llvm2goto_translator::get_load(const LoadInst *I,
       return dereference_exprt(
           get_load(dyn_cast<LoadInst>(I->getOperand(0)), symbol_table,
                    ret_symbol));
+    }
+  }
+}
+
+Value* llvm2goto_translator::get_llvm_value(const LoadInst *I) {
+  I->dump();
+  if (I->getOperand(0)->hasName()) {
+    return I->getOperand(0);
+  }
+  else {
+    if (BitCastInst *bci = dyn_cast<BitCastInst>(I->getOperand(0))) {
+      if (bci->getOperand(0)->hasName()) {
+        return bci->getOperand(0);
+      }
+      else {
+        assert(false && "bitcast found");
+      }
+      assert(false && "bitcast");
+    }
+    else if (dyn_cast<ConstantExpr>(I->getOperand(0))) {
+      return I->getOperand(0);
+    }
+    else {
+      return get_llvm_value(dyn_cast<LoadInst>(I->getOperand(0)));
     }
   }
 }
@@ -3647,7 +3671,7 @@ goto_programt llvm2goto_translator::trans_Fence(const Instruction *I) {
  \*******************************************************************/
 exprt llvm2goto_translator::trans_ConstGetElementPtr(
     const GetElementPtrInst *I, const symbol_tablet &symbol_table,
-    typet *final_type, DILocalScope * DIScp) {
+    typet *final_type, DILocalScope *DIScp) {
   exprt op_expr;
   const symbolt *op_symbol = nullptr;
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
@@ -3891,7 +3915,7 @@ goto_programt llvm2goto_translator::trans_GetElementPtr(
         scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
             + I->getName().str());
     bool need_deref_flag = true;
-    Value* index_operand;
+    Value *index_operand;
     if (I->getNumOperands() == 2) {
       need_deref_flag = false;
       index_operand = I->getOperand(1);
@@ -6213,6 +6237,62 @@ std::string llvm2goto_translator::get_arg_name(const Instruction *I) {
   return std::string(arg, ++i, arg.size() - 1);
 }
 
+void llvm2goto_translator::get_incoming_block_defs(
+    const BasicBlock *BB, const Value *fnc_ptr,
+    std::set<const symbolt*> &reaching_defs,
+    const symbol_tablet &symbol_table) {
+  for (auto bb_it = pred_begin(BB); bb_it != pred_end(BB); bb_it++) {
+
+    auto *PBB = (*bb_it);
+    bool flag = false;
+    for (auto inst_it = PBB->begin(); inst_it != PBB->end(); inst_it++) {
+      if (inst_it->getOperand(1) == fnc_ptr) {
+        auto actual_func = inst_it->getOperand(0);
+        auto actual_symbol = symbol_table.lookup(
+            get_var(
+                scope_name_map.find(inst_it->getDebugLoc()->getScope())->second
+                    + "::" + actual_func->getName().str()));
+        reaching_defs.insert(actual_symbol);
+        flag = true;
+        break;
+      }
+    }
+    if (!flag) get_incoming_block_defs(PBB, fnc_ptr, reaching_defs,
+                                       symbol_table);
+  }
+}
+
+std::set<const symbolt*> llvm2goto_translator::get_reaching_values(
+    const LoadInst *load_inst, symbol_tablet &symbol_table) {
+
+  auto fnc_ptr = load_inst->getOperand(0);
+
+  std::set<const symbolt*> reaching_defs;
+  auto prev_node = load_inst->getPrevNode();
+  while (prev_node) {
+    if (auto str_inst = dyn_cast<StoreInst>(prev_node)) {
+      if (str_inst->getOperand(1) == fnc_ptr) {
+        auto actual_func = str_inst->getOperand(0);
+        auto actual_symbol = symbol_table.lookup(
+            get_var(
+                scope_name_map.find(str_inst->getDebugLoc()->getScope())->second
+                    + "::" + actual_func->getName().str()));
+        reaching_defs.insert(actual_symbol);
+        break;
+      }
+    }
+    else
+      prev_node = prev_node->getPrevNode();
+  }
+
+  if (reaching_defs.empty()) {
+    get_incoming_block_defs(load_inst->getParent(), fnc_ptr, reaching_defs,
+                            symbol_table);
+  }
+
+  return reaching_defs;
+}
+
 /*******************************************************************
  Function: llvm2goto_translator::trans_Call
 
@@ -6233,24 +6313,33 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
 
   if (auto load_func = dyn_cast<LoadInst>(
       I->getOperand(I->getNumOperands() - 1))) {
-    AliasAnalysis *AA = &FAM->getResult<AAManager>(
-        *(M->getFunction(I->getFunction()->getName())));
-    for (auto f_it = M->begin(); f_it != M->end(); f_it++) {
-      auto result = AA->alias(I->getOperand(I->getNumOperands() - 1),
-                              dyn_cast<Value>(&*f_it));
-      if (result == MayAlias || result == MustAlias) {
-        errs() << "\nFunction " << f_it->getName().str() << " is Aliasing\n";
-      }
+//    AliasAnalysis *AA = &FAM->getResult<AAManager>(
+//        *(M->getFunction(I->getFunction()->getName())));
 
-    }
-//    auto AST = AliasSetTracker( *AA);
-//    AST.add(load_func);
-//    for (auto a : AST) {
-//      a.print(llvm::errs());
+//    for (auto f_it = M->begin(); f_it != M->end(); f_it++) {
+//      auto result = AA->alias(get_llvm_value(load_func),
+//                              dyn_cast<Value>(&*f_it));
+//      if (result == MustAlias) {
+//        errs() << "\nFunction " << f_it->getName().str() << " is Aliasing\n";
+//      }
+//
+//    }
+
+//    AliasSetTracker AST(*(dyn_cast<AliasAnalysis>(AA)));
+//    LoadInst *li = load_func;
+//    AST.add(li);
+//    AST.dump();
+//    for (auto ast_it = AST.begin(); ast_it != AST.end(); ast_it++) {
+//      for (auto ast_set_it = ast_it->begin(); ast_set_it != ast_it->end();
+//          ast_set_it++)
+//        ast_set_it->getValue()->dump();
+//    }
+
+//    for (auto a : get_reaching_values(load_func, *symbol_table)) {
+//      errs() << from_expr(a->symbol_expr()) << '\n';
 //    }
     exprt func = get_load(load_func, *symbol_table);
-
-    std::set<const symbolt *> actual_symbols;
+    std::set<const symbolt*> actual_symbols;
     std::set<code_function_callt> func_calls;
     for (auto a : *symbol_table)
       if (a.second.type == func.type().subtype()
@@ -7225,7 +7314,7 @@ goto_programt llvm2goto_translator::trans_CleanupPad(const Instruction *I) {
 }
 
 exprt llvm2goto_translator::get_initializer_list_exprt(
-    Constant* llvm_list_val, typet array_type, symbol_tablet & symbol_table) {
+    Constant *llvm_list_val, typet array_type, symbol_tablet &symbol_table) {
   array_exprt array_list(to_array_type(array_type));
   if (auto temp = dyn_cast<ConstantArray>(llvm_list_val)) {
     for (unsigned i = 0; i < temp->getNumOperands(); i++) {
@@ -7298,7 +7387,7 @@ symbol_tablet llvm2goto_translator::trans_Globals(const Module *Mod) {
   errs() << "in trans_Globals\n";
   symbol_tablet symbol_table;
   for (auto &GV : Mod->globals()) {
-    SmallVector<MDNode *, 1> MDs;
+    SmallVector<MDNode*, 1> MDs;
     if (!GV.isDeclaration()) {
       GV.getMetadata(LLVMContext::MD_dbg, MDs);
       if (!MDs.empty()) {

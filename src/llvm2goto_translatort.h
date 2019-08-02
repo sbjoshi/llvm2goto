@@ -9,6 +9,7 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/DebugInfoMetadata.h"
+#include "llvm/Analysis/AliasAnalysis.h"
 #include "goto-programs/goto_functions.h"
 //#include "goto-programs/goto_functions_template.h"  Removed in 5.11
 #include "util/arith_tools.h"
@@ -83,6 +84,13 @@ class llvm2goto_translatort {
   virtual goto_programt trans_Alloca(const Instruction *I,
                                      symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_Load(const Instruction *I) = 0;
+  virtual Value* get_llvm_value(const LoadInst *I) = 0;
+  virtual void get_incoming_block_defs(const BasicBlock *BB,
+                                       const Value *fnc_ptr,
+                                       std::set<const symbolt *> &reaching_defs,
+                                       const symbol_tablet &symbol_table) = 0;
+  virtual std::set<const symbolt *> get_reaching_values(
+      const LoadInst *load_inst, symbol_tablet &symbol_table) = 0;
   virtual exprt get_load(const LoadInst *I,
                          const symbol_tablet &symbol_table) = 0;
   virtual goto_programt trans_Store(const Instruction *I,
