@@ -6019,8 +6019,7 @@ goto_programt llvm2goto_translator::trans_FCmp(const Instruction *I,
 exprt llvm2goto_translator::get_PHI(const PHINode *I,
                                     symbol_tablet &symbol_table) {
   exprt expr;
-  auto i = I->getNumOperands() - 1;
-  for (auto &a : I->blocks()) {
+  for (int i = I->getNumOperands() - 1; i >= 0; i--) {
     auto bb = I->getIncomingBlock(i);
     auto v = I->getIncomingValue(i);
     if (auto last_ins = dyn_cast<BranchInst>(bb->getTerminator())) {
@@ -6088,7 +6087,6 @@ exprt llvm2goto_translator::get_PHI(const PHINode *I,
       assert(
           false
               && "Akash Last instruction of PHINode Incoming Block must be BranchInst!");
-    i--;
   }
   return expr;
 }

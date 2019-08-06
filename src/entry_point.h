@@ -23,7 +23,7 @@ void set_function_symbol_value(goto_functionst::function_mapt &function_map,
       cb.add(ins->code);
     }
 //    symbol_table.lookup(it->first).value.swap(cb);
-    symbolt* symbol = const_cast<symbolt*>(symbol_table.lookup(it->first));  //akash
+    symbolt *symbol = const_cast<symbolt*>(symbol_table.lookup(it->first));  //akash
     symbol->value.swap(cb);  //akash
   }
 }
@@ -38,7 +38,8 @@ void add_function_definitions(std::string name, goto_functionst &goto_functions,
     if (ID_assign == c.get_statement()) {
       ins->make_assignment();
       ins->code = code_assignt(c.operands()[0], c.operands()[1]);
-    } else if (ID_output == c.get_statement()) {
+    }
+    else if (ID_output == c.get_statement()) {
 //      codet output(ID_output);
       c.operands().resize(2);
 
@@ -53,11 +54,14 @@ void add_function_definitions(std::string name, goto_functionst &goto_functions,
 
 //      ins = std::move(output);
       ins->make_other(c);
-    } else if (ID_label == c.get_statement()) {
+    }
+    else if (ID_label == c.get_statement()) {
       ins->make_skip();
-    } else if (ID_function_call == c.get_statement()) {
+    }
+    else if (ID_function_call == c.get_statement()) {
       ins->make_function_call(c);
-    } else {
+    }
+    else {
       ins->code = c;
     }
   }
@@ -76,7 +80,7 @@ void set_entry_point(goto_functionst &goto_functions,
    #endif
    */
   int argc = 0;
-  const char **argv;
+  const char **argv = nullptr;
   cbmc_parse_optionst parse_options(argc, argv);
   c_object_factory_parameterst object_factory_params;
   optionst options;
