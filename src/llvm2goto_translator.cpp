@@ -6643,7 +6643,36 @@ goto_programt llvm2goto_translator::trans_Call(const Instruction *I,
     side_effect_expr_nondett nondef_func;
     std::string func_name = function->getName().str();
     symbolt symbol;
-
+    if (!func_name.substr(0, 11).compare("llvm.memcpy")) {
+      auto x = dyn_cast<MemCpyInst>(I);
+      auto target = x->getDest();
+      auto source = dyn_cast<Constant>(x->getSource())->getOperand(0);
+      auto target_sym = symbol_table->lookup(
+          get_var(
+              scope_name_map.find(I->getDebugLoc()->getScope())->second + "::"
+                  + target->getName().str()));
+      auto source_exp = get_initializer_list_exprt(dyn_cast<Constant>(source),
+                                                   target_sym->type,
+                                                   *symbol_table);
+      goto_programt::targett assgn_inst = gp.add_instruction();
+      assgn_inst->make_assignment();
+      assgn_inst->code = code_assignt(target_sym->symbol_expr(), source_exp);
+      assgn_inst->function = irep_idt(I->getFunction()->getName().str());
+      source_locationt location;
+      if (I->hasMetadata()) {
+        if (&(I->getDebugLoc()) != NULL) {
+          const DebugLoc loc = I->getDebugLoc();
+          location.set_file(loc->getScope()->getFile()->getFilename().str());
+          location.set_working_directory(
+              loc->getScope()->getFile()->getDirectory().str());
+          location.set_line(loc->getLine());
+          location.set_column(loc->getColumn());
+        }
+      }
+      assgn_inst->source_location = location;
+      assgn_inst->type = goto_program_instruction_typet::ASSIGN;
+      return gp;
+    }
     if (!func_name.compare("nondet_int") || !func_name.compare("nondet_uint")) {
       typet ret_type;
       switch (function->getReturnType()->getTypeID()) {
@@ -7339,7 +7368,6 @@ exprt llvm2goto_translator::get_initializer_list_exprt(
       else
         array_list.add_to_operands(from_integer(0, array_type.subtype()));
     }
-
   }
   else if (auto element = dyn_cast<ConstantDataArray>(llvm_list_val)) {
     for (unsigned i = 0; i < element->getNumElements(); i++) {
@@ -7363,6 +7391,20 @@ exprt llvm2goto_translator::get_initializer_list_exprt(
           array_list.add_to_operands(ieee_fl.to_expr());
         }
       }
+    }
+  }
+  else {
+    for (unsigned i = 0; i < llvm_list_val->getNumOperands(); i++) {
+      auto val = temp->getAggregateElement(i);
+      if (val->hasName()) {
+        array_list.add_to_operands(
+            address_of_exprt(
+                symbol_table.lookup(val->getName().str())->symbol_expr()));
+      }
+      else
+        array_list.add_to_operands(
+            get_initializer_list_exprt(val, array_type.subtype(),
+                                       symbol_table));
     }
   }
 

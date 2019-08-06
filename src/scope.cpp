@@ -182,8 +182,8 @@ void scope_tree::add_node(DIScope *new_scope) {
     scope_node *node = new scope_node();
 //    new_scope->getScope()->resolve();
 //    bhhoooot->resolve();
-    scope_node *parent = scope_scope_node_map.find(new_scope->getScope())
-        ->second;
+    scope_node *parent = scope_scope_node_map.find(
+        new_scope->getScope().resolve())->second;
     scope_node *left_sibling = parent->last_child;
 
     node->scope = new_scope;
@@ -233,7 +233,7 @@ void scope_tree::construct_tree(const Function &F) {
   for (const BasicBlock &B : F) {
     for (const Instruction &I : B) {
       if (I.hasMetadata()) {
-        SmallVector<std::pair<unsigned, MDNode *>, 4> MDs;
+        SmallVector<std::pair<unsigned, MDNode*>, 4> MDs;
         I.getAllMetadata(MDs);
         for (auto md = MDs.begin(), mde = MDs.end(); md != mde; md++) {
           if (md->second->getMetadataID()

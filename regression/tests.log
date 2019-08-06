@@ -115,13 +115,13 @@ Test '3d_array'
     --
     ^warning: ignoring
 Running cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test '3d_array1'
@@ -220,13 +220,13 @@ Test '3d_array_fail'
     --
     ^warning: ignoring
 Running cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test '7d_array'
@@ -598,13 +598,13 @@ Test 'Pointer_array3'
     --
     ^warning: ignoring
 Running cbmc --pointer-check --no-assertions main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=0\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_byte_extract6'
@@ -819,13 +819,13 @@ Test 'akash_test2'
     --
     ^warning: ignoring
 Running cbmc --unwind 5 --unwinding-assertions main.c.i >main.c.out 2>&1
-  Exit: 10
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [OK]
+^EXIT=10\r\\?$ [FAILED]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [FAILED]
 ^warning: ignoring [OK]
 
 Test 'assume1'
