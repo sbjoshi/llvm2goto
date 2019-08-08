@@ -87,9 +87,9 @@ class llvm2goto_translatort {
   virtual Value* get_llvm_value(const LoadInst *I) = 0;
   virtual void get_incoming_block_defs(const BasicBlock *BB,
                                        const Value *fnc_ptr,
-                                       std::set<const symbolt *> &reaching_defs,
+                                       std::set<const symbolt*> &reaching_defs,
                                        const symbol_tablet &symbol_table) = 0;
-  virtual std::set<const symbolt *> get_reaching_values(
+  virtual std::set<const symbolt*> get_reaching_values(
       const LoadInst *load_inst, symbol_tablet &symbol_table) = 0;
   virtual exprt get_load(const LoadInst *I,
                          const symbol_tablet &symbol_table) = 0;
@@ -181,6 +181,10 @@ class llvm2goto_translatort {
       std::map<const Instruction*,
           std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map)
       = 0;
+  virtual void move_symbol(symbolt &symbol, symbolt *&new_symbol,
+                           symbol_tablet &symbol_table) =0;
+  virtual void add_argc_argv(const symbolt &main_symbol,
+                             symbol_tablet &symbol_table) = 0;
   virtual goto_functionst trans_Program(std::string filename) = 0;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATORT_H_"

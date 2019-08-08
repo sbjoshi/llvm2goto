@@ -61,6 +61,16 @@ void add_function_definitions(std::string name, goto_functionst &goto_functions,
     else if (ID_function_call == c.get_statement()) {
       ins->make_function_call(c);
     }
+    else if (ID_input == c.get_statement()) {
+      c.operands().resize(2);
+      c.op0() = address_of_exprt(
+          index_exprt(string_constantt("argc"), from_integer(0, index_type())));
+      c.op1() = symbol_table.lookup("argc'")->symbol_expr();
+      ins->make_other(c);
+    }
+    else if (ID_assume == c.get_statement()) {
+      ins->make_assumption(c);
+    }
     else {
       ins->code = c;
     }

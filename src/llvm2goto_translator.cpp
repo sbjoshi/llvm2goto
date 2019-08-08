@@ -59,6 +59,12 @@ llvm2goto_translator::~llvm2goto_translator() {
 }
 
 std::string llvm2goto_translator::get_var(std::string str) {
+//  if (!str.compare(argc_name)) {
+//    return std::string("argc'");
+//  }
+//  if (!str.compare(argv_name)) {
+//    return std::string("argv'");
+//  }
   while (var_name_map.find(str) == var_name_map.end()) {
     std::string::iterator i = str.end() - 1;
     while (*i != ':' && i >= str.begin()) {
@@ -3290,19 +3296,25 @@ goto_programt llvm2goto_translator::trans_Store(const Instruction *I,
       arg != I->getFunction()->arg_end(); arg++) {
     if (dyn_cast<StoreInst>(I)->getOperand(0)->getName() == arg->getName()) {
       function_parameter_flag = 1;
-      const symbolt *func = symbol_table.lookup(
-          I->getFunction()->getName().str());
 
-      auto params = to_code_type(func->type).parameters();
-      for (auto i = params.begin(); i != params.end(); i++) {
-        if (!(I->getFunction()->getName().str() + "::"
-            + I->getOperand(0)->getName().str()).compare(
-            i->get_identifier().c_str())) {
+//      const symbolt *func = symbol_table.lookup(
+//          I->getFunction()->getName().str());
 
-          value_to_store = symbol_exprt(i->get_identifier(), i->type());
-          errs() << "Akash Dunno what to do now\n";
-        }
-      }
+//      auto params = to_code_type(func->type).parameters();
+//      for (auto i = params.begin(); i != params.end(); i++) {
+//        if (!(I->getFunction()->getName().str() + "::"
+//            + I->getOperand(0)->getName().str()).compare(
+//            i->get_identifier().c_str())) {
+//
+//          value_to_store = symbol_exprt(i->get_identifier(), i->type());
+//          errs() << "Akash Dunno what to do now\n";
+//        }
+//      }
+
+      value_to_store = symbol_table.lookup(
+          get_var(
+              I->getFunction()->getName().str() + "::"
+                  + I->getOperand(0)->getName().str()))->symbol_expr();
     }
   }
   if (!function_parameter_flag) {
@@ -8162,6 +8174,102 @@ bool llvm2goto_translator::run_Alias_Analysis(Module &mod,
   MPM.run(mod, MAM);
   return true;
 }
+
+void llvm2goto_translator::move_symbol(symbolt &symbol, symbolt *&new_symbol,
+                                       symbol_tablet &symbol_table) {
+  symbol.mode = ID_C;
+
+  if (symbol_table.move(symbol, new_symbol)) {
+    assert(false && "failed to move symbol");
+  }
+}
+
+void llvm2goto_translator::add_argc_argv(const symbolt &main_symbol,
+                                         symbol_tablet &symbol_table) {
+  const code_typet::parameterst &parameters = to_code_type(main_symbol.type)
+      .parameters();
+
+  if (parameters.empty()) return;
+
+  if (parameters.size() != 2 && parameters.size() != 3) {
+    assert(false && "main expected to have no or two or three parameters");
+  }
+
+  symbolt *argc_new_symbol;
+
+  const exprt &op0 = static_cast<const exprt&>(parameters[0]);
+  const exprt &op1 = static_cast<const exprt&>(parameters[1]);
+
+  {
+    symbolt argc_symbol;
+
+    argc_symbol.base_name = "argc";
+    argc_symbol.name = "argc'";
+    argc_symbol.type = op0.type();
+    argc_symbol.is_static_lifetime = true;
+    argc_symbol.is_lvalue = true;
+
+    if (argc_symbol.type.id() != ID_signedbv
+        && argc_symbol.type.id() != ID_unsignedbv) {
+      assert(false && "argc argument expected to be integer type");
+    }
+
+    move_symbol(argc_symbol, argc_new_symbol, symbol_table);
+  }
+
+  {
+    if (op1.type().id() != ID_pointer
+        || op1.type().subtype().id() != ID_pointer) {
+      assert(false && "argv argument expected to be pointer-to-pointer type");
+    }
+
+    // we make the type of this thing an array of pointers
+    // need to add one to the size -- the array is terminated
+    // with NULL
+    exprt one_expr = from_integer(1, argc_new_symbol->type);
+
+    const plus_exprt size_expr(argc_new_symbol->symbol_expr(), one_expr);
+    const array_typet argv_type(op1.type().subtype(), size_expr);
+
+    symbolt argv_symbol;
+
+    argv_symbol.base_name = "argv'";
+    argv_symbol.name = "argv'";
+    argv_symbol.type = argv_type;
+    argv_symbol.is_static_lifetime = true;
+    argv_symbol.is_lvalue = true;
+
+    symbolt *argv_new_symbol;
+    move_symbol(argv_symbol, argv_new_symbol, symbol_table);
+  }
+
+  if (parameters.size() == 3) {
+    symbolt envp_symbol;
+    envp_symbol.base_name = "envp'";
+    envp_symbol.name = "envp'";
+    envp_symbol.type = (static_cast<const exprt&>(parameters[2])).type();
+    envp_symbol.is_static_lifetime = true;
+
+    symbolt envp_size_symbol, *envp_new_size_symbol;
+    envp_size_symbol.base_name = "envp_size";
+    envp_size_symbol.name = "envp_size'";
+    envp_size_symbol.type = op0.type();  // same type as argc!
+    envp_size_symbol.is_static_lifetime = true;
+    move_symbol(envp_size_symbol, envp_new_size_symbol, symbol_table);
+
+    if (envp_symbol.type.id() != ID_pointer) {
+      assert(false && "envp argument expected to be pointer type");
+    }
+
+    exprt size_expr = envp_new_size_symbol->symbol_expr();
+
+    envp_symbol.type.id(ID_array);
+    envp_symbol.type.add(ID_size).swap(size_expr);
+
+    symbolt *envp_new_symbol;
+    move_symbol(envp_symbol, envp_new_symbol, symbol_table);
+  }
+}
 /*******************************************************************
  Function: llvm2goto_translator::trans_Program
 
@@ -8305,6 +8413,11 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
       for (Function::arg_iterator arg_b = F.arg_begin(), arg_e = F.arg_end();
           arg_b != arg_e; arg_b++) {
         symbolt arg;
+        arg.is_lvalue = true;
+        arg.is_parameter = true;
+        arg.is_state_var = true;
+        arg.is_thread_local = true;
+        arg.is_file_local = true;
         // TODO(Rasika) : get type from metadata.
 
         if (i < md->getTypeArray().size()) {
@@ -8319,20 +8432,24 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
         else
           arg.type = symbol_creator::create_type(arg_b->getType());
         i++;
-        if (!arg_b->getName().str().compare("argc"))
-          arg.name = "argc'";
-        else
-          arg.name = F.getName().str() + "::" + arg_b->getName().str();
-        if (!arg_b->getName().str().compare("argv"))
-          arg.name = "argv'";
-        else
-          arg.name = F.getName().str() + "::" + arg_b->getName().str();
+//        if (!arg_b->getName().str().compare("argc")) {
+//          argc_name = F.getName().str() + "::" + arg_b->getName().str();
+//          arg.name = "argc'";
+//          symbol_table.add(arg);
+//          var_name_map.insert(
+//              std::pair<std::string, std::string>(arg.name.c_str(),
+//                                                  arg.base_name.c_str()));  //akash fixed
+//        }
+//        else if (!arg_b->getName().str().compare("argv")) {
+//          argv_name = F.getName().str() + "::" + arg_b->getName().str();
+//          arg.type = array_typet(
+//              pointer_typet(signed_char_type(), config.ansi_c.pointer_width),
+//              plus_exprt(symbol_table.lookup("argc'")->symbol_expr(),
+//                         from_integer(1, unsigned_int_type())));
+//          arg.name = "argv'";
+//        }
+        arg.name = F.getName().str() + "::" + arg_b->getName().str();
         arg.base_name = arg_b->getName().str();
-        arg.is_lvalue = true;
-        arg.is_parameter = true;
-        arg.is_state_var = true;
-        arg.is_thread_local = true;
-        arg.is_file_local = true;
         symbol_table.add(arg);
         var_name_map.insert(
             std::pair<std::string, std::string>(arg.name.c_str(),
@@ -8378,6 +8495,7 @@ goto_functionst llvm2goto_translator::trans_Program(std::string filename) {
     (*goto_functions.function_map.find(dstringt(F.getName()))).second.type =
         to_code_type(fn->type);
   }
+  add_argc_argv(*symbol_table.lookup("main"), symbol_table);
   set_entry_point(goto_functions, symbol_table);
 //  cmdlinet cmdline;
 

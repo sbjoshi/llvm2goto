@@ -50,10 +50,10 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_Xor(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_Alloca(const Instruction *I, symbol_tablet &symbol_table);
   goto_programt trans_Load(const Instruction *I);
-  std::set<const symbolt *> get_reaching_values(const LoadInst *load_inst,
-                                                symbol_tablet &symbol_table);
+  std::set<const symbolt*> get_reaching_values(const LoadInst *load_inst,
+                                               symbol_tablet &symbol_table);
   void get_incoming_block_defs(const BasicBlock *BB, const Value *fnc_ptr,
-                               std::set<const symbolt *> &reaching_defs,
+                               std::set<const symbolt*> &reaching_defs,
                                const symbol_tablet &symbol_table);
   Value* get_llvm_value(const LoadInst *I);
   exprt get_load(const LoadInst *I, const symbol_tablet &symbol_table);
@@ -106,8 +106,8 @@ class llvm2goto_translator : public llvm2goto_translatort {
   goto_programt trans_InsertValue(const Instruction *I);
   goto_programt trans_LandingPad(const Instruction *I);
   goto_programt trans_CleanupPad(const Instruction *I);
-  exprt get_initializer_list_exprt(Constant* llvm_list_val, typet array_type,
-                                   symbol_tablet & symbol_table);
+  exprt get_initializer_list_exprt(Constant *llvm_list_val, typet array_type,
+                                   symbol_tablet &symbol_table);
   symbol_tablet trans_Globals(const Module *Mod);
 
   goto_programt trans_instruction(
@@ -138,11 +138,15 @@ class llvm2goto_translator : public llvm2goto_translatort {
           std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map);
 
   std::string get_arg_name(const Instruction*);
-
+  void move_symbol(symbolt &symbol, symbolt *&new_symbol,
+                   symbol_tablet &symbol_table);
+  void add_argc_argv(const symbolt &main_symbol, symbol_tablet &symbol_table);
   goto_functionst trans_Program(std::string filename);
   // scope to name of the scope.
   std::map<DIScope*, std::string> scope_name_map;
   // var name to full name.
   std::map<std::string, std::string> var_name_map;
+  std::string argc_name;
+  std::string argv_name;
 };
 #endif  // SRC_LLVM2GOTO_TRANSLATOR_H_"
