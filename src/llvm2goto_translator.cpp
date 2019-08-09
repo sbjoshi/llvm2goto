@@ -1865,10 +1865,12 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
   llvm::User::const_value_op_iterator ub = I->value_op_begin();
   const symbolt *op1 = nullptr, *op2 = nullptr;
   exprt exprt1, exprt2;
+  uint64_t val1 = 0, val2 = 0;
+  bool flag1 = false, flag2 = false;
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*ub)) {
-    uint64_t val;
-    val = cint->getSExtValue();
-    exprt1 = from_integer(val,
+    flag1 = true;
+    val1 = cint->getSExtValue();
+    exprt1 = from_integer(val1,
                           signedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else {
@@ -1895,9 +1897,9 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
     exprt1 = op1->symbol_expr();
   }
   if (const ConstantInt *cint = dyn_cast<ConstantInt>(*(ub + 1))) {
-    uint64_t val;
-    val = cint->getSExtValue();
-    exprt2 = from_integer(val,
+    flag2 = true;
+    val2 = cint->getSExtValue();
+    exprt2 = from_integer(val2,
                           signedbv_typet(I->getType()->getIntegerBitWidth()));
   }
   else {
@@ -1922,6 +1924,26 @@ goto_programt llvm2goto_translator::trans_SDiv(const Instruction *I,
                   + (ub + 1)->getName().str()));
     }
     exprt2 = op2->symbol_expr();
+  }
+  if (flag1 && flag2) {
+    if (val1 >= 0 && val2 >= 0) {
+      exprt1 = from_integer(
+          val1, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
+      exprt2 = from_integer(
+          val2, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
+    }
+  }
+  else if (flag1) {
+    if (exprt2.type().id() == ID_unsignedbv) {
+      exprt1 = from_integer(
+          val1, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
+    }
+  }
+  else if (flag2) {
+    if (exprt1.type().id() == ID_unsignedbv) {
+      exprt2 = from_integer(
+          val2, unsignedbv_typet(I->getType()->getIntegerBitWidth()));
+    }
   }
   if (var_name_map.find(
       get_var(
@@ -5319,7 +5341,15 @@ goto_programt llvm2goto_translator::trans_PtrToInt(
     var_name_map.insert(
         std::pair<std::string, std::string>(symbol.name.c_str(),
                                             symbol.base_name.c_str()));  //akash fixed
-    symbol.type = unsigned_int_type();
+    if (I->getType()->getIntegerBitWidth() == 64) {
+      symbol.type = unsigned_long_int_type();
+    }
+    else if (I->getType()->getIntegerBitWidth() > 64) {
+      symbol.type = unsigned_long_long_int_type();
+    }
+    else {
+      symbol.type = unsigned_int_type();
+    }
     dest_type = symbol.type;
     symbol_table.add(symbol);
     goto_programt::targett decl_add = gp.add_instruction();

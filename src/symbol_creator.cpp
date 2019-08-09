@@ -271,7 +271,15 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
   int encoding = get_encoding(type1);
   switch (encoding) {
     case dwarf::DW_ATE_signed: {
-      variable.type = signed_int_type();
+      if (type->getIntegerBitWidth() == 64) {
+        variable.type = signed_long_int_type();
+      }
+      else if (type->getIntegerBitWidth() > 64) {
+        variable.type = signed_long_long_int_type();
+      }
+      else {
+        variable.type = signed_int_type();
+      }
       break;
     }
     case dwarf::DW_ATE_signed_char: {
@@ -286,8 +294,15 @@ symbolt symbol_creator::create_IntegerTy(Type *type, MDNode *mdn) {
       break;
     }
     case dwarf::DW_ATE_unsigned: {
-      // case dwarf::DW_EH_PE_signed :
-      variable.type = unsigned_int_type();
+      if (type->getIntegerBitWidth() == 64) {
+        variable.type = unsigned_long_int_type();
+      }
+      else if (type->getIntegerBitWidth() > 64) {
+        variable.type = unsigned_long_long_int_type();
+      }
+      else {
+        variable.type = unsigned_int_type();
+      }
       break;
     }
     case -10: {
@@ -391,9 +406,9 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
 
         while (dyn_cast<DIDerivedType>(temp_type)
             || dyn_cast<DICompositeType>(temp_type)) {
-          if (DIDerivedType* temp = dyn_cast<DIDerivedType>(temp_type)) temp_type =
+          if (DIDerivedType *temp = dyn_cast<DIDerivedType>(temp_type)) temp_type =
               dyn_cast<DIType>(temp->getBaseType());
-          if (DICompositeType* temp = dyn_cast<DICompositeType>(temp_type)) temp_type =
+          if (DICompositeType *temp = dyn_cast<DICompositeType>(temp_type)) temp_type =
               dyn_cast<DIType>(temp->getBaseType());
         }
 
@@ -413,11 +428,32 @@ symbolt symbol_creator::create_StructTy(Type *type, const llvm::MDNode *mdn) {
 //        encoding = get_encoding(md);
         switch (encoding) {
           case dwarf::DW_ATE_signed: {
-            component = struct_typet::componentt(ele_name, signed_int_type());
+            if ((*e)->getIntegerBitWidth() == 64) {
+              component = struct_typet::componentt(ele_name,
+                                                   signed_long_int_type());
+            }
+            else if ((*e)->getIntegerBitWidth() > 64) {
+              component = struct_typet::componentt(ele_name,
+                                                   signed_long_long_int_type());
+            }
+            else {
+              component = struct_typet::componentt(ele_name, signed_int_type());
+            }
             break;
           }
           case dwarf::DW_ATE_unsigned: {
-            component = struct_typet::componentt(ele_name, unsigned_int_type());
+            if ((*e)->getIntegerBitWidth() == 64) {
+              component = struct_typet::componentt(ele_name,
+                                                   unsigned_long_int_type());
+            }
+            else if ((*e)->getIntegerBitWidth() > 64) {
+              component = struct_typet::componentt(
+                  ele_name, unsigned_long_long_int_type());
+            }
+            else {
+              component = struct_typet::componentt(ele_name,
+                                                   unsigned_int_type());
+            }
             break;
           }
           case dwarf::DW_ATE_signed_char: {
@@ -617,11 +653,32 @@ struct_union_typet symbol_creator::create_struct_union_type(
         struct_union_typet::componentt component;
         switch (encoding) {
           case dwarf::DW_ATE_signed: {
-            component = struct_typet::componentt(ele_name, signed_int_type());
+            if ((*e)->getIntegerBitWidth() == 64) {
+              component = struct_typet::componentt(ele_name,
+                                                   signed_long_int_type());
+            }
+            else if ((*e)->getIntegerBitWidth() > 64) {
+              component = struct_typet::componentt(ele_name,
+                                                   signed_long_long_int_type());
+            }
+            else {
+              component = struct_typet::componentt(ele_name, signed_int_type());
+            }
             break;
           }
           case dwarf::DW_ATE_unsigned: {
-            component = struct_typet::componentt(ele_name, unsigned_int_type());
+            if ((*e)->getIntegerBitWidth() == 64) {
+              component = struct_typet::componentt(ele_name,
+                                                   unsigned_long_int_type());
+            }
+            else if ((*e)->getIntegerBitWidth() > 64) {
+              component = struct_typet::componentt(
+                  ele_name, unsigned_long_long_int_type());
+            }
+            else {
+              component = struct_typet::componentt(ele_name,
+                                                   unsigned_int_type());
+            }
             break;
           }
           case dwarf::DW_ATE_signed_char: {
@@ -856,12 +913,31 @@ typet symbol_creator::create_array_type(Type *type, llvm::DIType *md) {
 //        }
         switch (encoding) {
           case dwarf::DW_ATE_signed: {
-            ele_type = signed_int_type();
+            if (dyn_cast<ArrayType>(type)->getArrayElementType()
+                ->getIntegerBitWidth() == 64) {
+              ele_type = signed_long_int_type();
+            }
+            else if (dyn_cast<ArrayType>(type)->getArrayElementType()
+                ->getIntegerBitWidth() > 64) {
+              ele_type = signed_long_long_int_type();
+            }
+            else {
+              ele_type = signed_int_type();
+            }
             break;
           }
           case dwarf::DW_ATE_unsigned: {
-            // case dwarf::DW_EH_PE_signed :
-            ele_type = unsigned_int_type();
+            if (dyn_cast<ArrayType>(type)->getArrayElementType()
+                ->getIntegerBitWidth() == 64) {
+              ele_type = unsigned_long_int_type();
+            }
+            else if (dyn_cast<ArrayType>(type)->getArrayElementType()
+                ->getIntegerBitWidth() > 64) {
+              ele_type = unsigned_long_long_int_type();
+            }
+            else {
+              ele_type = unsigned_int_type();
+            }
             break;
           }
           case dwarf::DW_ATE_signed_char: {
@@ -1091,12 +1167,31 @@ typet symbol_creator::create_pointer_type(Type *type, llvm::DIType *md) {
 
         switch (encoding) {
           case dwarf::DW_ATE_signed: {
-            ele_type = signed_int_type();
+            if (dyn_cast<PointerType>(type)->getPointerElementType()
+                ->getIntegerBitWidth() == 64) {
+              ele_type = signed_long_int_type();
+            }
+            else if (dyn_cast<PointerType>(type)->getPointerElementType()
+                ->getIntegerBitWidth() > 64) {
+              ele_type = signed_long_long_int_type();
+            }
+            else {
+              ele_type = signed_int_type();
+            }
             break;
           }
           case dwarf::DW_ATE_unsigned: {
-            // case dwarf::DW_EH_PE_signed :
-            ele_type = unsigned_int_type();
+            if (dyn_cast<PointerType>(type)->getPointerElementType()
+                ->getIntegerBitWidth() == 64) {
+              ele_type = unsigned_long_int_type();
+            }
+            else if (dyn_cast<PointerType>(type)->getPointerElementType()
+                ->getIntegerBitWidth() > 64) {
+              ele_type = unsigned_long_long_int_type();
+            }
+            else {
+              ele_type = unsigned_int_type();
+            }
             break;
           }
           case dwarf::DW_ATE_signed_char: {
@@ -1124,7 +1219,7 @@ typet symbol_creator::create_pointer_type(Type *type, llvm::DIType *md) {
       break;
     }
     case llvm::Type::TypeID::StructTyID: {
-      DIType * temp = md;
+      DIType *temp = md;
       while (!dyn_cast<DICompositeType>(temp))
         if (dyn_cast<DIDerivedType>(temp))
           temp = dyn_cast<DIType>(dyn_cast<DIDerivedType>(temp)->getBaseType());
@@ -1355,7 +1450,27 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
       int encoding = get_encoding(mdn);
       switch (encoding) {
         case dwarf::DW_ATE_signed: {
-          ele_type = signed_int_type();
+          if (type->getIntegerBitWidth() == 64) {
+            ele_type = signed_long_int_type();
+          }
+          else if (type->getIntegerBitWidth() > 64) {
+            ele_type = signed_long_long_int_type();
+          }
+          else {
+            ele_type = signed_int_type();
+          }
+          break;
+        }
+        case dwarf::DW_ATE_unsigned: {
+          if (type->getIntegerBitWidth() == 64) {
+            ele_type = unsigned_long_int_type();
+          }
+          else if (type->getIntegerBitWidth() > 64) {
+            ele_type = unsigned_long_long_int_type();
+          }
+          else {
+            ele_type = unsigned_int_type();
+          }
           break;
         }
         case dwarf::DW_ATE_signed_char: {
@@ -1368,11 +1483,6 @@ typet symbol_creator::create_type(Type *type, DIType *mdn) {
           // case dwarf::DW_EH_PE_signed :
 //          ele_type = signedbv_typet(type->getIntegerBitWidth());
           ele_type = unsigned_char_type();
-          break;
-        }
-        case dwarf::DW_ATE_unsigned: {
-          // case dwarf::DW_EH_PE_signed :
-          ele_type = unsigned_int_type();
           break;
         }
         case -10: {
