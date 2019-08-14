@@ -59,15 +59,15 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	else {
-		llvm::errs() << "IR File Successfully read!\n";
+		llvm::dbgs() << "IR File Successfully read!\n";
 		translator T(M);
 
 		llvm::errs() << "Generating GOTO Binary\n";
 		if (T.generate_goto()) {
-			llvm::errs() << "llvm2goto.generate_goto() Encountered error\n";
+			llvm::dbgs() << "llvm2goto.generate_goto() Encountered error\n";
 			exit(3);
 		}
-		llvm::errs() << "GOTO Binary generated successfully\n";
+		llvm::dbgs() << "GOTO Binary generated successfully\n";
 	}
 
 	return 0;

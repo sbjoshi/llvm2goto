@@ -19,6 +19,6 @@ bool translator::generate_goto() {
 }
 
 void ll2gb::print_help() {
-	llvm::errs() << "Version: 2.0\n"
+	llvm::outs() << "Version: 2.0\n"
 			<< "Usage: llvm2goto <ir_file> -o <op_file_name>\n";
 }
