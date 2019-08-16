@@ -4,16 +4,25 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/initialize_goto.cpp \
 ../src/llvm2goto-2.0.cpp \
-../src/llvm2goto_translator.cpp 
+../src/preprocess.cpp \
+../src/translator.cpp \
+../src/util.cpp 
 
 OBJS += \
+./src/initialize_goto.o \
 ./src/llvm2goto-2.0.o \
-./src/llvm2goto_translator.o 
+./src/preprocess.o \
+./src/translator.o \
+./src/util.o 
 
 CPP_DEPS += \
+./src/initialize_goto.d \
 ./src/llvm2goto-2.0.d \
-./src/llvm2goto_translator.d 
+./src/preprocess.d \
+./src/translator.d \
+./src/util.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

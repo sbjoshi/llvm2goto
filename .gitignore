@@ -1,3 +1,6 @@
 *.d
 *.o
 Debug/llvm2goto-2.0
+.cproject
+.project
+.settings

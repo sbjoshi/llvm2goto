@@ -11,63 +11,14 @@
 using namespace ll2gb;
 
 int main(int argc, char **argv) {
-
-	if (argc < 2) {
-		print_help();
-		exit(1);
-	}
-	else if (argc > 4) {
-		print_help();
-		exit(2);
-	}
 	std::string in_irfile, out_gbfile;
-	if (!std::string(argv[1]).compare("-h")
-			|| !std::string(argv[1]).compare("--help")) print_help();
+	parse_input(argc, argv, in_irfile, out_gbfile);
 
-	if (argc == 4) {
-		if (!std::string(argv[1]).compare("-o")) {
-			out_gbfile = argv[2];
-			in_irfile = argv[3];
-		}
-		else if (!std::string(argv[2]).compare("-o")) {
-			out_gbfile = argv[3];
-			in_irfile = argv[1];
-		}
-		else
-			print_help();
-	}
-	else if (argc == 3) {
-		in_irfile = argv[1];
-		out_gbfile = argv[2];
-	}
-	else {
-		in_irfile = argv[1];
-		std::string temp(argv[1]);
-		auto index = temp.find(".ll");
-		if (index != temp.npos)
-			out_gbfile = std::string(argv[1]).substr(0, index) + ".gb";
-		else
-			out_gbfile = temp + ".gb";
-	}
-
-	static llvm::LLVMContext context;
-	llvm::SMDiagnostic err;
-	auto M = llvm::parseIRFile(in_irfile, err, context);
-
-	if (!M) {
-		err.print(argv[0], llvm::errs());
-		return 1;
-	}
-	else {
-		llvm::dbgs() << "IR File Successfully read!\n";
-		translator T(M);
-
-		llvm::errs() << "Generating GOTO Binary\n";
-		if (T.generate_goto()) {
-			llvm::dbgs() << "llvm2goto.generate_goto() Encountered error\n";
-			exit(3);
-		}
-		llvm::dbgs() << "GOTO Binary generated successfully\n";
+	auto ir_module = get_llvm_ir(in_irfile);
+	translator T(ir_module);
+	if (!T.generate_goto()) {
+		llvm::errs() << "Encountered an error in generating goto-binary!\nProgram will now terminate.\n";
+		exit(3);
 	}
 
 	return 0;
