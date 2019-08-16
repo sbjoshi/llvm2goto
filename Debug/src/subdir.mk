@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/initialize_goto.cpp \
 ../src/llvm2goto-2.0.cpp \
 ../src/preprocess.cpp \
+../src/symbol_util.cpp \
 ../src/translator.cpp \
 ../src/util.cpp 
 
@@ -14,6 +15,7 @@ OBJS += \
 ./src/initialize_goto.o \
 ./src/llvm2goto-2.0.o \
 ./src/preprocess.o \
+./src/symbol_util.o \
 ./src/translator.o \
 ./src/util.o 
 
@@ -21,6 +23,7 @@ CPP_DEPS += \
 ./src/initialize_goto.d \
 ./src/llvm2goto-2.0.d \
 ./src/preprocess.d \
+./src/symbol_util.d \
 ./src/translator.d \
 ./src/util.d 
 

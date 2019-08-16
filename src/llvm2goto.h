@@ -10,6 +10,7 @@
 
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/SourceMgr.h>
@@ -27,17 +28,26 @@ class translator {
 private:
 	std::unique_ptr<llvm::Module> &llvm_module;
 	goto_modelt goto_model;
+	goto_functionst goto_functions;
 	symbol_tablet symbol_table;
+
 	std::map<std::string, std::string> var_name_map; //map from unique names to their base_name(pretty_name)
 
-	void write_goto(char *op_name);
 	void add_global_symbols();
 	void set_config();
 	void add_initial_symbols();
+	void add_function_symbols();
 	void initialize_goto() {
 		set_config();
 		add_initial_symbols();
 	}
+	typet get_goto_type(const llvm::DIType*);
+	typet get_goto_type(const llvm::Type*);
+	symbolt create_symbol(const llvm::DIType*);
+	symbolt create_symbol(const llvm::Type*);
+	symbolt create_goto_func_symbol(const llvm::FunctionType*,
+			const llvm::Function&);
+	void write_goto(const std::string &op_gbfile);
 
 public:
 	translator(std::unique_ptr<llvm::Module> &M) :
