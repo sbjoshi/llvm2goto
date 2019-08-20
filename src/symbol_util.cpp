@@ -2,33 +2,38 @@
  * symbols.cpp
  *
  *  Created on: 16-Aug-2019
- *      Author: akash
+ *      Author: Akash Banerjee
  */
 
 #include "llvm2goto.h"
+#include "symbol_util.h"
 
+using namespace std;
+using namespace llvm;
 using namespace ll2gb;
 
-typet translator::get_goto_type(const llvm::DIType*) {
-
+typet translator::symbol_util::get_goto_type(const DIType*) {
+	typet type;
+	return type;
 }
 
-typet translator::get_goto_type(const llvm::Type*) {
-
+typet translator::symbol_util::get_goto_type(const Type*) {
+	typet type;
+	return type;
 }
 
-symbolt translator::create_symbol(const llvm::DIType *di_type) {
+symbolt translator::symbol_util::create_symbol(const DIType *di_type) {
 	symbolt symbol;
 	return symbol;
 }
 
-symbolt translator::create_symbol(const llvm::Type *type) {
+symbolt translator::symbol_util::create_symbol(const Type *type) {
 	symbolt symbol;
 	return symbol;
 }
 
-symbolt translator::create_goto_func_symbol(const llvm::FunctionType *type,
-		const llvm::Function &F) {
+symbolt translator::symbol_util::create_goto_func_symbol(const FunctionType *type,
+		const Function &F) {
 	symbolt symbol;
 	symbol.clear();
 	symbol.is_thread_local = false;
@@ -36,8 +41,7 @@ symbolt translator::create_goto_func_symbol(const llvm::FunctionType *type,
 	auto func_code_type = code_typet();
 	code_typet::parameterst para;
 	if (F.hasMetadata()) {
-		auto *meta_data =
-				llvm::dyn_cast<llvm::DISubprogram>(F.getSubprogram())->getType();
+		auto *meta_data = dyn_cast<DISubprogram>(F.getSubprogram())->getType();
 		for (auto arg_iter = F.arg_begin(), arg_end = F.arg_end();
 				arg_iter != arg_end; arg_iter++) {
 			auto arg_symbol = symbol_table.lookup(F.getName().str() + "::"
@@ -47,12 +51,11 @@ symbolt translator::create_goto_func_symbol(const llvm::FunctionType *type,
 		}
 		func_code_type.parameters() = para;
 		if (&*meta_data->getTypeArray()[0] != NULL) {
-			auto *mdn =
-					llvm::dyn_cast<llvm::DIType>(&*meta_data->getTypeArray()[0]);
+			auto *mdn = dyn_cast<DIType>(&*meta_data->getTypeArray()[0]);
 			type->getReturnType();
-			while (mdn->getTag() == llvm::dwarf::DW_TAG_typedef)
-				mdn = llvm::dyn_cast<llvm::DIType>(llvm::dyn_cast<
-						llvm::DIDerivedType>(mdn)->getBaseType());
+			while (mdn->getTag() == dwarf::DW_TAG_typedef)
+				mdn =
+						dyn_cast<DIType>(dyn_cast<DIDerivedType>(mdn)->getBaseType());
 			func_code_type.return_type() = get_goto_type(mdn);
 		}
 		else {

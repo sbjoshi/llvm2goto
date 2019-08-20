@@ -5,27 +5,32 @@
  *      Author: Akash Banerjee
  */
 
-#include "llvm2goto.h"
+#include "translator.h"
+#include "symbol_util.h"
 
+using namespace std;
+using namespace llvm;
 using namespace ll2gb;
+
+symbol_tablet translator::symbol_table = symbol_tablet();
+map<string, string> translator::var_name_map = map<string, string>();
 
 void translator::add_global_symbols() {
 
 }
 
 void translator::add_function_symbols() {
-	for (llvm::Function &F : *llvm_module) {
+	for (Function &F : *llvm_module) {
 		if (F.isDeclaration()) {
 			continue;
 		}
 		if (F.getSubprogram() != NULL) {
-			auto *md =
-					llvm::dyn_cast<llvm::DISubprogram>(F.getSubprogram())->getType();
+			auto *md = dyn_cast<DISubprogram>(F.getSubprogram())->getType();
 			unsigned int i = 1;
 			for (auto arg_iter = F.arg_begin(), arg_end = F.arg_end();
 					arg_iter != arg_end; arg_iter++, i++) {
 				symbolt arg_symbol =
-						create_symbol(llvm::dyn_cast<llvm::DIType>(&*md->getTypeArray()[i]));
+						symbol_util::create_symbol(dyn_cast<DIType>(&*md->getTypeArray()[i]));
 
 				if (!arg_iter->getName().str().compare("argc"))
 					arg_symbol.name = "argc'";
@@ -48,7 +53,8 @@ void translator::add_function_symbols() {
 						arg_symbol.base_name.c_str();
 			}
 		}
-		symbolt func_symbol = create_goto_func_symbol(F.getFunctionType(), F);
+		symbolt func_symbol =
+				symbol_util::create_goto_func_symbol(F.getFunctionType(), F);
 		func_symbol.name = dstringt(F.getName().str());
 		func_symbol.base_name = func_symbol.name;
 		func_symbol.is_lvalue = true;
@@ -59,7 +65,7 @@ void translator::add_function_symbols() {
 }
 
 bool translator::generate_goto() {
-	llvm::dbgs() << "Generating GOTO Binary\n";
+	dbgs() << "Generating GOTO Binary\n";
 
 	initialize_goto();
 	add_global_symbols();
@@ -69,6 +75,6 @@ bool translator::generate_goto() {
 			F != llvm_module->getFunctionList().end(); F++) {
 		F->dump();
 	}
-	llvm::dbgs() << "GOTO Binary generated successfully\n";
+	dbgs() << "GOTO Binary generated successfully\n";
 	return true;
 }

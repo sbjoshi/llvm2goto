@@ -6,7 +6,10 @@
  */
 
 #include "llvm2goto.h"
+#include "translator.h"
 
+using namespace std;
+using namespace llvm;
 using namespace ll2gb;
 
 void translator::add_initial_symbols() {

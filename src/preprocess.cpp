@@ -6,15 +6,19 @@
  */
 #include "llvm2goto.h"
 
-std::unique_ptr<llvm::Module> ll2gb::get_llvm_ir(std::string in_irfile) {
-	static llvm::LLVMContext context;
-	llvm::SMDiagnostic err;
-	auto M = llvm::parseIRFile(in_irfile, err, context);
+using namespace std;
+using namespace llvm;
+using namespace ll2gb;
+
+unique_ptr<Module> ll2gb::get_llvm_ir(string in_irfile) {
+	static LLVMContext context;
+	SMDiagnostic err;
+	auto M = parseIRFile(in_irfile, err, context);
 
 	if (!M) {
-		err.print(in_irfile.c_str(), llvm::errs());
+		err.print(in_irfile.c_str(), errs());
 		exit(1);
 	}
-	llvm::dbgs() << "IR File Successfully read!\n";
+	dbgs() << "IR File Successfully read!\n";
 	return M;
 }

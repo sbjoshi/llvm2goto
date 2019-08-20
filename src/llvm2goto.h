@@ -22,47 +22,17 @@
 #include <util/arith_tools.h>
 #include <linking/static_lifetime_init.h>
 
+using namespace std;
+using namespace llvm;
+
 namespace ll2gb {
 
-class translator {
-private:
-	std::unique_ptr<llvm::Module> &llvm_module;
-	goto_modelt goto_model;
-	goto_functionst goto_functions;
-	symbol_tablet symbol_table;
+class translator;
 
-	std::map<std::string, std::string> var_name_map; //map from unique names to their base_name(pretty_name)
-
-	void add_global_symbols();
-	void set_config();
-	void add_initial_symbols();
-	void add_function_symbols();
-	void initialize_goto() {
-		set_config();
-		add_initial_symbols();
-	}
-	typet get_goto_type(const llvm::DIType*);
-	typet get_goto_type(const llvm::Type*);
-	symbolt create_symbol(const llvm::DIType*);
-	symbolt create_symbol(const llvm::Type*);
-	symbolt create_goto_func_symbol(const llvm::FunctionType*,
-			const llvm::Function&);
-	void write_goto(const std::string &op_gbfile);
-
-public:
-	translator(std::unique_ptr<llvm::Module> &M) :
-			llvm_module { M } {
-	}
-	bool generate_goto();
-};
-
-std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile);
+unique_ptr<Module> get_llvm_ir(string in_irfile);
 
 void print_help();
-void parse_input(int argc,
-		char **argv,
-		std::string &in_irfile,
-		std::string &out_gbfile);
+void parse_input(int argc, char **argv, string &in_irfile, string &out_gbfile);
 }
 
 #endif /* LLVM2GOTO_H */
