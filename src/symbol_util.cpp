@@ -12,6 +12,8 @@ using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
+set<string> translator::symbol_util::typedef_tag_set = set<string>();
+
 string translator::symbol_util::lookup_namespace(string str) {
 	while (var_name_map.find(str) == var_name_map.end()) {
 		string::iterator i = str.end() - 1;
@@ -122,14 +124,94 @@ typet translator::symbol_util::get_basic_type(const DIBasicType *di_basic) {
 	return type;
 }
 
+typet translator::symbol_util::get_tag_type(const DIDerivedType *di_derived) {
+	typet type;
+	auto di_base = dyn_cast<DIType>(di_derived->getBaseType());
+	if (typedef_tag_set.find(di_derived->getName().str())
+			!= typedef_tag_set.end()) {
+		symbolt symbol;
+		symbol.type = get_goto_type(di_base);
+		symbol.name = di_derived->getName().str();
+		symbol.base_name = symbol.name;
+		if (symbol.type.id() == ID_struct)
+			symbol.pretty_name = string("struct ")
+					+ string(symbol.name.c_str());
+		else if (symbol.type.id() == ID_union)
+			symbol.pretty_name = string("union ") + string(symbol.name.c_str());
+		else
+			symbol.pretty_name = symbol.name;
+		symbol.is_thread_local = true;
+		symbol.is_file_local = true;
+		symbol.is_type = true;
+		symbol.is_macro = true;
+		symbol_table.insert(symbol);
+	}
+	auto *tag_symbol = symbol_table.lookup(di_derived->getName().str());
+	if (tag_symbol->type.id() == ID_struct)
+		type = tag_typet(ID_struct_tag, di_derived->getName().str());
+	else if (tag_symbol->type.id() == ID_union)
+		type = tag_typet(ID_struct_tag, di_derived->getName().str());
+	else
+		type = tag_typet(ID_tag, di_derived->getName().str());
+	return type;
+}
+
 typet translator::symbol_util::get_derived_type(const DIDerivedType *di_derived) {
 	typet type;
 	auto di_base = dyn_cast<DIType>(di_derived->getBaseType());
-	if (auto tag = di_derived->getTag() == dwarf::DW_TAG_pointer_type)
+	auto tag = di_derived->getTag();
+	if (tag == dwarf::DW_TAG_pointer_type)
 		type = pointer_type(get_goto_type(di_base));
 	else if (tag == dwarf::DW_TAG_typedef) {
-
+		type = get_tag_type(di_derived);
 	}
+	else if (tag == dwarf::DW_TAG_member) {
+		type = get_goto_type(di_base);
+	}
+	else
+		assert(false && "Unhandled DIDerivedType!");
+	return type;
+}
+
+typet translator::symbol_util::get_composite_type(const DICompositeType *di_composite) {
+	typet type;
+	auto di_base = dyn_cast<DIType>(di_composite->getBaseType());
+	auto tag = di_composite->getTag();
+	if (tag == dwarf::DW_TAG_structure_type) {
+		struct_typet struct_type;
+		auto &components = struct_type.components();
+		for (auto a : di_composite->getElements()) {
+			auto di_type = dyn_cast<DIType>(a);
+			struct_typet::componentt component(di_type->getName().str(),
+					get_goto_type(di_type));
+			components.push_back(component);
+		}
+		type = struct_type;
+	}
+	else if (tag == dwarf::DW_TAG_union_type) {
+		union_typet union_type;
+		auto &components = union_type.components();
+		for (auto a : di_composite->getElements()) {
+			auto di_type = dyn_cast<DIType>(a);
+			union_typet::componentt component(di_type->getName().str(),
+					get_goto_type(di_type));
+			components.push_back(component);
+		}
+		type = union_type;
+	}
+	else if (tag == dwarf::DW_TAG_array_type) {
+		exprt size;
+		for (auto a : di_composite->getElements()) {
+			if (auto sub_range = dyn_cast<DISubrange>(a)) {
+				auto count =
+						sub_range->getCount().dyn_cast<ConstantInt*>()->getZExtValue();
+				size = index_exprt(size, from_integer(count, size_type()));
+			}
+		}
+		type = array_typet(get_goto_type(di_base), size);
+	}
+	else
+		assert(false && "Unhandled DICompositeType!");
 	return type;
 }
 
@@ -138,8 +220,11 @@ typet translator::symbol_util::get_goto_type(const DIType *di_type) {
 	if (auto basic_type = dyn_cast<DIBasicType>(di_type)) {
 		type = get_basic_type(basic_type);
 	}
-	if (auto basic_type = dyn_cast<DIDerivedType>(di_type)) {
-		type = get_derived_type(basic_type);
+	else if (auto derived_type = dyn_cast<DIDerivedType>(di_type)) {
+		type = get_derived_type(derived_type);
+	}
+	else if (auto composite_type = dyn_cast<DICompositeType>(di_type)) {
+		type = get_composite_type(composite_type);
 	}
 	return type;
 }
