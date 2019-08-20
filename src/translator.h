@@ -21,7 +21,7 @@ private:
 	goto_functionst goto_functions;
 	static symbol_tablet symbol_table;
 
-	static map<string, string> var_name_map; //map from unique names to their base_name(pretty_name)
+	static map<string, string> var_name_map; ///<map from unique names to their base_name(pretty_name)
 
 	void add_global_symbols();
 	void set_config();
@@ -33,7 +33,7 @@ private:
 	}
 	void write_goto(const string &op_gbfile);
 
-	class symbol_util;
+	class symbol_util; ///<A sub-class to group all the symbol and type related methods.
 
 public:
 	translator(unique_ptr<Module> &M) :
