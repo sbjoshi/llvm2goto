@@ -125,6 +125,8 @@ typet translator::symbol_util::get_basic_type(const DIBasicType *di_basic) {
 }
 
 typet translator::symbol_util::get_tag_type(const DIDerivedType *di_derived) {
+//	TODO:All tags are being taken from the global namespace;Implement scoping
+//	rules for tags, typedefs, etc.
 	typet type;
 	auto di_base = dyn_cast<DIType>(di_derived->getBaseType());
 	if (typedef_tag_set.find(di_derived->getName().str())
