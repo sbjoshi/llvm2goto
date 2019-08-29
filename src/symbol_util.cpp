@@ -128,7 +128,7 @@ typet translator::symbol_util::get_tag_type(const DIDerivedType *di_derived) {
 //	TODO:All tags are being taken from the global namespace;Implement scoping
 //	rules for tags, typedefs, etc.
 	typet type;
-	auto di_base = dyn_cast<DIType>(di_derived->getBaseType());
+	auto di_base = cast<DIType>(di_derived->getBaseType());
 	if (typedef_tag_set.find(di_derived->getName().str())
 			!= typedef_tag_set.end()) {
 		symbolt symbol;
@@ -160,7 +160,7 @@ typet translator::symbol_util::get_tag_type(const DIDerivedType *di_derived) {
 
 typet translator::symbol_util::get_derived_type(const DIDerivedType *di_derived) {
 	typet type;
-	auto di_base = dyn_cast<DIType>(di_derived->getBaseType());
+	auto di_base = cast<DIType>(di_derived->getBaseType());
 	auto tag = di_derived->getTag();
 	if (tag == dwarf::DW_TAG_pointer_type)
 		type = pointer_type(get_goto_type(di_base));
@@ -177,13 +177,13 @@ typet translator::symbol_util::get_derived_type(const DIDerivedType *di_derived)
 
 typet translator::symbol_util::get_composite_type(const DICompositeType *di_composite) {
 	typet type;
-	auto di_base = dyn_cast<DIType>(di_composite->getBaseType());
+	auto di_base = cast<DIType>(di_composite->getBaseType());
 	auto tag = di_composite->getTag();
 	if (tag == dwarf::DW_TAG_structure_type) {
 		struct_typet struct_type;
 		auto &components = struct_type.components();
 		for (auto a : di_composite->getElements()) {
-			auto di_type = dyn_cast<DIType>(a);
+			auto di_type = cast<DIType>(a);
 			struct_typet::componentt component(di_type->getName().str(),
 					get_goto_type(di_type));
 			components.push_back(component);
@@ -194,7 +194,7 @@ typet translator::symbol_util::get_composite_type(const DICompositeType *di_comp
 		union_typet union_type;
 		auto &components = union_type.components();
 		for (auto a : di_composite->getElements()) {
-			auto di_type = dyn_cast<DIType>(a);
+			auto di_type = cast<DIType>(a);
 			union_typet::componentt component(di_type->getName().str(),
 					get_goto_type(di_type));
 			components.push_back(component);
@@ -204,7 +204,7 @@ typet translator::symbol_util::get_composite_type(const DICompositeType *di_comp
 	else if (tag == dwarf::DW_TAG_array_type) {
 		exprt size;
 		for (auto a : di_composite->getElements()) {
-			if (auto sub_range = dyn_cast<DISubrange>(a)) {
+			if (auto sub_range = cast<DISubrange>(a)) {
 				auto count =
 						sub_range->getCount().dyn_cast<ConstantInt*>()->getZExtValue();
 				size = index_exprt(size, from_integer(count, size_type()));
@@ -219,13 +219,13 @@ typet translator::symbol_util::get_composite_type(const DICompositeType *di_comp
 
 typet translator::symbol_util::get_goto_type(const DIType *di_type) {
 	typet type;
-	if (auto basic_type = dyn_cast<DIBasicType>(di_type)) {
+	if (auto basic_type = cast<DIBasicType>(di_type)) {
 		type = get_basic_type(basic_type);
 	}
-	else if (auto derived_type = dyn_cast<DIDerivedType>(di_type)) {
+	else if (auto derived_type = cast<DIDerivedType>(di_type)) {
 		type = get_derived_type(derived_type);
 	}
-	else if (auto composite_type = dyn_cast<DICompositeType>(di_type)) {
+	else if (auto composite_type = cast<DICompositeType>(di_type)) {
 		type = get_composite_type(composite_type);
 	}
 	return type;
@@ -250,12 +250,11 @@ symbolt translator::symbol_util::create_goto_func_symbol(const FunctionType *typ
 		const Function &F) {
 	symbolt symbol;
 	symbol.clear();
-	symbol.is_thread_local = false;
-	symbol.mode = ID_C;
 	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
+	auto *di_subprog = F.getSubprogram();
 	if (F.hasMetadata()) {
-		auto *meta_data = dyn_cast<DISubprogram>(F.getSubprogram())->getType();
+		auto *di_subroutn = di_subprog->getType();
 		for (auto arg_iter = F.arg_begin(), arg_end = F.arg_end();
 				arg_iter != arg_end; arg_iter++) {
 			auto arg_symbol =
@@ -268,15 +267,20 @@ symbolt translator::symbol_util::create_goto_func_symbol(const FunctionType *typ
 			parameters.push_back(para);
 		}
 		func_code_type.parameters() = parameters;
-		if (&*meta_data->getTypeArray()[0] != NULL) {
-			auto *md_node = dyn_cast<DIType>(&*meta_data->getTypeArray()[0]);
-			type->getReturnType();
+		if (&*di_subroutn->getTypeArray()[0] != NULL) {
+			auto *md_node = cast<DIType>(&*di_subroutn->getTypeArray()[0]);
 			func_code_type.return_type() = get_goto_type(md_node);
 		}
 		else
 			func_code_type.return_type() = void_typet();
 
 	}
+	symbol.name = F.getName().str();
+	symbol.base_name = di_subprog->getName().str();
+	symbol.pretty_name = symbol.base_name;
+	symbol.is_thread_local = false;
+	symbol.mode = ID_C;
+	symbol.is_lvalue = true;
 	symbol.type = func_code_type;
 	return symbol;
 }
