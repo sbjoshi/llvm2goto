@@ -23,6 +23,9 @@
 #include <util/config.h>
 #include <util/c_types.h>
 #include <util/arith_tools.h>
+#include <util/namespace.h>
+#include <langapi/mode.h>
+#include <ansi-c/ansi_c_language.h>
 #include <linking/static_lifetime_init.h>
 
 using namespace std;

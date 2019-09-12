@@ -25,8 +25,8 @@ public:
 	static string lookup_namespace(string);
 	static typet get_goto_type(const DIType*);
 	static typet get_goto_type(const Type*);
-	static symbolt create_symbol(const DIType*);
-	static symbolt create_symbol(const Type*);
+	static symbolt create_symbol(const DIVariable*);
+	static symbolt create_symbol(const Type*, DebugLoc *dbg_loc = nullptr);
 	static symbolt create_goto_func_symbol(const FunctionType*,
 			const Function&);
 };
