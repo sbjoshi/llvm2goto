@@ -10,11 +10,7 @@
 
 #include "translator.h"
 
-using namespace std;
-using namespace llvm;
-using namespace ll2gb;
-
-class translator::scope_tree {
+class ll2gb::translator::scope_tree {
 public:
 	scope_tree() {
 	}
@@ -22,16 +18,16 @@ public:
 		delete_tree();
 	}
 	void delete_tree();
-	void get_scope_name_map(const Function &F,
-			map<DIScope*, string> *scope_name_map);
+	void get_scope_name_map(const llvm::Function &F,
+			std::map<llvm::DIScope*, std::string> *scope_name_map);
 
 private:
 	struct scope_node;
-	map<DIScope*, scope_node*> scope_scope_node_map;
+	std::map<llvm::DIScope*, scope_node*> scope_scope_node_map;
 	static scope_node root;
-	void populate_names(map<DIScope*, string>*, scope_node*);
-	void add_node(DIScope*);
-	void construct_tree(const Function&);
+	void populate_names(std::map<llvm::DIScope*, std::string>*, scope_node*);
+	void add_node(llvm::DIScope*);
+	void construct_tree(const llvm::Function&);
 };
 
 #endif /* SCOPE_TREE_H */

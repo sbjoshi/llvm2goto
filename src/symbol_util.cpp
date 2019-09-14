@@ -15,7 +15,7 @@ using namespace ll2gb;
 set<string> translator::symbol_util::typedef_tag_set = set<string>();
 
 string translator::symbol_util::lookup_namespace(string str) {
-	while (var_name_map.find(str) == var_name_map.end()) {
+	while (symbol_table.lookup(str) == nullptr) {
 		string::iterator i = str.end() - 1;
 		while (*i != ':' && i >= str.begin()) {
 			i--;
@@ -268,9 +268,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	case Type::StructTyID: {
-		static bool create_struct_symbol = false;
 		auto strct_name = ll_type->getStructName().str();
-		if (create_struct_symbol) {
+		if (typedef_tag_set.find(strct_name) == typedef_tag_set.end()) {
 			struct_typet struct_type;
 			auto &components = struct_type.components();
 			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
@@ -280,12 +279,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
-			type = struct_type;
-		}
-		else if (typedef_tag_set.find(strct_name) == typedef_tag_set.end()) {
-			create_struct_symbol = true;
 			symbolt symbol;
-			symbol.type = get_goto_type(ll_type);
+			symbol.type = struct_type;
 			symbol.name = strct_name;
 			symbol.base_name = strct_name;
 			if (symbol.type.id() == ID_struct)
@@ -301,17 +296,14 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			symbol.is_type = true;
 			symbol.is_macro = true;
 			symbol_table.insert(symbol);
-			create_struct_symbol = false;
 		}
-		else {
-			auto *tag_symbol = symbol_table.lookup(strct_name);
-			if (tag_symbol->type.id() == ID_struct)
-				type = tag_typet(ID_struct_tag, strct_name);
-			else if (tag_symbol->type.id() == ID_union)
-				type = tag_typet(ID_union_tag, strct_name);
-			else
-				type = tag_typet(ID_tag, strct_name);
-		}
+		auto *tag_symbol = symbol_table.lookup(strct_name);
+		if (tag_symbol->type.id() == ID_struct)
+			type = tag_typet(ID_struct_tag, strct_name);
+		else if (tag_symbol->type.id() == ID_union)
+			type = tag_typet(ID_union_tag, strct_name);
+		else
+			type = tag_typet(ID_tag, strct_name);
 		break;
 	}
 	case Type::ArrayTyID: {
@@ -345,57 +337,56 @@ symbolt translator::symbol_util::create_symbol(const DIVariable *di_var) {
 	symbol.base_name = di_var->getName().str();
 	symbol.name = scope_name_map[dyn_cast<DIScope>(di_var->getScope())] + "::"
 			+ symbol.base_name.c_str();
-	var_name_map[symbol.name.c_str()] = symbol.base_name.c_str();
 	symbol.type = get_goto_type(dyn_cast<DIType>(di_var->getType()));
 	return symbol;
 }
 
 symbolt translator::symbol_util::create_symbol(const Type *ll_type,
-		DebugLoc *di_scope) {
-	static unsigned var_counter;
+		DILocalScope *di_scope) {
+	static unsigned var_counter = 1;
 	symbolt symbol;
 	symbol.is_file_local = true;
 	symbol.is_thread_local = true;
 	symbol.is_lvalue = true;
-	symbol.base_name = string("var" + var_counter);
-	symbol.name = scope_name_map[di_scope] + "::" + symbol.base_name.c_str();
-	var_name_map[symbol.name.c_str()] = symbol.base_name.c_str();
+	symbol.base_name = string("var" + to_string(var_counter));
+	if (di_scope) {
+		symbol.name = scope_name_map[di_scope] + "::"
+				+ symbol.base_name.c_str();
+	}
+	else
+		symbol.name = symbol.base_name;
 	var_counter++;
 	symbol.type = get_goto_type(ll_type);
 	return symbol;
 }
 
-symbolt translator::symbol_util::create_goto_func_symbol(const FunctionType *type,
-		const Function &F) {
+symbolt translator::symbol_util::create_goto_func_symbol(const Function &F) {
 	symbolt symbol;
 	symbol.clear();
 	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
-	auto *di_subprog = F.getSubprogram();
-	if (F.hasMetadata()) {
-		auto *di_subroutine = di_subprog->getType();
-		for (auto arg_iter = F.arg_begin(), arg_end = F.arg_end();
-				arg_iter != arg_end; arg_iter++) {
-			auto arg_symbol =
-					symbol_table.lookup(lookup_namespace(F.getName().str()
-							+ "::" + arg_iter->getName().str()));
-			code_typet::parametert para(arg_symbol->type);
-			para.set_identifier(F.getName().str() + "::"
-					+ arg_iter->getName().str());
-			para.set_base_name(arg_iter->getName().str());
-			parameters.push_back(para);
-		}
-		func_code_type.parameters() = parameters;
+	for (const auto &arg_iter : F.args()) {
+		auto arg_symbol = symbol_table.lookup(func_arg_name_map[&arg_iter]);
+		code_typet::parametert para(arg_symbol->type);
+		para.set_identifier(arg_symbol->name);
+		para.set_base_name(arg_symbol->base_name);
+		parameters.push_back(para);
+	}
+	func_code_type.parameters() = parameters;
+	if (F.getSubprogram()) {
+		auto *di_subroutine = F.getSubprogram()->getType();
 		if (&*di_subroutine->getTypeArray()[0] != NULL) {
 			auto *DI = cast<DIType>(&*di_subroutine->getTypeArray()[0]);
 			func_code_type.return_type() = get_goto_type(DI);
 		}
 		else
 			func_code_type.return_type() = void_typet();
-
 	}
+	else
+		func_code_type.return_type() = get_goto_type(F.getReturnType());
+
 	symbol.name = F.getName().str();
-	symbol.base_name = di_subprog->getName().str();
+	symbol.base_name = symbol.name;
 	symbol.pretty_name = symbol.base_name;
 	symbol.is_thread_local = false;
 	symbol.mode = ID_C;

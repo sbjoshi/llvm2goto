@@ -23,6 +23,6 @@ int main(int argc, char **argv) {
 		errs() << "Encountered an error in generating goto-binary!\nProgram will now terminate.\n";
 		exit(3);
 	}
-
+	T.write_goto(out_gbfile);
 	return 0;
 }

@@ -20,25 +20,37 @@
 #include <llvm/IR/LLVMContext.h>
 
 #include <goto-programs/goto_model.h>
+#include <goto-programs/write_goto_binary.h>
 #include <util/config.h>
 #include <util/c_types.h>
 #include <util/arith_tools.h>
 #include <util/namespace.h>
+#include <util/string_constant.h>
 #include <langapi/mode.h>
 #include <ansi-c/ansi_c_language.h>
+#include <ansi-c/ansi_c_entry_point.h>
 #include <linking/static_lifetime_init.h>
+#include <cbmc/cbmc_parse_options.h>
 
-using namespace std;
-using namespace llvm;
+//#include "pointer-analysis/dereference_callback.h"
+//#include <util/arith_tools.h>
+//#include <util/c_types.h>
 
 namespace ll2gb {
 
 class translator;
 
-unique_ptr<Module> get_llvm_ir(string in_irfile);
+std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile);
+
+void set_function_symbol_value(goto_functionst::function_mapt&, symbol_tablet&);
+void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
+void set_entry_point(goto_functionst&, symbol_tablet&);
 
 void print_help();
-void parse_input(int argc, char **argv, string &in_irfile, string &out_gbfile);
+void parse_input(int argc,
+		char **argv,
+		std::string &in_irfile,
+		std::string &out_gbfile);
 }
 
 #endif /* LLVM2GOTO_H */

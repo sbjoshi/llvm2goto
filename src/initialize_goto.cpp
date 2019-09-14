@@ -37,8 +37,6 @@ void translator::add_initial_symbols() {
 	cprover_rounding_mode.is_thread_local = true;
 	cprover_rounding_mode.is_static_lifetime = true;
 	cprover_rounding_mode.is_lvalue = true;
-	var_name_map[cprover_rounding_mode.name.c_str()] =
-			cprover_rounding_mode.base_name.c_str();
 	symbol_table.add(cprover_rounding_mode);
 
 	symbolt cprover_deallocated;
@@ -51,8 +49,6 @@ void translator::add_initial_symbols() {
 	cprover_deallocated.mode = ID_C;
 	cprover_deallocated.is_lvalue = true;
 	cprover_deallocated.is_static_lifetime = true;
-	var_name_map[cprover_deallocated.name.c_str()] =
-			cprover_deallocated.base_name.c_str();
 	symbol_table.add(cprover_deallocated);
 
 	symbolt cprover_dead_object;
@@ -65,8 +61,6 @@ void translator::add_initial_symbols() {
 	cprover_dead_object.mode = ID_C;
 	cprover_dead_object.is_lvalue = true;
 	cprover_dead_object.is_static_lifetime = true;
-	var_name_map[cprover_dead_object.name.c_str()] =
-			cprover_dead_object.base_name.c_str();
 	symbol_table.add(cprover_dead_object);
 
 	symbolt cprover_malloc_object;
@@ -79,8 +73,6 @@ void translator::add_initial_symbols() {
 	cprover_malloc_object.mode = ID_C;
 	cprover_malloc_object.is_lvalue = true;
 	cprover_malloc_object.is_static_lifetime = true;
-	var_name_map[cprover_malloc_object.name.c_str()] =
-			cprover_malloc_object.base_name.c_str();
 	symbol_table.add(cprover_malloc_object);
 
 	symbolt cprover_malloc_size;
@@ -91,8 +83,6 @@ void translator::add_initial_symbols() {
 	cprover_malloc_size.mode = ID_C;
 	cprover_malloc_size.is_lvalue = true;
 	cprover_malloc_size.is_static_lifetime = true;
-	var_name_map[cprover_malloc_size.name.c_str()] =
-			cprover_malloc_size.base_name.c_str();
 	symbol_table.add(cprover_malloc_size);
 }
 

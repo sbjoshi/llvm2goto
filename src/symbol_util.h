@@ -10,25 +10,21 @@
 
 #include "translator.h"
 
-using namespace std;
-using namespace llvm;
-using namespace ll2gb;
+class ll2gb::translator::symbol_util {
+	static typet get_basic_type(const llvm::DIBasicType*);
+	static typet get_tag_type(const llvm::DIDerivedType*);
+	static typet get_composite_type(const llvm::DICompositeType*);
+	static typet get_derived_type(const llvm::DIDerivedType*);
 
-class translator::symbol_util {
-	static typet get_basic_type(const DIBasicType*);
-	static typet get_tag_type(const DIDerivedType*);
-	static typet get_composite_type(const DICompositeType*);
-	static typet get_derived_type(const DIDerivedType*);
-
-	static set<string> typedef_tag_set; ///<Stores typdefs whose type symbols have already been added.
+	static std::set<std::string> typedef_tag_set; ///<Stores typdefs whose type symbols have already been added.
 public:
-	static string lookup_namespace(string);
-	static typet get_goto_type(const DIType*);
-	static typet get_goto_type(const Type*);
-	static symbolt create_symbol(const DIVariable*);
-	static symbolt create_symbol(const Type*, DebugLoc *dbg_loc = nullptr);
-	static symbolt create_goto_func_symbol(const FunctionType*,
-			const Function&);
+	static std::string lookup_namespace(std::string);
+	static typet get_goto_type(const llvm::DIType*);
+	static typet get_goto_type(const llvm::Type*);
+	static symbolt create_symbol(const llvm::DIVariable*);
+	static symbolt create_symbol(const llvm::Type*,
+			llvm::DILocalScope *di_scope = nullptr);
+	static symbolt create_goto_func_symbol(const llvm::Function&);
 };
 
 #endif /* SYMBOL_UTIL_H */

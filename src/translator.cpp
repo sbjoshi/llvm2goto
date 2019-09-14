@@ -9,13 +9,99 @@
 #include "symbol_util.h"
 #include "scope_tree.h"
 
+#include<fstream>
+
 using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
 symbol_tablet translator::symbol_table = symbol_tablet();
-map<string, string> translator::var_name_map = map<string, string>();
+//map<Instruction*, string> translator::var_name_map =
+//		map<Instruction*, string>();
+map<const Argument*, string> translator::func_arg_name_map = map<
+		const Argument*, string>();
 map<DIScope*, string> translator::scope_name_map = map<DIScope*, string>();
+
+exprt translator::get_expr_const(const Constant &C) {
+	exprt expr;
+	if (isa<ConstantAggregate>(C)) {
+//		TODO:Implement this
+	}
+	else if (isa<ConstantData>(C)) {
+		if (isa<ConstantAggregateZero>(C)) {
+		}
+		else if (isa<ConstantDataSequential>(C)) {
+		}
+		else if (isa<ConstantFP>(C)) {
+		}
+		else if (isa<ConstantInt>(C)) {
+			auto &CI = cast<ConstantInt>(C);
+			auto val = CI.getSExtValue();
+			expr = from_integer(val, signedbv_typet(CI.getBitWidth()));
+		}
+		else if (isa<ConstantPointerNull>(C)) {
+		}
+		else if (isa<ConstantTokenNone>(C)) {
+		}
+		else if (isa<UndefValue>(C)) {
+		}
+	}
+	else if (isa<ConstantExpr>(C)) {
+//		TODO:Implement this
+	}
+	else if (isa<GlobalValue>(C)) {
+//		TODO:Implement this
+	}
+	return expr;
+}
+
+exprt translator::get_expr(const Value &V) {
+	exprt expr;
+	if (isa<Instruction>(V)) {
+		const auto &I = cast<Instruction>(V);
+		if (isa<AllocaInst>(&I)) {
+			auto symbol = symbol_table.lookup(var_name_map[&I]);
+			return symbol->symbol_expr();
+		}
+	}
+	else if (isa<Constant>(V)) {
+		if (isa<ConstantAggregate>(V)) {
+
+		}
+		else if (isa<ConstantData>(V)) {
+			const auto &C = cast<ConstantData>(V);
+			expr = get_expr_const(C);
+		}
+		else if (isa<ConstantExpr>(V)) {
+
+		}
+		else if (isa<GlobalValue>(V)) {
+
+		}
+	}
+	return expr;
+}
+
+void translator::trans_store(const StoreInst &SI) {
+	const auto &ll_op1 = SI.getOperand(0);
+	const auto &ll_op2 = SI.getOperand(1);
+	auto src_expr = get_expr(*ll_op1);
+	auto tgt_expr = get_expr(*ll_op2);
+	auto asgn_instr = goto_program.add_instruction();
+	asgn_instr->make_assignment();
+	asgn_instr->code = code_assignt(tgt_expr, src_expr);
+	source_locationt location;
+	if (SI.getMetadata(0)) {
+		const auto loc = SI.getDebugLoc();
+		location.set_file(loc->getScope()->getFile()->getFilename().str());
+		location.set_working_directory(loc->getScope()->getFile()->getDirectory().str());
+		location.set_line(loc->getLine());
+		location.set_column(loc->getColumn());
+	}
+	asgn_instr->source_location = location;
+	asgn_instr->type = goto_program_instruction_typet::ASSIGN;
+	goto_program.update();
+}
 
 void translator::trans_alloca(const AllocaInst &AI) {
 	symbolt symbol;
@@ -24,13 +110,56 @@ void translator::trans_alloca(const AllocaInst &AI) {
 		symbol = symbol_util::create_symbol(DI);
 	}
 	else {
-		symbol = symbol_util::create_symbol(AI.getAllocatedType(),
-				AI.getDebugLoc());
+		if (AI.getMetadata(0)) {
+			symbol = symbol_util::create_symbol(AI.getAllocatedType(),
+					AI.getDebugLoc()->getScope());
+		}
+		else {
+			symbol = symbol_util::create_symbol(AI.getAllocatedType());
+			symbol.name = AI.getFunction()->getName().str() + "::"
+					+ symbol.name.c_str();
+			auto &I = cast<Instruction>(AI);
+			var_name_map[&I] = symbol.name.c_str();
+		}
 	}
 	symbol_table.add(symbol);
+	auto dclr_instr = goto_program.add_instruction();
+	dclr_instr->make_decl();
+	dclr_instr->code = code_declt(symbol.symbol_expr());
+	auto location = symbol.location;
+	if (AI.getMetadata(0)) {
+		const auto loc = AI.getDebugLoc();
+		location.set_file(loc->getScope()->getFile()->getFilename().str());
+		location.set_working_directory(loc->getScope()->getFile()->getDirectory().str());
+		location.set_line(loc->getLine());
+		location.set_column(loc->getColumn());
+	}
+	dclr_instr->source_location = location;
+	goto_program.update();
 }
 
-exprt translator::get_cmp_expr(const Instruction *I) {
+void translator::trans_ret(const ReturnInst &RI) {
+	const auto &ll_op1 = RI.getOperand(0);
+	auto ret_expr = get_expr(*ll_op1);
+	goto_programt::targett ret_inst = goto_program.add_instruction();
+	code_returnt cret;
+	cret.return_value() = ret_expr;
+	ret_inst->make_return();
+	ret_inst->code = cret;
+	source_locationt location;
+	if (RI.getMetadata(0)) {
+		const auto loc = RI.getDebugLoc();
+		location.set_file(loc->getScope()->getFile()->getFilename().str());
+		location.set_working_directory(loc->getScope()->getFile()->getDirectory().str());
+		location.set_line(loc->getLine());
+		location.set_column(loc->getColumn());
+	}
+	ret_inst->source_location = location;
+	goto_program.update();
+	ret_inst->source_location = location;
+}
+
+exprt translator::get_expr_cmp(const Instruction *I) {
 	exprt condition;
 	User::const_value_op_iterator ub = I->value_op_begin();
 	exprt opnd1, opnd2;
@@ -262,10 +391,11 @@ exprt translator::get_cmp_expr(const Instruction *I) {
 void translator::trans_instruction(const Instruction &I) {
 //	const Instruction *Inst = &I;
 	switch (I.getOpcode()) {
-//	case Instruction::Ret: {
-//		trans_Ret(Inst, *symbol_table);
-//		break;
-//	}
+	case Instruction::Ret: {
+		const ReturnInst &RI = *dyn_cast<ReturnInst>(&I);
+		trans_ret(RI);
+		break;
+	}
 //	case Instruction::Br: {
 //		goto_programt br_gp = trans_Br(Inst,
 //				symbol_table,
@@ -397,11 +527,11 @@ void translator::trans_instruction(const Instruction &I) {
 //		goto_programt store_gp = trans_Load(Inst);
 //		break;
 //	}
-//	case Instruction::Store: {
-//		goto_programt load_gp = trans_Store(Inst, *symbol_table);
-//		gp.destructive_append(load_gp);
-//		break;
-//	}
+	case Instruction::Store: {
+		const StoreInst &SI = *dyn_cast<StoreInst>(&I);
+		trans_store(SI);
+		break;
+	}
 //	case Instruction::AtomicCmpXchg: {
 //		gp = trans_AtomicCmpXchg(Inst);
 //		break;
@@ -575,7 +705,7 @@ void translator::set_branches(map<const BasicBlock*, goto_programt::targett> blo
 				auto temp =
 						dyn_cast<Instruction>(dyn_cast<BranchInst>((*i).first)->getCondition());
 				if (dyn_cast<CmpInst>(temp))
-					guard = not_exprt(get_cmp_expr(temp));
+					guard = not_exprt(get_expr_cmp(temp));
 //				else if (auto phi = dyn_cast<PHINode>(temp))
 //					guard = not_exprt(get_PHI(phi));
 			}
@@ -596,7 +726,7 @@ void translator::set_branches(map<const BasicBlock*, goto_programt::targett> blo
 			exprt guard;
 			if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
 				guard =
-						get_cmp_expr(dyn_cast<Instruction>(dyn_cast<BranchInst>((*i).first)->getCondition()));
+						get_expr_cmp(dyn_cast<Instruction>(dyn_cast<BranchInst>((*i).first)->getCondition()));
 			}
 			else {
 				guard = true_exprt();
@@ -610,10 +740,106 @@ void translator::set_branches(map<const BasicBlock*, goto_programt::targett> blo
 	}
 }
 
+void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
+	symbol.mode = ID_C;
+
+	if (symbol_table.move(symbol, new_symbol)) {
+		assert(false && "failed to move symbol");
+	}
+}
+
+void translator::add_argc_argv(const symbolt &main_symbol) {
+	const code_typet::parameterst &parameters =
+			to_code_type(main_symbol.type).parameters();
+
+	if (parameters.empty()) return;
+
+	if (parameters.size() != 2 && parameters.size() != 3) {
+		assert(false && "main expected to have no or two or three parameters");
+	}
+
+	symbolt *argc_new_symbol;
+
+	const exprt &op0 = static_cast<const exprt&>(parameters[0]);
+	const exprt &op1 = static_cast<const exprt&>(parameters[1]);
+
+	{
+		symbolt argc_symbol;
+
+		argc_symbol.base_name = "argc";
+		argc_symbol.name = "argc'";
+		argc_symbol.type = op0.type();
+		argc_symbol.is_static_lifetime = true;
+		argc_symbol.is_lvalue = true;
+
+		if (argc_symbol.type.id() != ID_signedbv
+				&& argc_symbol.type.id() != ID_unsignedbv) {
+			assert(false && "argc argument expected to be integer type");
+		}
+
+		move_symbol(argc_symbol, argc_new_symbol);
+	}
+
+	{
+		if (op1.type().id() != ID_pointer
+				|| op1.type().subtype().id() != ID_pointer) {
+			assert(false
+					&& "argv argument expected to be pointer-to-pointer type");
+		}
+
+		// we make the type of this thing an array of pointers
+		// need to add one to the size -- the array is terminated
+		// with NULL
+		exprt one_expr = from_integer(1, argc_new_symbol->type);
+
+		const plus_exprt size_expr(argc_new_symbol->symbol_expr(), one_expr);
+		const array_typet argv_type(op1.type().subtype(), size_expr);
+
+		symbolt argv_symbol;
+
+		argv_symbol.base_name = "argv'";
+		argv_symbol.name = "argv'";
+		argv_symbol.type = argv_type;
+		argv_symbol.is_static_lifetime = true;
+		argv_symbol.is_lvalue = true;
+
+		symbolt *argv_new_symbol;
+		move_symbol(argv_symbol, argv_new_symbol);
+	}
+
+	if (parameters.size() == 3) {
+		symbolt envp_symbol;
+		envp_symbol.base_name = "envp'";
+		envp_symbol.name = "envp'";
+		envp_symbol.type = (static_cast<const exprt&>(parameters[2])).type();
+		envp_symbol.is_static_lifetime = true;
+
+		symbolt envp_size_symbol, *envp_new_size_symbol;
+		envp_size_symbol.base_name = "envp_size";
+		envp_size_symbol.name = "envp_size'";
+		envp_size_symbol.type = op0.type();  // same type as argc!
+		envp_size_symbol.is_static_lifetime = true;
+		move_symbol(envp_size_symbol, envp_new_size_symbol);
+
+		if (envp_symbol.type.id() != ID_pointer) {
+			assert(false && "envp argument expected to be pointer type");
+		}
+
+		exprt size_expr = envp_new_size_symbol->symbol_expr();
+
+		envp_symbol.type.id(ID_array);
+		envp_symbol.type.add(ID_size).swap(size_expr);
+
+		symbolt *envp_new_symbol;
+		move_symbol(envp_symbol, envp_new_symbol);
+	}
+}
+
 void translator::trans_function(Function &F) {
 	scope_tree st;
 	scope_name_map.clear();
 	st.get_scope_name_map(F, &scope_name_map);
+	scope_name_map[nullptr] = "";
 	map<const BasicBlock*, goto_programt::targett> block_target_map;
 	map<goto_programt::targett, const BasicBlock*> branch_dest_block_map_switch;
 	map<const Instruction*, pair<goto_programt::targett, goto_programt::targett>> instruction_target_map;
@@ -685,23 +911,55 @@ void translator::add_function_symbols() {
 				else
 					arg_symbol.name = F.getName().str() + "::"
 							+ arg_iter->getName().str();
-				arg_symbol.base_name = arg_iter->getName().str();
 				arg_symbol.is_lvalue = true;
 				arg_symbol.is_parameter = true;
 				arg_symbol.is_state_var = true;
 				arg_symbol.is_thread_local = true;
 				arg_symbol.is_file_local = true;
+				func_arg_name_map[arg_iter] = arg_symbol.name.c_str();
 				symbol_table.add(arg_symbol);
-				var_name_map[arg_symbol.name.c_str()] =
-						arg_symbol.base_name.c_str();
 			}
 		}
-		symbolt func_symbol =
-				symbol_util::create_goto_func_symbol(F.getFunctionType(), F);
+		else {
+			if (!F.getName().str().compare("main"))
+				assert(F.arg_size() <= 2
+						&& "main function can't take more than two arguments!");
+			for (auto &arg : F.args()) {
+				symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
+				if (!F.getName().str().compare("main")) {
+					if (arg_symbol.type.id() == ID_signedbv) {
+						arg_symbol.name = "argc'";
+					}
+					else if (arg_symbol.type.id() == ID_pointer) {
+						arg_symbol.name = "argv'";
+					}
+					else
+						assert(false
+								&& "Incompatible parameter type for main function!");
+				}
+				else
+					arg_symbol.name = F.getName().str() + "::"
+							+ arg.getName().str();
+				arg_symbol.is_lvalue = true;
+				arg_symbol.is_parameter = true;
+				arg_symbol.is_state_var = true;
+				arg_symbol.is_thread_local = true;
+				arg_symbol.is_file_local = true;
+				func_arg_name_map[&arg] = arg_symbol.name.c_str();
+				symbol_table.add(arg_symbol);
+			}
+		}
+		symbolt func_symbol = symbol_util::create_goto_func_symbol(F);
 		symbol_table.add(func_symbol);
 		goto_functions.function_map[F.getName().str()] =
 				goto_functionst::goto_functiont();
 	}
+}
+
+void translator::write_goto(const string &filename) {
+	ofstream out(filename, ios::binary);
+	write_goto_binary(out, symbol_table, goto_functions);
+	dbgs() << "GOTO Binary written to file: " << filename << '\n';
 }
 
 bool translator::generate_goto() {
@@ -714,7 +972,16 @@ bool translator::generate_goto() {
 	for (auto F = llvm_module->getFunctionList().begin();
 			F != llvm_module->getFunctionList().end(); F++) {
 		trans_function(*F);
+		const auto *fn = symbol_table.lookup(F->getName().str());
+		(*goto_functions.function_map.find(dstringt(F->getName()))).second.body.swap(goto_program);
+		(*goto_functions.function_map.find(dstringt(F->getName()))).second.type =
+				to_code_type(fn->type);
+		goto_program.clear();
 	}
+	add_argc_argv(*symbol_table.lookup("main"));
+	set_entry_point(goto_functions, symbol_table);
+	config.set_from_symbol_table(symbol_table);
+	namespacet ns(symbol_table);
 
 	dbgs() << "GOTO Binary generated successfully\n";
 	return true;
