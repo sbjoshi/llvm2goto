@@ -4,8 +4,7 @@ struct akash{
 
 typedef struct akash funtype;
 typedef int cooltype;
-int main(int argc,char**argv){
-    //int zzzzzz = argc;
+int main(){
     union un_test{
         funtype struc;
         cooltype integer;
@@ -16,7 +15,6 @@ int main(int argc,char**argv){
     
     unsigned a = -10;
     long b = 20;
-    int c = a+b;
     double d;
     float f;
     struct akash s;

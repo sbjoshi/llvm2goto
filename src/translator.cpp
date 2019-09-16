@@ -60,24 +60,19 @@ exprt translator::get_expr(const Value &V) {
 	if (isa<Instruction>(V)) {
 		const auto &I = cast<Instruction>(V);
 		if (isa<AllocaInst>(&I)) {
+			auto s = var_name_map[&I];
 			auto symbol = symbol_table.lookup(var_name_map[&I]);
 			return symbol->symbol_expr();
 		}
 	}
 	else if (isa<Constant>(V)) {
-		if (isa<ConstantAggregate>(V)) {
-
-		}
-		else if (isa<ConstantData>(V)) {
-			const auto &C = cast<ConstantData>(V);
-			expr = get_expr_const(C);
-		}
-		else if (isa<ConstantExpr>(V)) {
-
-		}
-		else if (isa<GlobalValue>(V)) {
-
-		}
+		const auto &C = cast<Constant>(V);
+		expr = get_expr_const(C);
+	}
+	else if (isa<Argument>(V)) {
+		const auto &A = cast<Argument>(V);
+		auto symbol = symbol_table.lookup(func_arg_name_map[&A]);
+		return symbol->symbol_expr();
 	}
 	return expr;
 }
@@ -105,23 +100,23 @@ void translator::trans_store(const StoreInst &SI) {
 
 void translator::trans_alloca(const AllocaInst &AI) {
 	symbolt symbol;
-	if (alloca_dbg_map.find(&AI) != alloca_dbg_map.end()) {
-		auto DI = dyn_cast<DIVariable>(alloca_dbg_map[&AI]->getVariable());
-		symbol = symbol_util::create_symbol(DI);
-	}
-	else {
-		if (AI.getMetadata(0)) {
-			symbol = symbol_util::create_symbol(AI.getAllocatedType(),
-					AI.getDebugLoc()->getScope());
-		}
-		else {
-			symbol = symbol_util::create_symbol(AI.getAllocatedType());
-			symbol.name = AI.getFunction()->getName().str() + "::"
-					+ symbol.name.c_str();
-			auto &I = cast<Instruction>(AI);
-			var_name_map[&I] = symbol.name.c_str();
-		}
-	}
+//	if (alloca_dbg_map.find(&AI) != alloca_dbg_map.end()) {
+//		auto DI = dyn_cast<DIVariable>(alloca_dbg_map[&AI]->getVariable());
+//		symbol = symbol_util::create_symbol(DI);
+//	}
+//	else {
+	symbol = symbol_util::create_symbol(AI.getAllocatedType());
+//	if (AI.hasName()) {
+//		symbol.base_name = AI.getName().str();
+//		symbol.name = AI.getFunction()->getName().str() + "::"
+//				+ symbol.base_name.c_str();
+//	}
+//	else
+	symbol.name = AI.getFunction()->getName().str() + "::"
+			+ symbol.name.c_str();
+//	}
+	auto &I = cast<Instruction>(AI);
+	var_name_map[&I] = symbol.name.c_str();
 	symbol_table.add(symbol);
 	auto dclr_instr = goto_program.add_instruction();
 	dclr_instr->make_decl();
@@ -392,7 +387,7 @@ void translator::trans_instruction(const Instruction &I) {
 //	const Instruction *Inst = &I;
 	switch (I.getOpcode()) {
 	case Instruction::Ret: {
-		const ReturnInst &RI = *dyn_cast<ReturnInst>(&I);
+		const ReturnInst &RI = cast<ReturnInst>(I);
 		trans_ret(RI);
 		break;
 	}
@@ -519,7 +514,7 @@ void translator::trans_instruction(const Instruction &I) {
 //		break;
 //	}
 	case Instruction::Alloca: {
-		const AllocaInst &AI = *dyn_cast<AllocaInst>(&I);
+		const AllocaInst &AI = cast<AllocaInst>(I);
 		trans_alloca(AI);
 		break;
 	}
@@ -528,7 +523,7 @@ void translator::trans_instruction(const Instruction &I) {
 //		break;
 //	}
 	case Instruction::Store: {
-		const StoreInst &SI = *dyn_cast<StoreInst>(&I);
+		const StoreInst &SI = cast<StoreInst>(I);
 		trans_store(SI);
 		break;
 	}
@@ -628,11 +623,14 @@ void translator::trans_instruction(const Instruction &I) {
 //		gp = trans_Select(Inst);
 //		break;
 //	}
-//	case Instruction::Call: {
-//		goto_programt Call_Inst = trans_Call(Inst, symbol_table, &FAM);
-//		gp.destructive_append(Call_Inst);
-//		break;
-//	}
+	case Instruction::Call: {
+		if (isa<DbgDeclareInst>(I)) {
+			break;
+		}
+		const CallInst &CI = cast<CallInst>(I);
+//		trans_store (SI);
+		break;
+	}
 //	case Instruction::Shl: {
 //		goto_programt shl_Inst = trans_Shl(Inst, *symbol_table);
 //		gp.destructive_append(shl_Inst);
@@ -836,6 +834,7 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 }
 
 void translator::trans_function(Function &F) {
+	symbol_util::set_var_counter(F.arg_size() + 1);
 	scope_tree st;
 	scope_name_map.clear();
 	st.get_scope_name_map(F, &scope_name_map);
@@ -843,7 +842,7 @@ void translator::trans_function(Function &F) {
 	map<const BasicBlock*, goto_programt::targett> block_target_map;
 	map<goto_programt::targett, const BasicBlock*> branch_dest_block_map_switch;
 	map<const Instruction*, pair<goto_programt::targett, goto_programt::targett>> instruction_target_map;
-	auto func_symbol = namespacet(symbol_table).lookup(F.getName().str());
+	auto func_symbol = symbol_table.lookup(F.getName().str());
 	Function::const_iterator b = F.begin(), be = F.end();
 	for (; b != be; ++b) {
 		const BasicBlock &B = *b;
@@ -891,64 +890,47 @@ void translator::analyse_ir() {
 
 void translator::add_function_symbols() {
 	for (Function &F : *llvm_module) {
+		symbol_util::set_var_counter(1);
 		if (F.isDeclaration()) {
 			continue;
 		}
-		if (F.getSubprogram() != NULL) {
-			auto *md = cast<DISubprogram>(F.getSubprogram())->getType();
-			unsigned int i = 1;
-			for (auto arg_iter = F.arg_begin(), arg_end = F.arg_end();
-					arg_iter != arg_end; arg_iter++, i++) {
-				symbolt arg_symbol = symbol_util::create_symbol(cast<
-						DILocalVariable>(&*md->getTypeArray()[i]));
-				if (!arg_iter->getName().str().compare("argc"))
-					arg_symbol.name = "argc'";
-				else
-					arg_symbol.name = F.getName().str() + "::"
-							+ arg_iter->getName().str();
-				if (!arg_iter->getName().str().compare("argv"))
-					arg_symbol.name = "argv'";
-				else
-					arg_symbol.name = F.getName().str() + "::"
-							+ arg_iter->getName().str();
-				arg_symbol.is_lvalue = true;
-				arg_symbol.is_parameter = true;
-				arg_symbol.is_state_var = true;
-				arg_symbol.is_thread_local = true;
-				arg_symbol.is_file_local = true;
-				func_arg_name_map[arg_iter] = arg_symbol.name.c_str();
-				symbol_table.add(arg_symbol);
-			}
+//		if (F.getSubprogram() != NULL) {
+//			auto *md = cast<DISubprogram>(F.getSubprogram())->getType();
+//			unsigned int i = 1;
+//			for (auto arg_iter = F.arg_begin(), arg_end = F.arg_end();
+//					arg_iter != arg_end; arg_iter++, i++) {
+//
+//				symbolt arg_symbol;
+//				arg_symbol.type =
+//						symbol_util::get_goto_type(cast<DIType>(md->getTypeArray()[i]));
+//				arg_symbol.name = F.getName().str() + "::"
+//						+ arg_iter->getName().str();
+//				arg_symbol.is_lvalue = true;
+//				arg_symbol.is_parameter = true;
+//				arg_symbol.is_state_var = true;
+//				arg_symbol.is_thread_local = true;
+//				arg_symbol.is_file_local = true;
+//				func_arg_name_map[arg_iter] = arg_symbol.name.c_str();
+//				symbol_table.add(arg_symbol);
+//			}
+//		}
+//		else {
+		if (!F.getName().str().compare("main"))
+			assert(F.arg_size() <= 2
+					&& "main function can't take more than two arguments!");
+		for (auto &arg : F.args()) {
+			symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
+			arg_symbol.name = F.getName().str() + "::"
+					+ arg_symbol.name.c_str();
+			arg_symbol.is_lvalue = true;
+			arg_symbol.is_parameter = true;
+			arg_symbol.is_state_var = true;
+			arg_symbol.is_thread_local = true;
+			arg_symbol.is_file_local = true;
+			func_arg_name_map[&arg] = arg_symbol.name.c_str();
+			symbol_table.add(arg_symbol);
 		}
-		else {
-			if (!F.getName().str().compare("main"))
-				assert(F.arg_size() <= 2
-						&& "main function can't take more than two arguments!");
-			for (auto &arg : F.args()) {
-				symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
-				if (!F.getName().str().compare("main")) {
-					if (arg_symbol.type.id() == ID_signedbv) {
-						arg_symbol.name = "argc'";
-					}
-					else if (arg_symbol.type.id() == ID_pointer) {
-						arg_symbol.name = "argv'";
-					}
-					else
-						assert(false
-								&& "Incompatible parameter type for main function!");
-				}
-				else
-					arg_symbol.name = F.getName().str() + "::"
-							+ arg.getName().str();
-				arg_symbol.is_lvalue = true;
-				arg_symbol.is_parameter = true;
-				arg_symbol.is_state_var = true;
-				arg_symbol.is_thread_local = true;
-				arg_symbol.is_file_local = true;
-				func_arg_name_map[&arg] = arg_symbol.name.c_str();
-				symbol_table.add(arg_symbol);
-			}
-		}
+//		}
 		symbolt func_symbol = symbol_util::create_goto_func_symbol(F);
 		symbol_table.add(func_symbol);
 		goto_functions.function_map[F.getName().str()] =
@@ -964,7 +946,6 @@ void translator::write_goto(const string &filename) {
 
 bool translator::generate_goto() {
 	dbgs() << "Generating GOTO Binary\n";
-
 	initialize_goto();
 	add_global_symbols();
 	add_function_symbols();
@@ -973,12 +954,17 @@ bool translator::generate_goto() {
 			F != llvm_module->getFunctionList().end(); F++) {
 		trans_function(*F);
 		const auto *fn = symbol_table.lookup(F->getName().str());
-		(*goto_functions.function_map.find(dstringt(F->getName()))).second.body.swap(goto_program);
-		(*goto_functions.function_map.find(dstringt(F->getName()))).second.type =
+		stringstream out;
+		goto_program.output(out);
+		auto str = out.str();
+		errs() << out.str();
+		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
+//		(*goto_functions.function_map.find(F->getName().str())).second.body.swap(goto_program);
+		(*goto_functions.function_map.find(F->getName().str())).second.type =
 				to_code_type(fn->type);
 		goto_program.clear();
 	}
-	add_argc_argv(*symbol_table.lookup("main"));
+	remove_skip(goto_functions);
 	set_entry_point(goto_functions, symbol_table);
 	config.set_from_symbol_table(symbol_table);
 	namespacet ns(symbol_table);

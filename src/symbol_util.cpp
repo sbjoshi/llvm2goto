@@ -13,6 +13,7 @@ using namespace llvm;
 using namespace ll2gb;
 
 set<string> translator::symbol_util::typedef_tag_set = set<string>();
+unsigned translator::symbol_util::var_counter = 1;
 
 string translator::symbol_util::lookup_namespace(string str) {
 	while (symbol_table.lookup(str) == nullptr) {
@@ -132,27 +133,32 @@ typet translator::symbol_util::get_tag_type(const DIDerivedType *di_derived) {
 	if (typedef_tag_set.find(di_derived->getName().str())
 			== typedef_tag_set.end()) {
 		symbolt symbol;
-		symbol.type = get_goto_type(di_base);
 		symbol.name = di_derived->getName().str();
+		symbol.type = get_goto_type(di_base);
+		symbol.type.set(ID_tag, symbol.name);
 		symbol.base_name = symbol.name;
 		if (symbol.type.id() == ID_struct)
 			symbol.pretty_name = string("struct ")
 					+ string(symbol.name.c_str());
 		else if (symbol.type.id() == ID_union)
 			symbol.pretty_name = string("union ") + string(symbol.name.c_str());
-		else
+		else {
 			symbol.pretty_name = symbol.name;
-		symbol.is_thread_local = true;
-		symbol.is_file_local = true;
+			symbol.is_thread_local = true;
+			symbol.is_file_local = true;
+			symbol.is_macro = true;
+		}
 		symbol.is_type = true;
-		symbol.is_macro = true;
+		symbol.mode = ID_C;
 		symbol_table.insert(symbol);
 	}
 	auto *tag_symbol = symbol_table.lookup(di_derived->getName().str());
-	if (tag_symbol->type.id() == ID_struct)
-		type = tag_typet(ID_struct_tag, di_derived->getName().str());
-	else if (tag_symbol->type.id() == ID_union)
-		type = tag_typet(ID_union_tag, di_derived->getName().str());
+	if (tag_symbol->type.id() == ID_struct
+			|| tag_symbol->type.id() == ID_incomplete_struct)
+		type = struct_tag_typet(di_derived->getName().str());
+	else if (tag_symbol->type.id() == ID_union
+			|| tag_symbol->type.id() == ID_incomplete_union)
+		type = union_tag_typet(di_derived->getName().str());
 	else
 		type = tag_typet(ID_tag, di_derived->getName().str());
 	return type;
@@ -187,6 +193,7 @@ typet translator::symbol_util::get_composite_type(const DICompositeType *di_comp
 					get_goto_type(di_type));
 			components.push_back(component);
 		}
+		struct_type.set_tag(di_composite->getName().str());
 		type = struct_type;
 	}
 	else if (tag == dwarf::DW_TAG_union_type) {
@@ -198,6 +205,7 @@ typet translator::symbol_util::get_composite_type(const DICompositeType *di_comp
 					get_goto_type(di_type));
 			components.push_back(component);
 		}
+		union_type.set_tag(di_composite->getName().str());
 		type = union_type;
 	}
 	else if (tag == dwarf::DW_TAG_array_type) {
@@ -275,14 +283,18 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
 					i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_" + i),
+				struct_typet::componentt component(string("ele_"
+						+ to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
 			symbolt symbol;
+			struct_type.set_tag(strct_name);
 			symbol.type = struct_type;
+			symbol.mode = ID_C;
 			symbol.name = strct_name;
 			symbol.base_name = strct_name;
+			symbol.type.set(ID_name, symbol.name);
 			if (symbol.type.id() == ID_struct)
 				symbol.pretty_name = string("struct ")
 						+ string(symbol.name.c_str());
@@ -291,17 +303,16 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 						+ string(symbol.name.c_str());
 			else
 				symbol.pretty_name = symbol.name;
-			symbol.is_thread_local = true;
-			symbol.is_file_local = true;
 			symbol.is_type = true;
-			symbol.is_macro = true;
 			symbol_table.insert(symbol);
 		}
 		auto *tag_symbol = symbol_table.lookup(strct_name);
-		if (tag_symbol->type.id() == ID_struct)
-			type = tag_typet(ID_struct_tag, strct_name);
-		else if (tag_symbol->type.id() == ID_union)
-			type = tag_typet(ID_union_tag, strct_name);
+		if (tag_symbol->type.id() == ID_struct
+				|| tag_symbol->type.id() == ID_incomplete_struct)
+			type = struct_tag_typet(strct_name);
+		else if (tag_symbol->type.id() == ID_union
+				|| tag_symbol->type.id() == ID_incomplete_union)
+			type = union_tag_typet(strct_name);
 		else
 			type = tag_typet(ID_tag, strct_name);
 		break;
@@ -338,25 +349,21 @@ symbolt translator::symbol_util::create_symbol(const DIVariable *di_var) {
 	symbol.name = scope_name_map[dyn_cast<DIScope>(di_var->getScope())] + "::"
 			+ symbol.base_name.c_str();
 	symbol.type = get_goto_type(dyn_cast<DIType>(di_var->getType()));
+	symbol.mode = ID_C;
 	return symbol;
 }
 
-symbolt translator::symbol_util::create_symbol(const Type *ll_type,
-		DILocalScope *di_scope) {
-	static unsigned var_counter = 1;
+symbolt translator::symbol_util::create_symbol(const Type *ll_type) {
 	symbolt symbol;
 	symbol.is_file_local = true;
 	symbol.is_thread_local = true;
 	symbol.is_lvalue = true;
-	symbol.base_name = string("var" + to_string(var_counter));
-	if (di_scope) {
-		symbol.name = scope_name_map[di_scope] + "::"
-				+ symbol.base_name.c_str();
-	}
-	else
-		symbol.name = symbol.base_name;
+
+	symbol.name = string("var" + to_string(var_counter));
+	symbol.base_name = symbol.name;
 	var_counter++;
 	symbol.type = get_goto_type(ll_type);
+	symbol.mode = ID_C;
 	return symbol;
 }
 
@@ -373,17 +380,17 @@ symbolt translator::symbol_util::create_goto_func_symbol(const Function &F) {
 		parameters.push_back(para);
 	}
 	func_code_type.parameters() = parameters;
-	if (F.getSubprogram()) {
-		auto *di_subroutine = F.getSubprogram()->getType();
-		if (&*di_subroutine->getTypeArray()[0] != NULL) {
-			auto *DI = cast<DIType>(&*di_subroutine->getTypeArray()[0]);
-			func_code_type.return_type() = get_goto_type(DI);
-		}
-		else
-			func_code_type.return_type() = void_typet();
-	}
-	else
-		func_code_type.return_type() = get_goto_type(F.getReturnType());
+//	if (F.getSubprogram()) {
+//		auto *di_subroutine = F.getSubprogram()->getType();
+////		if (&*di_subroutine->getTypeArray()[0] != NULL) {
+////			auto *DI = cast<DIType>(&*di_subroutine->getTypeArray()[0]);
+////			func_code_type.return_type() = get_goto_type(DI);
+////		}
+////		else
+//		func_code_type.return_type() = void_typet();
+//	}
+//	else
+	func_code_type.return_type() = get_goto_type(F.getReturnType());
 
 	symbol.name = F.getName().str();
 	symbol.base_name = symbol.name;
