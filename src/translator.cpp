@@ -55,14 +55,81 @@ exprt translator::get_expr_const(const Constant &C) {
 	return expr;
 }
 
+exprt translator::get_expr_trunc(const TruncInst &TI) {
+	exprt expr;
+	const auto &ll_op1 = TI.getOperand(0);
+	const auto &ll_op2 = TI.getDestTy();
+	auto expr_op1 = get_expr(*ll_op1);
+	expr = typecast_exprt(expr_op1,
+			signedbv_typet(ll_op2->getIntegerBitWidth()));
+	return expr;
+}
+
+exprt translator::get_expr_add(const Instruction &AI) {
+	exprt expr;
+	const auto &ll_op1 = AI.getOperand(0);
+	const auto &ll_op2 = AI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	expr = plus_exprt(expr_op1, expr_op2);
+	return expr;
+}
+
+exprt translator::get_expr_zext(const ZExtInst &ZI) {
+	exprt expr;
+	const auto &ll_op1 = ZI.getOperand(0);
+	const auto &ll_op2 = ZI.getDestTy();
+	expr = get_expr(*ll_op1);
+	expr = typecast_exprt(expr, unsignedbv_typet(ll_op2->getIntegerBitWidth()));
+	return expr;
+}
+
+exprt translator::get_expr_load(const LoadInst &LI) {
+	exprt expr;
+	static bool first_call = true; //Dereferencing is not needed for the first load.
+	const auto &ll_op1 = LI.getOperand(0);
+	if (first_call) {
+		first_call = false;
+		expr = get_expr(*ll_op1);
+		first_call = true;
+	}
+	else
+		expr = dereference_exprt(get_expr(*ll_op1));
+	return expr;
+}
+
 exprt translator::get_expr(const Value &V) {
 	exprt expr;
 	if (isa<Instruction>(V)) {
 		const auto &I = cast<Instruction>(V);
-		if (isa<AllocaInst>(&I)) {
+		switch (I.getOpcode()) {
+		case Instruction::Alloca: {
 			auto s = var_name_map[&I];
 			auto symbol = symbol_table.lookup(var_name_map[&I]);
 			return symbol->symbol_expr();
+			break;
+		}
+		case Instruction::Load: {
+			const auto &LI = cast<LoadInst>(&I);
+			expr = get_expr_load(*LI);
+			break;
+		}
+		case Instruction::ZExt: {
+			const auto &ZI = cast<ZExtInst>(&I);
+			expr = get_expr_zext(*ZI);
+			break;
+		}
+		case Instruction::Add: {
+			expr = get_expr_add(I);
+			break;
+		}
+		case Instruction::Trunc: {
+			const auto &TI = cast<TruncInst>(&I);
+			expr = get_expr_trunc(*TI);
+			break;
+		}
+		default:
+			assert(false && "Unhandled Instruction type in get_expr()");
 		}
 	}
 	else if (isa<Constant>(V)) {

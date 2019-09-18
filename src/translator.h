@@ -43,6 +43,10 @@ private:
 	void trans_ret(const llvm::ReturnInst&);
 
 	exprt get_expr(const llvm::Value&);
+	exprt get_expr_trunc(const llvm::TruncInst&);
+	exprt get_expr_load(const llvm::LoadInst&);
+	exprt get_expr_add(const llvm::Instruction&);
+	exprt get_expr_zext(const llvm::ZExtInst&);
 	exprt get_expr_const(const llvm::Constant&);
 	exprt get_expr_cmp(const llvm::Instruction*);
 
