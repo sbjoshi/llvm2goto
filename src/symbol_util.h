@@ -11,18 +11,11 @@
 #include "translator.h"
 
 class ll2gb::translator::symbol_util {
-	static typet get_basic_type(const llvm::DIBasicType*);
-	static typet get_tag_type(const llvm::DIDerivedType*);
-	static typet get_composite_type(const llvm::DICompositeType*);
-	static typet get_derived_type(const llvm::DIDerivedType*);
-
 	static std::set<std::string> typedef_tag_set; ///<Stores typdefs whose type symbols have already been added.
 	static unsigned var_counter;
 public:
 	static std::string lookup_namespace(std::string);
-	static typet get_goto_type(const llvm::DIType*);
 	static typet get_goto_type(const llvm::Type*);
-	static symbolt create_symbol(const llvm::DIVariable*);
 	static symbolt create_symbol(const llvm::Type*);
 	static symbolt create_goto_func_symbol(const llvm::Function&);
 
