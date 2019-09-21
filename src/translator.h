@@ -40,9 +40,11 @@ private:
 
 	void trans_store(const llvm::StoreInst&);
 	void trans_alloca(const llvm::AllocaInst&);
+	void trans_call(const llvm::CallInst&);
 	void trans_ret(const llvm::ReturnInst&);
 
 	exprt get_expr(const llvm::Value&);
+	exprt get_expr_icmp(const llvm::ICmpInst&);
 	exprt get_expr_trunc(const llvm::TruncInst&);
 	exprt get_expr_load(const llvm::LoadInst&);
 	exprt get_expr_add(const llvm::Instruction&);

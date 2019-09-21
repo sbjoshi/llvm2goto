@@ -55,12 +55,63 @@ exprt translator::get_expr_const(const Constant &C) {
 	return expr;
 }
 
+exprt translator::get_expr_icmp(const ICmpInst &ICI) {
+	exprt expr;
+	const auto &ll_op1 = ICI.getOperand(0);
+	const auto &ll_op2 = ICI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	switch (ICI.getPredicate()) {
+	case CmpInst::Predicate::ICMP_EQ: {
+		expr = equal_exprt(expr_op1, expr_op2);
+		break;
+	}
+	case CmpInst::Predicate::ICMP_NE: {
+		expr = notequal_exprt(expr_op1, expr_op2);
+		break;
+	}
+	case CmpInst::Predicate::ICMP_SGE: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_SGT: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_SLE: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_SLT: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_UGE: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_UGT: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_ULE: {
+		break;
+	}
+	case CmpInst::Predicate::ICMP_ULT: {
+		break;
+	}
+	default:
+		assert(false && "Unknown ICmp Instr Predicate");
+	}
+	return expr;
+}
+
 exprt translator::get_expr_trunc(const TruncInst &TI) {
 	exprt expr;
 	const auto &ll_op1 = TI.getOperand(0);
 	const auto &ll_op2 = TI.getDestTy();
 	auto expr_op1 = get_expr(*ll_op1);
-	expr = typecast_exprt(expr_op1,
+	auto lsb_bound = from_integer(0, unsignedbv_typet(64));
+//	expr = unary_exprt(expr);
+	auto msb_bound = from_integer(ll_op2->getIntegerBitWidth() - 1,
+			unsignedbv_typet(64));
+	expr = extractbits_exprt(expr_op1,
+			msb_bound,
+			lsb_bound,
 			signedbv_typet(ll_op2->getIntegerBitWidth()));
 	return expr;
 }
@@ -126,6 +177,11 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::Trunc: {
 			const auto &TI = cast<TruncInst>(&I);
 			expr = get_expr_trunc(*TI);
+			break;
+		}
+		case Instruction::ICmp: {
+			const auto &ICI = cast<ICmpInst>(&I);
+			expr = get_expr_icmp(*ICI);
 			break;
 		}
 		default:
@@ -215,6 +271,33 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	dclr_instr->source_location = location;
 	dclr_instr->type = goto_program_instruction_typet::DECL;
 	goto_program.update();
+}
+
+void translator::trans_call(const llvm::CallInst &CI) {
+	auto called_func = CI.getCalledFunction();
+	if (called_func) {
+
+	}
+	else {
+		auto called_val = CI.getCalledValue()->stripPointerCasts();
+		if (!called_val->getName().str().compare("assert")) {
+			auto assert_inst = goto_program.add_instruction();
+			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
+					bool_typet());
+			assert_inst->make_assertion(guard_expr);
+			source_locationt location;
+			if (CI.getMetadata(0)) {
+				const auto loc = CI.getDebugLoc();
+				location.set_file(loc->getScope()->getFile()->getFilename().str());
+				location.set_working_directory(loc->getScope()->getFile()->getDirectory().str());
+				location.set_line(loc->getLine());
+				location.set_column(loc->getColumn());
+				location.set_function(CI.getFunction()->getName().str());
+			}
+			assert_inst->source_location = location;
+			goto_program.update();
+		}
+	}
 }
 
 void translator::trans_ret(const ReturnInst &RI) {
@@ -523,11 +606,6 @@ void translator::trans_instruction(const Instruction &I) {
 //		gp = trans_CatchSwitch(Inst);
 //		break;
 //	}
-//	case Instruction::Add: {
-//		goto_programt add_ins = trans_Add(Inst, *symbol_table);
-//		gp.destructive_append(add_ins);
-//		break;
-//	}
 //	case Instruction::FAdd: {
 //		goto_programt fadd_inst = trans_FAdd(Inst, *symbol_table);
 //		gp.destructive_append(fadd_inst);
@@ -603,10 +681,6 @@ void translator::trans_instruction(const Instruction &I) {
 		trans_alloca(AI);
 		break;
 	}
-//	case Instruction::Load: {
-//		goto_programt store_gp = trans_Load(Inst);
-//		break;
-//	}
 	case Instruction::Store: {
 		const StoreInst &SI = cast<StoreInst>(I);
 		trans_store(SI);
@@ -628,16 +702,6 @@ void translator::trans_instruction(const Instruction &I) {
 //		goto_programt getElementPtr_gp = trans_GetElementPtr(Inst,
 //				*symbol_table);
 //		gp.destructive_append(getElementPtr_gp);
-//		break;
-//	}
-//	case Instruction::Trunc: {
-//		goto_programt trunc_gp = trans_Trunc(Inst, *symbol_table);
-//		gp.destructive_append(trunc_gp);
-//		break;
-//	}
-//	case Instruction::ZExt: {
-//		goto_programt zext_gp = trans_ZExt(Inst, *symbol_table);
-//		gp.destructive_append(zext_gp);
 //		break;
 //	}
 //	case Instruction::SExt: {
@@ -713,7 +777,8 @@ void translator::trans_instruction(const Instruction &I) {
 			break;
 		}
 		const CallInst &CI = cast<CallInst>(I);
-//		trans_store (SI);
+		trans_call(CI);
+		break;
 	}
 //	case Instruction::Shl: {
 //		goto_programt shl_Inst = trans_Shl(Inst, *symbol_table);
@@ -762,6 +827,11 @@ void translator::trans_instruction(const Instruction &I) {
 //		gp = trans_CleanupPad(Inst);
 //		break;
 //	}
+	case Instruction::Add:
+	case Instruction::Trunc:
+	case Instruction::ZExt:
+	case Instruction::Load:
+		break;
 	default:
 		errs() << "Invalid instruction type...\n ";
 	}
@@ -929,7 +999,6 @@ void translator::trans_function(Function &F) {
 	for (; b != be; ++b) {
 		const BasicBlock &B = *b;
 		trans_block(B);
-		register_language(new_ansi_c_language);
 		goto_programt::targett target = goto_program.add_instruction();
 		target->make_skip();
 		block_target_map.insert(pair<const BasicBlock*, goto_programt::targett>(&(*b),
@@ -1012,6 +1081,7 @@ bool translator::generate_goto() {
 		if (F->isDeclaration()) {
 			continue;
 		}
+		register_language(new_ansi_c_language);
 		trans_function(*F);
 		const auto *fn = symbol_table.lookup(F->getName().str());
 		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);

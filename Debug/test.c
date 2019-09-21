@@ -1,4 +1,4 @@
-#include<assert.h>
+//#include<assert.h>
 struct akash{
     int a;
 };
@@ -21,6 +21,6 @@ int main(){
     struct akash s;
     funtype *p;
     cooltype ct = a + b;
-    //assert(ct == 10);    
+    assert(ct == 10);
     return 0;
 }
