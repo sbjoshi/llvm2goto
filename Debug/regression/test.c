@@ -1,7 +1,12 @@
-//#include<assert.h>
+#include<assert.h>
 struct akash{
     int a;
 };
+
+int foo(int x){
+    if(x<0)return -x;
+    return x;
+}
 
 typedef struct akash funtype;
 typedef int cooltype;
@@ -22,5 +27,7 @@ int main(){
     funtype *p;
     cooltype ct = a + b;
     assert(ct == 10);
+    int x;
+    assert(foo(x) >=0);
     return 0;
 }

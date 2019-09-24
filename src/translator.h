@@ -21,6 +21,9 @@ private:
 	static std::map<const llvm::Argument*, std::string> func_arg_name_map; ///<map from instructions to their symbol names
 	static std::map<llvm::DIScope*, std::string> scope_name_map;
 	std::map<const llvm::AllocaInst*, llvm::DbgDeclareInst*> alloca_dbg_map; ///<map from Allocas to their DbgDeclare if exists
+	std::map<const llvm::BasicBlock*, goto_programt::targett> block_target_map;
+	std::map<const llvm::BranchInst*,
+			std::pair<goto_programt::targett, goto_programt::targett>> br_instr_target_map;
 
 	void add_global_symbols();
 	void set_config();
@@ -34,14 +37,14 @@ private:
 	void trans_instruction(const llvm::Instruction&);
 	void trans_block(const llvm::BasicBlock&);
 	void trans_function(llvm::Function&);
-	void set_branches(std::map<const llvm::BasicBlock*, goto_programt::targett> block_target_map,
-			std::map<const llvm::Instruction*,
-					std::pair<goto_programt::targett, goto_programt::targett>> instruction_target_map);
+	void trans_module();
+	void set_branches();
 
 	void trans_store(const llvm::StoreInst&);
 	void trans_alloca(const llvm::AllocaInst&);
 	void trans_call(const llvm::CallInst&);
 	void trans_ret(const llvm::ReturnInst&);
+	void trans_br(const llvm::BranchInst&);
 
 	exprt get_expr(const llvm::Value&);
 	exprt get_expr_icmp(const llvm::ICmpInst&);
@@ -49,8 +52,8 @@ private:
 	exprt get_expr_load(const llvm::LoadInst&);
 	exprt get_expr_add(const llvm::Instruction&);
 	exprt get_expr_zext(const llvm::ZExtInst&);
+	exprt get_expr_sext(const llvm::SExtInst&);
 	exprt get_expr_const(const llvm::Constant&);
-	exprt get_expr_cmp(const llvm::Instruction*);
 
 	void move_symbol(symbolt&, symbolt*&);
 	void add_argc_argv(const symbolt&);

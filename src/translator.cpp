@@ -9,7 +9,7 @@
 #include "symbol_util.h"
 #include "scope_tree.h"
 
-#include<fstream>
+#include <fstream>
 
 using namespace std;
 using namespace llvm;
@@ -71,27 +71,35 @@ exprt translator::get_expr_icmp(const ICmpInst &ICI) {
 		break;
 	}
 	case CmpInst::Predicate::ICMP_SGE: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_SGT: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_SLE: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_SLT: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_UGE: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_UGT: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_ULE: {
+		//		TODO:Implement this
 		break;
 	}
 	case CmpInst::Predicate::ICMP_ULT: {
+		//		TODO:Implement this
 		break;
 	}
 	default:
@@ -105,13 +113,7 @@ exprt translator::get_expr_trunc(const TruncInst &TI) {
 	const auto &ll_op1 = TI.getOperand(0);
 	const auto &ll_op2 = TI.getDestTy();
 	auto expr_op1 = get_expr(*ll_op1);
-	auto lsb_bound = from_integer(0, unsignedbv_typet(64));
-//	expr = unary_exprt(expr);
-	auto msb_bound = from_integer(ll_op2->getIntegerBitWidth() - 1,
-			unsignedbv_typet(64));
-	expr = extractbits_exprt(expr_op1,
-			msb_bound,
-			lsb_bound,
+	expr = typecast_exprt(expr_op1,
 			signedbv_typet(ll_op2->getIntegerBitWidth()));
 	return expr;
 }
@@ -126,12 +128,28 @@ exprt translator::get_expr_add(const Instruction &AI) {
 	return expr;
 }
 
+exprt translator::get_expr_sext(const SExtInst &SI) {
+	exprt expr;
+	const auto &ll_op1 = SI.getOperand(0);
+	const auto &ll_op2 = SI.getDestTy();
+	expr = get_expr(*ll_op1);
+	expr = typecast_exprt(expr, signedbv_typet(ll_op2->getIntegerBitWidth()));
+	return expr;
+}
+
 exprt translator::get_expr_zext(const ZExtInst &ZI) {
 	exprt expr;
 	const auto &ll_op1 = ZI.getOperand(0);
 	const auto &ll_op2 = ZI.getDestTy();
 	expr = get_expr(*ll_op1);
-	expr = typecast_exprt(expr, unsignedbv_typet(ll_op2->getIntegerBitWidth()));
+	expr = typecast_exprt(expr, signedbv_typet(ll_op2->getIntegerBitWidth()));
+///	Make all the MSB bits as 0, since we want to do a Zero Extension.
+	unsigned long long zext_and = 1u;
+	zext_and <<= ll_op1->getType()->getIntegerBitWidth();
+	zext_and--;
+	auto zext_expr = from_integer(zext_and,
+			signedbv_typet(ll_op2->getIntegerBitWidth()));
+	expr = bitand_exprt(expr, zext_expr);
 	return expr;
 }
 
@@ -168,6 +186,11 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::ZExt: {
 			const auto &ZI = cast<ZExtInst>(&I);
 			expr = get_expr_zext(*ZI);
+			break;
+		}
+		case Instruction::SExt: {
+			const auto &SI = cast<SExtInst>(&I);
+			expr = get_expr_sext(*SI);
 			break;
 		}
 		case Instruction::Add: {
@@ -276,7 +299,22 @@ void translator::trans_alloca(const AllocaInst &AI) {
 void translator::trans_call(const llvm::CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
 	if (called_func) {
-
+		if (!called_func->getName().str().compare("__assert_fail")) {
+			auto assert_inst = goto_program.add_instruction();
+			assert_inst->make_assertion(false_exprt());
+			source_locationt location;
+			if (CI.getMetadata(0)) {
+				const auto loc = CI.getDebugLoc();
+				location.set_file(loc->getScope()->getFile()->getFilename().str());
+				location.set_working_directory(loc->getScope()->getFile()->getDirectory().str());
+				location.set_line(loc->getLine());
+				location.set_column(loc->getColumn());
+				location.set_function(CI.getFunction()->getName().str());
+			}
+			assert_inst->source_location = location;
+			goto_program.update();
+		}
+		//		TODO:Implement this
 	}
 	else {
 		auto called_val = CI.getCalledValue()->stripPointerCasts();
@@ -297,6 +335,7 @@ void translator::trans_call(const llvm::CallInst &CI) {
 			assert_inst->source_location = location;
 			goto_program.update();
 		}
+		//		TODO:Implement this
 	}
 }
 
@@ -319,253 +358,35 @@ void translator::trans_ret(const ReturnInst &RI) {
 	}
 	ret_inst->source_location = location;
 	goto_program.update();
-	ret_inst->source_location = location;
 }
 
-exprt translator::get_expr_cmp(const Instruction *I) {
-	exprt condition;
-	User::const_value_op_iterator ub = I->value_op_begin();
-	exprt opnd1, opnd2;
-	typet type1, type2;
-	int flag = 2, f1 = 0, f2 = 0;
-	if (const LoadInst *li = dyn_cast<LoadInst>(*ub)) {
-		li->getOperand(0)->dump();
-//		opnd1 = get_load(li, *symbol_table);
-		f1 = 1;
-	}
-	else if (dyn_cast<ConstantExpr>(*ub)) {
-		User::value_op_iterator temp =
-				const_cast<Instruction*>(I)->value_op_begin();
-		auto *CE = dyn_cast<ConstantExpr>(*temp);
-		GetElementPtrInst *GE =
-				dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
-
-		typet dummy;
-//		opnd1 = address_of_exprt(trans_ConstGetElementPtr(GE,
-//				&dummy,
-//				I->getDebugLoc()->getScope()));
-
-		GE->deleteValue();
-		f1 = 1;
-	}
-	if (const LoadInst *li = dyn_cast<LoadInst>(*(ub + 1))) {
-		li->getOperand(0)->dump();
-//		opnd2 = get_load(li);
-		f2 = 1;
-	}
-	else if (dyn_cast<ConstantExpr>(*(ub + 1))) {
-		User::value_op_iterator temp =
-				const_cast<Instruction*>(I)->value_op_begin();
-		auto *CE = dyn_cast<ConstantExpr>(*(temp + 1));
-		GetElementPtrInst *GE =
-				dyn_cast<GetElementPtrInst>(CE->getAsInstruction());
-
-		typet dummy;
-//		opnd2 = address_of_exprt(trans_ConstGetElementPtr(GE,
-//				*symbol_table,
-//				&dummy,
-//				I->getDebugLoc()->getScope()));
-
-		GE->deleteValue();
-		f2 = 1;
-	}
-	if (f1 == 1 && f2 == 1) {
-		errs() << "done!";
-	}
-	else if (I->getOperand(0)->getType()->isIntegerTy()
-			|| I->getOperand(1)->getType()->isIntegerTy()) {
-		if (f1 == 0) {
-			if (dyn_cast<ConstantInt>(*ub)) {
-				flag = 1;
-			}
-			else {
-				opnd1 =
-						symbol_table.lookup(symbol_util::lookup_namespace(scope_name_map.find(I->getDebugLoc()->getScope())->second
-								+ "::" + ub->getName().str()))->symbol_expr();
-			}
-		}
-
-		if (f2 == 0) {
-			if (dyn_cast<ConstantInt>(*(ub + 1))) {
-				flag = 0;
-			}
-			else {
-				const symbolt *op2_sym =
-						symbol_table.lookup(symbol_util::lookup_namespace(scope_name_map.find(I->getDebugLoc()->getScope())->second
-								+ "::" + (ub + 1)->getName().str()));
-
-				opnd2 = op2_sym->symbol_expr();
-			}
-		}
-		type1 = opnd1.type();
-		type2 = opnd2.type();
-		if (type2.id() == ID_pointer) {
-			type2 = type2.subtype();
-		}
-		if (type1.id() == ID_pointer) {
-			type1 = type1.subtype();
-		}
-		while (type1.id() == ID_array) {
-			type1 = type1.subtype();
-		}
-		while (type2.id() == ID_array) {
-			type2 = type2.subtype();
-		}
-		typet op_type;
-		if (type2.id() == ID_signedbv) {
-			op_type = type2;
-		}
-		if (type1.id() == ID_signedbv) {
-			op_type = type1;
-		}
-		if (type2.id() == ID_unsignedbv) {
-			op_type = type2;
-		}
-		if (type1.id() == ID_unsignedbv) {
-			op_type = type1;
-		}
-		if (op_type.id() == ID_signedbv && flag == 1) {
-			uint64_t val = dyn_cast<ConstantInt>(*(ub))->getSExtValue();
-			typet type = op_type;
-			opnd1 = from_integer(val, type);
-		}
-		if (op_type.id() == ID_signedbv && flag == 0) {
-			uint64_t val = dyn_cast<ConstantInt>(*(ub + 1))->getSExtValue();
-			typet type = op_type;
-			opnd2 = from_integer(val, type);
-		}
-		if (op_type.id() == ID_unsignedbv && flag == 1) {
-			uint64_t val = dyn_cast<ConstantInt>(*(ub))->getZExtValue();
-			typet type = op_type;
-			opnd1 = from_integer(val, type);
-		}
-		if (op_type.id() == ID_unsignedbv && flag == 0) {
-			uint64_t val = dyn_cast<ConstantInt>(*(ub + 1))->getZExtValue();
-			typet type = op_type;
-			opnd2 = from_integer(val, type);
-		}
+void translator::trans_br(const BranchInst &BI) {
+	if (BI.getNumSuccessors() == 2) {
+		goto_programt::targett cond_true = goto_program.add_instruction();
+		goto_programt::targett cond_false = goto_program.add_instruction();
+		br_instr_target_map[&BI] = pair<goto_programt::targett,
+				goto_programt::targett>(cond_true, cond_false);
 	}
 	else {
-		if (I->getOperand(0)->getType()->isFloatTy()) {
-			if (f1 == 0) {
-				if (dyn_cast<ConstantFP>(*ub)) {
-					float val =
-							dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToFloat();
-					ieee_floatt ieee_fl(float_type());
-					ieee_fl.from_float(val);
-					opnd1 = ieee_fl.to_expr();
-				}
-			}
-			if (f2 == 0) {
-				if (dyn_cast<ConstantFP>(*(ub + 1))) {
-					float val =
-							dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToFloat();
-					ieee_floatt ieee_fl(float_type());
-					ieee_fl.from_double(val);
-					opnd2 = ieee_fl.to_expr();
-				}
-			}
-		}
-		else if (I->getOperand(0)->getType()->isDoubleTy()) {
-			if (f1 == 0) {
-				if (dyn_cast<ConstantFP>(*ub)) {
-					double val =
-							dyn_cast<ConstantFP>(*ub)->getValueAPF().convertToDouble();
-					ieee_floatt ieee_fl(double_type());
-					ieee_fl.from_double(val);
-					opnd1 = ieee_fl.to_expr();
-				}
-			}
-			if (f2 == 0) {
-				if (dyn_cast<ConstantFP>(*(ub + 1))) {
-					double val =
-							dyn_cast<ConstantFP>(*(ub + 1))->getValueAPF().convertToDouble();
-					ieee_floatt ieee_fl(double_type());
-					ieee_fl.from_double(val);
-					opnd2 = ieee_fl.to_expr();
-				}
-			}
-		}
-		else if (I->getOperand(0)->getType()->isPointerTy()) {
-			I->getOperand(0)->getType()->dump();
-			assert(false && "Pointer datatype has not been handled");
-		}
-		else {
-			assert(false && "This datatype has not been handled");
-		}
+		goto_programt::targett br_ins = goto_program.add_instruction();
+		br_instr_target_map[&BI] = pair<goto_programt::targett,
+				goto_programt::targett>(br_ins, br_ins);
 	}
-	if (opnd1.type().id() != opnd2.type().id()) {
-		opnd2 = typecast_exprt(opnd2, opnd1.type());
-	}
-	switch (dyn_cast<CmpInst>(I)->getPredicate()) {
-	case CmpInst::Predicate::ICMP_EQ: {
-		condition = equal_exprt(opnd1, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::FCMP_OEQ:
-	case CmpInst::Predicate::FCMP_UEQ: {
-		condition = ieee_float_equal_exprt(opnd1, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::ICMP_NE: {
-		condition = notequal_exprt(opnd1, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::FCMP_ONE:
-	case CmpInst::Predicate::FCMP_UNE: {
-		condition = ieee_float_notequal_exprt(opnd1, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::ICMP_UGT:
-	case CmpInst::Predicate::ICMP_SGT:
-	case CmpInst::Predicate::FCMP_OGT:
-	case CmpInst::Predicate::FCMP_UGT: {
-		condition = binary_relation_exprt(opnd1, ID_gt, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::ICMP_UGE:
-	case CmpInst::Predicate::ICMP_SGE:
-	case CmpInst::Predicate::FCMP_OGE:
-	case CmpInst::Predicate::FCMP_UGE: {
-		condition = binary_relation_exprt(opnd1, ID_ge, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::ICMP_ULT:
-	case CmpInst::Predicate::ICMP_SLT:
-	case CmpInst::Predicate::FCMP_OLT:
-	case CmpInst::Predicate::FCMP_ULT: {
-		condition = binary_relation_exprt(opnd1, ID_lt, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::ICMP_ULE:
-	case CmpInst::Predicate::ICMP_SLE:
-	case CmpInst::Predicate::FCMP_OLE:
-	case CmpInst::Predicate::FCMP_ULE: {
-		condition = binary_relation_exprt(opnd1, ID_le, opnd2);
-		break;
-	}
-	case CmpInst::Predicate::BAD_ICMP_PREDICATE: {
-		break;
-	}
-	}
-	return condition;
+	goto_program.update();
 }
 
 void translator::trans_instruction(const Instruction &I) {
-//	const Instruction *Inst = &I;
 	switch (I.getOpcode()) {
 	case Instruction::Ret: {
 		const ReturnInst &RI = cast<ReturnInst>(I);
 		trans_ret(RI);
 		break;
 	}
-//	case Instruction::Br: {
-//		goto_programt br_gp = trans_Br(Inst,
-//				symbol_table,
-//				instruction_target_map);
-//		gp.destructive_append(br_gp);
-//		break;
-//	}
+	case Instruction::Br: {
+		const BranchInst &BI = cast<BranchInst>(I);
+		trans_br(BI);
+		break;
+	}
 //	case Instruction::Switch: {
 //		goto_programt sw_gp = trans_Switch(Inst,
 //				branch_dest_block_map_switch,
@@ -830,6 +651,7 @@ void translator::trans_instruction(const Instruction &I) {
 	case Instruction::Add:
 	case Instruction::Trunc:
 	case Instruction::ZExt:
+	case Instruction::SExt:
 	case Instruction::Load:
 		break;
 	default:
@@ -844,50 +666,23 @@ void translator::trans_block(const BasicBlock &BB) {
 	}
 }
 
-void translator::set_branches(map<const BasicBlock*, goto_programt::targett> block_target_map,
-		map<const Instruction*,
-				pair<goto_programt::targett, goto_programt::targett>> instruction_target_map) {
-	for (auto i = instruction_target_map.begin(), ie =
-			instruction_target_map.end(); i != ie; i++) {
-		if (dyn_cast<BranchInst>((*i).first)->getNumSuccessors() == 2) {
-			goto_programt::targett then_part;
-			goto_programt::targett else_part;
-			exprt guard;
-			if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
-				auto temp =
-						dyn_cast<Instruction>(dyn_cast<BranchInst>((*i).first)->getCondition());
-				if (dyn_cast<CmpInst>(temp))
-					guard = not_exprt(get_expr_cmp(temp));
-//				else if (auto phi = dyn_cast<PHINode>(temp))
-//					guard = not_exprt(get_PHI(phi));
-			}
-			else {
-				guard = true_exprt();
-			}
-			map<const BasicBlock*, goto_programt::targett>::iterator then_pair =
-					block_target_map.find(dyn_cast<BasicBlock>(dyn_cast<
-							BranchInst>((*i).first)->getSuccessor(1)));
-			then_part = (*then_pair).second;
-			else_part = block_target_map[dyn_cast<BasicBlock>(dyn_cast<
-					BranchInst>((*i).first)->getSuccessor(0))];
-			(*i).second.first->make_goto(then_part, guard);
-			(*i).second.second->make_goto(else_part, true_exprt());
+void translator::set_branches() {
+	for (auto br_inst_iter = br_instr_target_map.begin(), ie =
+			br_instr_target_map.end(); br_inst_iter != ie; br_inst_iter++) {
+		const auto &BI = br_inst_iter->first;
+		if (br_inst_iter->first->isConditional()) {
+			const auto &cond = br_inst_iter->first->getCondition();
+			auto guard_expr = get_expr(*cond);
+			auto then_target = block_target_map[BI->getSuccessor(1)];
+			auto else_taget = block_target_map[BI->getSuccessor(0)];
+			br_inst_iter->second.first->make_goto(then_target, guard_expr);
+			br_inst_iter->second.second->make_goto(else_taget, true_exprt());
 		}
 		else {
 			goto_programt::targett then_part;
-			exprt guard;
-			if (dyn_cast<BranchInst>((*i).first)->isConditional()) {
-				guard =
-						get_expr_cmp(dyn_cast<Instruction>(dyn_cast<BranchInst>((*i).first)->getCondition()));
-			}
-			else {
-				guard = true_exprt();
-			}
-			map<const BasicBlock*, goto_programt::targett>::iterator then_pair =
-					block_target_map.find(dyn_cast<BasicBlock>(dyn_cast<
-							BranchInst>((*i).first)->getSuccessor(0)));
-			then_part = (*then_pair).second;
-			(*i).second.first->make_goto(then_part, guard);
+			auto guard_expr = true_exprt();
+			then_part = block_target_map[BI->getSuccessor(0)];
+			br_inst_iter->second.first->make_goto(then_part, guard_expr);
 		}
 	}
 }
@@ -992,9 +787,6 @@ void translator::trans_function(Function &F) {
 	scope_name_map.clear();
 	st.get_scope_name_map(F, &scope_name_map);
 	scope_name_map[nullptr] = "";
-	map<const BasicBlock*, goto_programt::targett> block_target_map;
-	map<goto_programt::targett, const BasicBlock*> branch_dest_block_map_switch;
-	map<const Instruction*, pair<goto_programt::targett, goto_programt::targett>> instruction_target_map;
 	Function::const_iterator b = F.begin(), be = F.end();
 	for (; b != be; ++b) {
 		const BasicBlock &B = *b;
@@ -1005,15 +797,14 @@ void translator::trans_function(Function &F) {
 				target));
 	}
 	goto_program.add_instruction(END_FUNCTION);
-	set_branches(block_target_map, instruction_target_map);
-	goto_program.update();
-	for (auto i = branch_dest_block_map_switch.begin();
-			i != branch_dest_block_map_switch.end(); i++) {
-		map<const BasicBlock*, goto_programt::targett>::iterator then_pair =
-				block_target_map.find(dyn_cast<BasicBlock>(i->second));
-		auto guard = i->first->guard;
-		i->first->make_goto(then_pair->second, guard);
-	}
+	set_branches();
+//	for (auto i = branch_dest_block_map_switch.begin();
+//			i != branch_dest_block_map_switch.end(); i++) {
+//		map<const BasicBlock*, goto_programt::targett>::iterator then_pair =
+//				block_target_map.find(dyn_cast<BasicBlock>(i->second));
+//		auto guard = i->first->guard;
+//		i->first->make_goto(then_pair->second, guard);
+//	}
 	goto_program.update();
 }
 
@@ -1070,18 +861,13 @@ void translator::write_goto(const string &filename) {
 	dbgs() << "GOTO Binary written to file: " << filename << '\n';
 }
 
-bool translator::generate_goto() {
-	dbgs() << "Generating GOTO Binary\n";
-	initialize_goto();
-	add_global_symbols();
-	add_function_symbols();
-	analyse_ir();
+void translator::trans_module() {
+	register_language(new_ansi_c_language);
 	for (auto F = llvm_module->getFunctionList().begin();
 			F != llvm_module->getFunctionList().end(); F++) {
 		if (F->isDeclaration()) {
 			continue;
 		}
-		register_language(new_ansi_c_language);
 		trans_function(*F);
 		const auto *fn = symbol_table.lookup(F->getName().str());
 		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
@@ -1090,10 +876,19 @@ bool translator::generate_goto() {
 		goto_program.clear();
 	}
 	remove_skip(goto_functions);
+	goto_functions.update();
 	set_entry_point(goto_functions, symbol_table);
 	config.set_from_symbol_table(symbol_table);
 	namespacet ns(symbol_table);
+}
 
+bool translator::generate_goto() {
+	dbgs() << "Generating GOTO Binary\n";
+	initialize_goto();
+	add_global_symbols();
+	add_function_symbols();
+	analyse_ir();
+	trans_module();
 	dbgs() << "GOTO Binary generated successfully\n";
 	return true;
 }

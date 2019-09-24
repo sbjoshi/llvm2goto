@@ -1,7 +1,13 @@
+# Project files
 Debug/llvm2goto-2.0
 .cproject
 .project
 .settings
+
+# IR files
+*.ll
+*.gb
+
 # Prerequisites
 *.d
 
