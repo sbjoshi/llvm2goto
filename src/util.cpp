@@ -112,7 +112,7 @@ void ll2gb::add_function_definitions(std::string name,
 			ins->make_other(c);
 		}
 		else if (ID_assume == c.get_statement()) {
-			ins->make_assumption(c);
+			ins->make_assumption(c.op0());
 		}
 		else {
 			ins->code = c;

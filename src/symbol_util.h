@@ -11,7 +11,7 @@
 #include "translator.h"
 
 class ll2gb::translator::symbol_util {
-	static std::set<std::string> typedef_tag_set; ///<Stores typdefs whose type symbols have already been added.
+	static std::set<std::string> typedef_tag_set; ///<Stores names of typdefs whose type symbols have already been added.
 	static unsigned var_counter;
 public:
 	static std::string lookup_namespace(std::string);

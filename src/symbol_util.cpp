@@ -102,15 +102,13 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			symbol_table.insert(symbol);
 			typedef_tag_set.insert(strct_name);
 		}
+		struct_typet struct_type;
 		auto *tag_symbol = symbol_table.lookup(strct_name);
 		if (tag_symbol->type.id() == ID_struct
 				|| tag_symbol->type.id() == ID_incomplete_struct)
-			type = struct_tag_typet(strct_name);
-		else if (tag_symbol->type.id() == ID_union
-				|| tag_symbol->type.id() == ID_incomplete_union)
-			type = union_tag_typet(strct_name);
+			struct_type.add_base(struct_tag_typet(strct_name));
 		else
-			type = tag_typet(ID_tag, strct_name);
+			assert(false);
 		break;
 	}
 	case Type::ArrayTyID: {

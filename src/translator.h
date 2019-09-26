@@ -18,12 +18,13 @@ private:
 	static symbol_tablet symbol_table;
 
 	std::map<const llvm::Instruction*, std::string> var_name_map; ///<map from instructions to their symbol names
-	static std::map<const llvm::Argument*, std::string> func_arg_name_map; ///<map from instructions to their symbol names
-	static std::map<llvm::DIScope*, std::string> scope_name_map;
+	static std::map<const llvm::Argument*, std::string> func_arg_name_map; ///<map from func args to their symbol names
 	std::map<const llvm::AllocaInst*, llvm::DbgDeclareInst*> alloca_dbg_map; ///<map from Allocas to their DbgDeclare if exists
-	std::map<const llvm::BasicBlock*, goto_programt::targett> block_target_map;
+	std::map<const llvm::CallInst*, std::string> call_ret_sym_map; ///<map from Call Instructions to their return symbol names
+	std::map<const llvm::BasicBlock*, goto_programt::targett> block_target_map; ///<map from BB to first goto target for that block
 	std::map<const llvm::BranchInst*,
-			std::pair<goto_programt::targett, goto_programt::targett>> br_instr_target_map;
+			std::pair<goto_programt::targett, goto_programt::targett>> br_instr_target_map; ///<map from BranchInst to their goto targets
+	static std::map<llvm::DIScope*, std::string> scope_name_map;
 
 	void add_global_symbols();
 	void set_config();
@@ -47,16 +48,23 @@ private:
 	void trans_br(const llvm::BranchInst&);
 
 	exprt get_expr(const llvm::Value&);
+	exprt get_expr_gep(const llvm::GetElementPtrInst&);
 	exprt get_expr_icmp(const llvm::ICmpInst&);
 	exprt get_expr_trunc(const llvm::TruncInst&);
 	exprt get_expr_load(const llvm::LoadInst&);
 	exprt get_expr_add(const llvm::Instruction&);
+	exprt get_expr_sub(const llvm::Instruction&);
+	exprt get_expr_mul(const llvm::Instruction&);
+	exprt get_expr_sdiv(const llvm::Instruction&);
+	exprt get_expr_udiv(const llvm::Instruction&);
 	exprt get_expr_zext(const llvm::ZExtInst&);
 	exprt get_expr_sext(const llvm::SExtInst&);
 	exprt get_expr_const(const llvm::Constant&);
 
 	void move_symbol(symbolt&, symbolt*&);
 	void add_argc_argv(const symbolt&);
+
+	source_locationt get_location(const llvm::Instruction&);
 
 	class symbol_util; ///<A sub-class to group all the symbol and type related methods.
 	class scope_tree; ///<A sub-class to implement the scoping rules.
