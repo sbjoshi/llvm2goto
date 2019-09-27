@@ -22,6 +22,10 @@ public:
 	static void set_var_counter(unsigned a) {
 		var_counter = a;
 	}
+
+	static void reset_var_counter() {
+		var_counter = 1;
+	}
 };
 
 #endif /* SYMBOL_UTIL_H */

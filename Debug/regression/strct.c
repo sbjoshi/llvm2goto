@@ -11,6 +11,8 @@ struct strct2{
 
 int main(){
     struct strct2 new_arr[25];
+    new_arr[0].my_ar[0].a[0] = 100;
+    assert(new_arr[0].my_ar[0].a[0] == 100);
     return 0;
 }
 

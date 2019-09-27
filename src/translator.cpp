@@ -426,8 +426,18 @@ void translator::trans_call(const CallInst &CI) {
 	if (called_func) {
 		if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is a special assert by llvm which is equivalent to assert(fail && "Message").
 			auto assert_inst = goto_program.add_instruction();
+			auto asrt_comment =
+					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(0))->getOperand(0)->getOperand(0))->getAsCString();
+			auto file_name =
+					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(1))->getOperand(0)->getOperand(0))->getAsCString();
+			auto func_name =
+					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(3))->getOperand(0)->getOperand(0))->getAsCString();
+			auto line_no = cast<ConstantInt>(CI.getOperand(2))->getZExtValue();
+			auto comment = file_name + ":" + to_string(line_no) + ": "
+					+ func_name + ": " + asrt_comment;
 			assert_inst->make_assertion(false_exprt());
 			assert_inst->source_location = location;
+			assert_inst->source_location.set_comment(comment.str());
 			goto_program.update();
 		}
 		else if (called_func->isDeclaration()) { /// These are functions whose definitions are missing.
