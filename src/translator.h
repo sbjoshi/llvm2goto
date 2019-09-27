@@ -24,6 +24,7 @@ private:
 	std::map<const llvm::BasicBlock*, goto_programt::targett> block_target_map; ///<map from BB to first goto target for that block
 	std::map<const llvm::BranchInst*,
 			std::pair<goto_programt::targett, goto_programt::targett>> br_instr_target_map; ///<map from BranchInst to their goto targets
+	std::map<const llvm::SwitchInst*, std::vector<goto_programt::targett>> switch_instr_target_map; ///<map from SwitchInst to their goto targets
 	static std::map<llvm::DIScope*, std::string> scope_name_map;
 
 	void add_global_symbols();
@@ -31,6 +32,7 @@ private:
 	void add_initial_symbols();
 	void add_function_symbols();
 	void initialize_goto() {
+		register_language(new_ansi_c_language);
 		set_config();
 		add_initial_symbols();
 	}
@@ -40,15 +42,18 @@ private:
 	void trans_function(llvm::Function&);
 	void trans_module();
 	void set_branches();
+	void set_switches();
 
 	void trans_store(const llvm::StoreInst&);
 	void trans_alloca(const llvm::AllocaInst&);
 	void trans_call(const llvm::CallInst&);
 	void trans_ret(const llvm::ReturnInst&);
 	void trans_br(const llvm::BranchInst&);
+	void trans_switch(const llvm::SwitchInst&);
 
 	exprt get_expr(const llvm::Value&);
 	exprt get_expr_gep(const llvm::GetElementPtrInst&);
+	exprt get_expr_bitcast(const llvm::BitCastInst&);
 	exprt get_expr_icmp(const llvm::ICmpInst&);
 	exprt get_expr_trunc(const llvm::TruncInst&);
 	exprt get_expr_load(const llvm::LoadInst&);
@@ -57,6 +62,8 @@ private:
 	exprt get_expr_mul(const llvm::Instruction&);
 	exprt get_expr_sdiv(const llvm::Instruction&);
 	exprt get_expr_udiv(const llvm::Instruction&);
+	exprt get_expr_and(const llvm::Instruction&);
+	exprt get_expr_or(const llvm::Instruction&);
 	exprt get_expr_zext(const llvm::ZExtInst&);
 	exprt get_expr_sext(const llvm::SExtInst&);
 	exprt get_expr_const(const llvm::Constant&);

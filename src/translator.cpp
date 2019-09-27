@@ -39,19 +39,40 @@ source_locationt translator::get_location(const Instruction &I) {
 exprt translator::get_expr_const(const Constant &C) {
 	exprt expr;
 	if (isa<ConstantAggregate>(C)) {
-//		TODO:Implement this
+		if (isa<ConstantArray>(C)) {
+			const auto &CA = cast<ConstantArray>(C);
+			array_exprt array_list(to_array_type(symbol_util::get_goto_type(C.getType())));
+			for (unsigned i = 0; i < CA.getNumOperands(); i++) {
+				const auto &V = CA.getAggregateElement(i);
+				array_list.add_to_operands(get_expr(*V));
+			}
+			expr = array_list;
+		}
+		else if (isa<ConstantStruct>(C)) {
+
+		}
+		else if (isa<ConstantVector>(C)) {
+
+		}
 	}
 	else if (isa<ConstantData>(C)) {
 		if (isa<ConstantAggregateZero>(C)) {
 		}
 		else if (isa<ConstantDataSequential>(C)) {
+			const auto &CDS = cast<ConstantDataSequential>(C);
+			array_exprt array_list(to_array_type(symbol_util::get_goto_type(C.getType())));
+			for (unsigned i = 0; i < CDS.getNumElements(); i++) {
+				const auto &V = CDS.getAggregateElement(i);
+				array_list.add_to_operands(get_expr(*V));
+			}
+			expr = array_list;
 		}
 		else if (isa<ConstantFP>(C)) {
 		}
 		else if (isa<ConstantInt>(C)) {
 			auto &CI = cast<ConstantInt>(C);
 			auto val = CI.getSExtValue();
-			expr = from_integer(val, signedbv_typet(CI.getBitWidth()));
+			expr = from_integer(val, symbol_util::get_goto_type(CI.getType()));
 		}
 		else if (isa<ConstantPointerNull>(C)) {
 		}
@@ -64,7 +85,8 @@ exprt translator::get_expr_const(const Constant &C) {
 //		TODO:Implement this
 	}
 	else if (isa<GlobalValue>(C)) {
-//		TODO:Implement this
+		const auto &symbol = symbol_table.lookup(C.getName().str());
+		expr = address_of_exprt(symbol->symbol_expr());
 	}
 	return expr;
 }
@@ -214,6 +236,35 @@ exprt translator::get_expr_udiv(const Instruction &UDI) {
 	return expr;
 }
 
+exprt translator::get_expr_and(const Instruction &AI) {
+	exprt expr;
+	const auto &ll_op1 = AI.getOperand(0);
+	const auto &ll_op2 = AI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	expr = and_exprt(expr_op1, expr_op2);
+	return expr;
+}
+
+exprt translator::get_expr_or(const Instruction &AI) {
+	exprt expr;
+	const auto &ll_op1 = AI.getOperand(0);
+	const auto &ll_op2 = AI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	expr = or_exprt(expr_op1, expr_op2);
+	return expr;
+}
+
+exprt translator::get_expr_bitcast(const BitCastInst &BI) {
+	exprt expr;
+	const auto &ll_op1 = BI.getOperand(0);
+	const auto &ll_op2 = BI.getDestTy();
+	expr = get_expr(*ll_op1);
+	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
 /// Translates and returns a sign extended integer.
 /// Sign extension is dont by a simple typecast.
 exprt translator::get_expr_sext(const SExtInst &SI) {
@@ -221,7 +272,7 @@ exprt translator::get_expr_sext(const SExtInst &SI) {
 	const auto &ll_op1 = SI.getOperand(0);
 	const auto &ll_op2 = SI.getDestTy();
 	expr = get_expr(*ll_op1);
-	expr = typecast_exprt(expr, signedbv_typet(ll_op2->getIntegerBitWidth()));
+	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
 	return expr;
 }
 
@@ -237,7 +288,7 @@ exprt translator::get_expr_zext(const ZExtInst &ZI) {
 	const auto &ll_op1 = ZI.getOperand(0);
 	const auto &ll_op2 = ZI.getDestTy();
 	expr = get_expr(*ll_op1);
-	expr = typecast_exprt(expr, signedbv_typet(ll_op2->getIntegerBitWidth()));
+	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
 	unsigned long long zext_and = 1u;
 	zext_and <<= ll_op1->getType()->getIntegerBitWidth();
 	zext_and--;
@@ -308,13 +359,11 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::ZExt: {
 			const auto &ZI = cast<ZExtInst>(&I);
 			expr = get_expr_zext(*ZI);
-//			expr = address_of_exprt(expr);
 			break;
 		}
 		case Instruction::SExt: {
 			const auto &SI = cast<SExtInst>(&I);
 			expr = get_expr_sext(*SI);
-//			expr = address_of_exprt(expr);
 			break;
 		}
 		case Instruction::Add: {
@@ -337,15 +386,27 @@ exprt translator::get_expr(const Value &V) {
 			expr = get_expr_udiv(I);
 			break;
 		}
+		case Instruction::And: {
+			expr = get_expr_and(I);
+			break;
+		}
+		case Instruction::Or: {
+			expr = get_expr_or(I);
+			break;
+		}
 		case Instruction::Trunc: {
 			const auto &TI = cast<TruncInst>(&I);
 			expr = get_expr_trunc(*TI);
-//			expr = address_of_exprt(expr);
 			break;
 		}
 		case Instruction::ICmp: {
 			const auto &ICI = cast<ICmpInst>(&I);
 			expr = get_expr_icmp(*ICI);
+			break;
+		}
+		case Instruction::BitCast: {
+			const auto &BI = cast<BitCastInst>(&I);
+			expr = get_expr_bitcast(*BI);
 			break;
 		}
 		case Instruction::Call: {
@@ -441,7 +502,31 @@ void translator::trans_call(const CallInst &CI) {
 			goto_program.update();
 		}
 		else if (called_func->isDeclaration()) { /// These are functions whose definitions are missing.
-			//		TODO:Implement Undet Call
+			if (!called_func->getReturnType()->isVoidTy()) { ///We should add a new variable to capture the return value of the func.
+				auto ret_symbol =
+						symbol_util::create_symbol(called_func->getReturnType());
+				if (CI.hasName()) {
+					ret_symbol.base_name = CI.getName().str();
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.base_name.c_str();
+				}
+				else
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.name.c_str();
+				ret_symbol.location = location;
+				symbol_table.add(ret_symbol);
+				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+				auto dclr_instr = goto_program.add_instruction();
+				dclr_instr->make_decl();
+				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+				dclr_instr->source_location = location;
+				goto_program.update();
+				auto asgn_instr = goto_program.add_instruction();
+				asgn_instr->make_assignment();
+				asgn_instr->code = code_assignt(ret_symbol.symbol_expr(),
+						side_effect_expr_nondett(ret_symbol.type, location));
+				asgn_instr->source_location = location;
+			}
 		}
 		else {
 			code_function_callt call_expr;
@@ -452,23 +537,23 @@ void translator::trans_call(const CallInst &CI) {
 				call_expr.arguments().push_back(get_expr(*arg_val));
 			}
 			if (!called_func->getReturnType()->isVoidTy()) { ///We should add a new variable to capture the return value of the func.
-				auto symbol =
+				auto ret_symbol =
 						symbol_util::create_symbol(called_func->getReturnType());
 				if (CI.hasName()) {
-					symbol.base_name = CI.getName().str();
-					symbol.name = CI.getFunction()->getName().str() + "::"
-							+ symbol.base_name.c_str();
+					ret_symbol.base_name = CI.getName().str();
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.base_name.c_str();
 				}
 				else
-					symbol.name = CI.getFunction()->getName().str() + "::"
-							+ symbol.name.c_str();
-				symbol.location = location;
-				symbol_table.add(symbol);
-				call_expr.lhs() = symbol.symbol_expr();
-				call_ret_sym_map[&CI] = symbol.name.c_str();
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.name.c_str();
+				ret_symbol.location = location;
+				symbol_table.add(ret_symbol);
+				call_expr.lhs() = ret_symbol.symbol_expr();
+				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
 				auto dclr_instr = goto_program.add_instruction();
 				dclr_instr->make_decl();
-				dclr_instr->code = code_declt(symbol.symbol_expr());
+				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
 				dclr_instr->source_location = location;
 				goto_program.update();
 			}
@@ -495,7 +580,78 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->source_location = location;
 			goto_program.update();
 		}
-		//		TODO:Implement Assume and Undet
+		else {
+			auto ll_func_type =
+					cast<FunctionType>(called_val->getType()->getPointerElementType());
+			auto func_type = symbol_util::get_goto_type(ll_func_type);
+			auto func_expr = get_expr(*called_val);
+			std::set<const symbolt*> actual_symbols;
+			std::set<code_function_callt> func_calls;
+			for (auto a : symbol_table)
+				if (a.second.type == func_type
+						&& std::string("main").compare(a.second.name.c_str())) {
+					actual_symbols.insert(symbol_table.lookup(a.second.name));
+				}
+			code_typet func__code_type;
+			symbolt ret_symbol;
+			code_function_callt call_expr;
+			if (!ll_func_type->getReturnType()->isVoidTy()) {
+				ret_symbol =
+						symbol_util::create_symbol(ll_func_type->getReturnType());
+				if (CI.hasName()) {
+					ret_symbol.base_name = CI.getName().str();
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.base_name.c_str();
+				}
+				else
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.name.c_str();
+				ret_symbol.location = location;
+				symbol_table.add(ret_symbol);
+				call_expr.lhs() = ret_symbol.symbol_expr();
+				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+				auto dclr_instr = goto_program.add_instruction();
+				dclr_instr->make_decl();
+				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+				dclr_instr->source_location = location;
+				goto_program.update();
+			}
+			for (auto func_sym : actual_symbols) {
+				call_expr.function() = func_sym->symbol_expr();
+				for (const auto &arg : CI.args()) {
+					const auto &arg_val = arg.get();
+					call_expr.arguments().push_back(get_expr(*arg_val));
+				}
+				func_calls.insert(call_expr);
+				call_expr.arguments().clear();
+			}
+			std::vector<goto_programt::targett> cond_targets;
+			std::vector<goto_programt::targett> func_targets;
+			std::vector<goto_programt::targett> goto_end_targets;
+			for (auto actual_func_call : func_calls) {
+				goto_programt::targett temp = goto_program.add_instruction();
+				cond_targets.push_back(temp);
+			}
+			auto default_target = goto_program.add_instruction();
+			for (auto actual_func_call : func_calls) {
+				goto_programt::targett temp = goto_program.add_instruction();
+				func_targets.push_back(temp);
+				goto_programt::targett temp2 = goto_program.add_instruction();
+				goto_end_targets.push_back(temp2);
+			}
+			goto_programt::targett end = goto_program.add_instruction();
+			end->make_skip();
+			default_target->make_goto(end, true_exprt());
+			int i = 0;
+			for (auto actual_func_call : func_calls) {
+				func_targets[i]->make_function_call(actual_func_call);
+				cond_targets[i]->make_goto(func_targets[i],
+						equal_exprt(func_expr,
+								address_of_exprt(actual_func_call.function())));
+				goto_end_targets[i]->make_goto(end, true_exprt());
+				i++;
+			}
+		}
 	}
 }
 
@@ -536,6 +692,43 @@ void translator::trans_br(const BranchInst &BI) {
 	goto_program.update();
 }
 
+/// Add Skip instructions for each switch case + 1 for
+/// the default/epilog case.
+void translator::trans_switch(const SwitchInst &SI) {
+	auto location = get_location(SI);
+	auto i = SI.getNumCases();
+	while (i--) {
+		auto skip_instr = goto_program.add_instruction();
+		skip_instr->make_skip();
+		switch_instr_target_map[&SI].push_back(skip_instr);
+	}
+	auto skip_instr = goto_program.add_instruction();
+	skip_instr->make_skip();
+	switch_instr_target_map[&SI].push_back(skip_instr);
+	goto_program.update();
+}
+
+/// Once all blocks have been translated
+/// add the goto statements for each case.
+void translator::set_switches() {
+	for (auto sw_inst_iter = switch_instr_target_map.begin(), ie =
+			switch_instr_target_map.end(); sw_inst_iter != ie; sw_inst_iter++) {
+		auto SI = sw_inst_iter->first;
+		auto select_expr = get_expr(*SI->getCondition());
+		auto target_vector = sw_inst_iter->second;
+		for (auto i = 1u, n = SI->getNumCases(); i <= n; i++) {
+			auto guard_expr = equal_exprt(select_expr,
+					get_expr(*SI->getOperand(i * 2)));
+			auto target = block_target_map[SI->getSuccessor(i)];
+			target_vector[i - 1]->make_goto(target, guard_expr);
+		}
+		auto default_inst = target_vector.back();
+		auto default_target = block_target_map[SI->getDefaultDest()];
+		default_inst->make_goto(default_target, true_exprt());
+	}
+	switch_instr_target_map.clear();
+}
+
 /// We only translate instructions that resemble a
 /// a state change, like store instructions, etc, else skip.
 void translator::trans_instruction(const Instruction &I) {
@@ -568,11 +761,18 @@ void translator::trans_instruction(const Instruction &I) {
 		trans_call(CI);
 		break;
 	}
+	case Instruction::Switch: {
+		const SwitchInst &SI = cast<SwitchInst>(I);
+		trans_switch(SI);
+		break;
+	}
 	case Instruction::Add:
 	case Instruction::Sub:
 	case Instruction::Mul:
 	case Instruction::UDiv:
 	case Instruction::SDiv:
+	case Instruction::And:
+	case Instruction::Or:
 	case Instruction::Trunc:
 	case Instruction::ZExt:
 	case Instruction::SExt:
@@ -580,6 +780,7 @@ void translator::trans_instruction(const Instruction &I) {
 	case Instruction::ICmp:
 	case Instruction::Unreachable:
 	case Instruction::GetElementPtr:
+	case Instruction::BitCast:
 		break;
 	default:
 		I.dump();
@@ -616,6 +817,7 @@ void translator::set_branches() {
 			br_inst_iter->second.first->make_goto(then_part, true_exprt());
 		}
 	}
+	br_instr_target_map.clear();
 }
 
 /// Moves new symbol to symbol.
@@ -730,6 +932,7 @@ void translator::trans_function(Function &F) {
 	}
 	goto_program.add_instruction(END_FUNCTION);
 	set_branches();
+	set_switches();
 //	for (auto i = branch_dest_block_map_switch.begin();
 //			i != branch_dest_block_map_switch.end(); i++) {
 //		map<const BasicBlock*, goto_programt::targett>::iterator then_pair =
@@ -743,8 +946,17 @@ void translator::trans_function(Function &F) {
 /// This adds all the global symbols to
 /// the symbol table.
 void translator::add_global_symbols() {
+	symbolt symbol;
+	symbol_util::reset_var_counter();
 	for (auto &G : llvm_module->globals()) {
-		G.getType()->dump();
+		symbol = symbol_util::create_symbol(G.getValueType());
+		if (G.hasName()) {
+			symbol.base_name = G.getName().str();
+			symbol.name = symbol.base_name.c_str();
+			symbol.value = get_expr(*G.getOperand(0));
+			symbol.is_static_lifetime = true;
+		}
+		symbol_table.add(symbol);
 	}
 }
 
@@ -805,7 +1017,6 @@ void translator::write_goto(const string &filename) {
 /// Translates and entire module and writes it
 ///	to the goto_functions.
 void translator::trans_module() {
-	register_language(new_ansi_c_language);
 	for (auto F = llvm_module->getFunctionList().begin();
 			F != llvm_module->getFunctionList().end(); F++) {
 		if (F->isDeclaration()) {

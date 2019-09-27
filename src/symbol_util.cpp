@@ -67,7 +67,10 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	case Type::IntegerTyID: {
-		type = signedbv_typet(ll_type->getIntegerBitWidth());
+		if (ll_type->getIntegerBitWidth() == 1)
+			type = bool_typet();
+		else
+			type = signedbv_typet(ll_type->getIntegerBitWidth());
 		break;
 	}
 	case Type::StructTyID: {
@@ -123,7 +126,16 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	case Type::FunctionTyID: {
-		assert(false && "Function llvm::TypeID encountered!");
+		auto ll_func_type = cast<FunctionType>(ll_type);
+		auto func_type = code_typet();
+		code_typet::parameterst parameters;
+		for (auto param_type : ll_func_type->params()) {
+			code_typet::parametert para(get_goto_type(param_type));
+			parameters.push_back(para);
+		}
+		func_type.parameters() = parameters;
+		func_type.return_type() = get_goto_type(ll_func_type->getReturnType());
+		type = func_type;
 		break;
 	}
 	default: {
