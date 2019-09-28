@@ -52,8 +52,11 @@ private:
 	void trans_switch(const llvm::SwitchInst&);
 
 	exprt get_expr(const llvm::Value&);
+	exprt get_expr_phi(const llvm::PHINode&);
+	exprt get_expr_extractvalue(const llvm::ExtractValueInst&);
 	exprt get_expr_gep(const llvm::GetElementPtrInst&);
 	exprt get_expr_bitcast(const llvm::BitCastInst&);
+	exprt get_expr_fcmp(const llvm::FCmpInst&);
 	exprt get_expr_icmp(const llvm::ICmpInst&);
 	exprt get_expr_trunc(const llvm::TruncInst&);
 	exprt get_expr_load(const llvm::LoadInst&);
@@ -64,8 +67,15 @@ private:
 	exprt get_expr_udiv(const llvm::Instruction&);
 	exprt get_expr_and(const llvm::Instruction&);
 	exprt get_expr_or(const llvm::Instruction&);
+	exprt get_expr_xor(const llvm::Instruction&);
+	exprt get_expr_shl(const llvm::Instruction&);
+	exprt get_expr_lshr(const llvm::Instruction&);
+	exprt get_expr_ashr(const llvm::Instruction&);
 	exprt get_expr_zext(const llvm::ZExtInst&);
 	exprt get_expr_sext(const llvm::SExtInst&);
+	exprt get_expr_fpext(const llvm::FPExtInst&);
+	exprt get_expr_ptrtoint(const llvm::PtrToIntInst&);
+	exprt get_expr_inttoptr(const llvm::IntToPtrInst&);
 	exprt get_expr_const(const llvm::Constant&);
 
 	void move_symbol(symbolt&, symbolt*&);

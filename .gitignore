@@ -7,6 +7,8 @@ Debug/llvm2goto-2.0
 # IR files
 *.ll
 *.gb
+*.i
+*.out
 
 # Prerequisites
 *.d

@@ -74,7 +74,12 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	case Type::StructTyID: {
-		auto strct_name = ll_type->getStructName().str();
+		string strct_name;
+		if (cast<StructType>(ll_type)->isLiteral()) {
+			strct_name = "ll_literal_struct" + to_string(var_counter);
+		}
+		else
+			strct_name = ll_type->getStructName().str();
 		if (typedef_tag_set.find(strct_name) == typedef_tag_set.end()) {
 			struct_typet struct_type;
 			auto &components = struct_type.components();
@@ -152,7 +157,7 @@ symbolt translator::symbol_util::create_symbol(const Type *ll_type) {
 	symbol.is_thread_local = true;
 	symbol.is_lvalue = true;
 
-	symbol.name = string("var" + to_string(var_counter));
+	symbol.name = "var" + to_string(var_counter);
 	symbol.base_name = symbol.name;
 	var_counter++;
 	symbol.type = get_goto_type(ll_type);

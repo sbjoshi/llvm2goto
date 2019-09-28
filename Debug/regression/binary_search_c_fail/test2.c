@@ -1,0 +1,68 @@
+int main()
+{
+        signed int first;
+        signed int last;
+        signed int middle;
+        signed int n;
+        signed int search;
+        n = 2;
+        signed int array[2ul];
+        signed int found;
+        found = 0;
+        first = 0;
+        signed int sub;
+        sub = n - 1;
+        last = sub;
+        signed int add;
+        add = first + last;
+        signed int div;
+        div = add / 2;
+        middle = div;
+     L1: ; 
+        int cmp;
+        cmp = first < last;
+        if (!(first < last)) goto L4;
+        long int idxprom;
+        idxprom = (long int)middle;
+        signed int *arrayidx;
+        arrayidx = &array[idxprom];
+        int cmp1;
+        cmp1 = *arrayidx < search;
+        if(!(*arrayidx < search)) goto L2;
+        signed int add2;
+        add2 = middle + 1;
+        first = add2;
+        goto L3;
+        
+     L2: ;
+        long int idxprom3;
+        idxprom3 = (long int)middle;
+        signed int *arrayidx4;
+        arrayidx4 = &array[idxprom3];
+        int cmp5;
+        cmp5 = *arrayidx4 == search;
+        if (!(*arrayidx4 == search)) goto L3;
+        found = 2;
+        goto L4;
+     L3: goto L1;
+     L4: ; 
+        int cmp8;
+        cmp8 = first > last;
+        if (!(first > last)) goto L5;
+        int cmp9;
+        cmp9 = found == 0;
+        if (!(found == 0)) goto L5;
+        goto L6;
+     L5: ; 
+        int cmp10;
+        cmp10 = first <= last;
+        if (!(first <= last)) goto L6;
+        int cmp11;
+        cmp11 = found > 0;
+     L6: ;
+        int lor_ext;
+        lor_ext = (int)(cmp9 ? 1 : (cmp10 ? cmp11 : 0));
+        assert(lor_ext);
+        return 0;
+ 
+}
