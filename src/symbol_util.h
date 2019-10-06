@@ -13,6 +13,7 @@
 class ll2gb::translator::symbol_util {
 	static std::set<std::string> typedef_tag_set; ///<Stores names of typdefs whose type symbols have already been added.
 	static unsigned var_counter;
+	static std::set<const llvm::Type*> current_struct_eval;
 public:
 	static std::string lookup_namespace(std::string);
 	static typet get_goto_type(const llvm::Type*);

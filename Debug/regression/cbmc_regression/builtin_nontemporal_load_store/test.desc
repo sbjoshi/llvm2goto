@@ -1,0 +1,6 @@
+CORE
+main.c.i
+
+^EXIT=0$
+^SIGNAL=0$
+--

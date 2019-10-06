@@ -13,6 +13,8 @@ using namespace llvm;
 using namespace ll2gb;
 
 set<string> translator::symbol_util::typedef_tag_set = set<string>();
+set<const Type*> translator::symbol_util::current_struct_eval =
+		set<const Type*>();
 unsigned translator::symbol_util::var_counter = 1;
 
 string translator::symbol_util::lookup_namespace(string str) {
@@ -75,8 +77,23 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	}
 	case Type::StructTyID: {
 		string strct_name;
+		if (current_struct_eval.find(ll_type) != current_struct_eval.end()) {
+			assert(false && "Recursive structs not handled!!!");
+		}
+		current_struct_eval.insert(ll_type);
 		if (cast<StructType>(ll_type)->isLiteral()) {
-			strct_name = "ll_literal_struct" + to_string(var_counter);
+			struct_typet struct_type;
+			auto &components = struct_type.components();
+			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
+					i++) {
+				auto struct_element = ll_type->getStructElementType(i);
+				struct_typet::componentt component(string("ele_"
+						+ to_string(i)),
+						get_goto_type(struct_element));
+				components.push_back(component);
+			}
+			type = struct_type;
+			break;
 		}
 		else
 			strct_name = ll_type->getStructName().str();

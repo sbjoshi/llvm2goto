@@ -1,0 +1,3625 @@
+Test 'Array_Declarator1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Array_Declarator2'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=6$
+    ^SIGNAL=0$
+    syntax error
+    ^PARSING ERROR$
+    --
+    --
+    Tests a parsing issue regarding array declarators, see Array_Declarator1
+Execution [SKIPPED]
+
+Test 'Array_Declarator3'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=6$
+    ^SIGNAL=0$
+    syntax error
+    ^PARSING ERROR$
+    --
+    --
+    Tests a parsing issue regarding array declarators, see Array_Declarator1
+Execution [SKIPPED]
+
+Test 'Array_Declarator4'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=6$
+    ^SIGNAL=0$
+    syntax error
+    ^PARSING ERROR$
+    --
+    --
+    Tests a parsing issue regarding array declarators, see Array_Declarator1
+Execution [SKIPPED]
+
+Test 'Array_Declarator5'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=6$
+    ^SIGNAL=0$
+    syntax error
+    ^PARSING ERROR$
+    --
+    --
+    Tests a parsing issue regarding array declarators, see Array_Declarator1
+Execution [SKIPPED]
+
+Test 'Array_Declarator6'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=6$
+    ^SIGNAL=0$
+    syntax error
+    ^PARSING ERROR$
+    --
+    ^VERIFICATION SUCCESSFUL$
+    --
+    Tests a parsing issue regarding array declarators, see Array_Declarator1
+Execution [SKIPPED]
+
+Test 'Array_Declarator7'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=64$
+    ^SIGNAL=0$
+    ^PARSING ERROR$
+    --
+    --
+    Tests a parsing issue regarding array declarators, see Array_Declarator1
+Execution [SKIPPED]
+
+Test 'Array_Declarator8'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    array size of static symbol `B' is not constant$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+array size of static symbol `B' is not constant\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'Atomic1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Defines1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options:  -D NEW_DEFINE
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^CONVERSION ERROR$
+Running cbmc  -D NEW_DEFINE main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Empty_Declaration1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^SIGNAL=0$
+    ^EXIT=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^SIGNAL=0\r\\?$ [OK]
+^EXIT=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Forward_Declaration1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^SIGNAL=0$
+    ^EXIT=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^SIGNAL=0\r\\?$ [OK]
+^EXIT=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Forward_Declaration2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(1|64)$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(1|64)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'Function_parameters1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Function_parameters2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Function_pointer1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Header_files1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    is not declared$
+    --
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+is not declared\r\\?$ [OK]
+
+Test 'Incomplete_Type1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(1|64)$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(1|64)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'Initializer_cast1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Initializer_cast2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'KnR1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'KnR2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'KnR3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Lvalue1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'MMX1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'MMX2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Multiple'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Qualifiers1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Recursive_Structure1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^SIGNAL=0$
+    ^EXIT=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^SIGNAL=0\r\\?$ [OK]
+^EXIT=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Recursive_Structure2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^SIGNAL=0$
+    ^EXIT=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^SIGNAL=0\r\\?$ [OK]
+^EXIT=0\r\\?$ [FAILED]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Bitfields1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Enum_Padding1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Hierarchy1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Initialization1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Initialization2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    --
+    ^warning: ignoring
+    --
+    variable-length arrays in the middle of a struct are not permitted
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'Struct_Padding2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Padding3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Padding4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Padding5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_Padding6'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Struct_ptrmember1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Transparent_union1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Transparent_union2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Typecast_to_array_ptr1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Typecast_to_union1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Union_Initialization1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^SIGNAL=0$
+    ^EXIT=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^SIGNAL=0\r\\?$ [OK]
+^EXIT=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Union_Padding1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Union_Padding2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Universal_characters1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'VS_extensions1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'Zero_Initialization1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^SIGNAL=0$
+    ^EXIT=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^SIGNAL=0\r\\?$ [OK]
+^EXIT=0\r\\?$ [FAILED]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test '_Alignof1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test '_Bool1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test '_Generic1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    _Generic is a C11 extension.
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test '_Static_assert1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'always_inline1'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    The static asserts (arrays that may have a negative size if the assertion fails)
+    can only be evaluated if always_inline is correctly applied.
+Execution [SKIPPED]
+
+Test 'always_inline2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'always_inline3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 2
+  Core: 0
+Execution [FAILED]
+
+Test 'always_inline4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 2
+  Core: 0
+Execution [FAILED]
+
+Test 'always_inline5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'always_inline6'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'always_inline7'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'always_inline8'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'always_inline9'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'arch_flags_mcpu_bad'
+  Level: CORE
+  Input: preproc.i
+  Output: preproc.out
+  Options: -mcpu=cortex-a15 -o linked-object.gb object.intel
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This tests the -mcpu=cortex=a15 flag that should activate ARM-32 mode.
+    The object file 'object.intel' was compiled from 'source.c' with goto-cc
+    on a 64-bit platform:
+    
+      goto-cc -c source.c
+    
+    preproc.i is already pre-processed so that it can be linked in without
+    needing to invoke a pre-processor from a cross-compile toolchain on your
+    local machine. Linking it together with the Intel object file, while
+    passing -mcpu=cortex-a15 on the command line, should fail because
+    -mcpu=cortex-a15 implies that we're trying to make an ARM executable.
+Running cbmc -mcpu=cortex-a15 -o linked-object.gb object.intel preproc.i >preproc.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'arch_flags_mcpu_good'
+  Level: CORE
+  Input: preproc.i
+  Output: preproc.out
+  Options: -mcpu=cortex-a15 -o linked-object.gb object.arm
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This tests the -mcpu=cortex-a15 flag that should activate ARM-32 mode.
+    The object file 'object.arm' was compiled from 'source.c' with goto-cc
+    along with an ARM cross-compiler on a 64-bit platform with the following
+    command line:
+    
+      goto-cc -o object.arm --native-compiler=arm-none-eabi-gcc -mcpu=cortex-a15 -c source.c
+    
+    To regenerate object.arm on an x86_64 machine, you will need to install
+    an ARM-32 cross compiler and pass the name of that compiler to the
+    --native-compiler flag. On Ubuntu, you can get a suitable compiler
+    using:
+    
+      sudo apt install gcc-arm-none-eabi
+    
+    which will install arm-none-eabi-gcc (amongst other things).
+    
+    preproc.i is already pre-processed so that it can be linked in without
+    needing to invoke a pre-processor from a cross-compile toolchain on your
+    local machine. Linking it together with the ARM object file, while
+    passing -mcpu=cortex-a15 on the command line, should succeed.
+Running cbmc -mcpu=cortex-a15 -o linked-object.gb object.arm preproc.i >preproc.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'arch_flags_mthumb_bad'
+  Level: CORE
+  Input: preproc.i
+  Output: preproc.out
+  Options: -mthumb -o linked-object.gb object.intel
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This tests the -mthumb flag that should activate ARM-32 mode. The object
+    file 'object.intel' was compiled from 'source.c' with goto-cc on a
+    64-bit platform:
+    
+      goto-cc -c source.c
+    
+    preproc.i is already pre-processed so that it can be linked in without
+    needing to invoke a pre-processor from a cross-compile toolchain on your
+    local machine. Linking it together with the Intel object file, while
+    passing -mthumb on the command line, should fail because -mthumb implies
+    that we're trying to make an ARM executable.
+Running cbmc -mthumb -o linked-object.gb object.intel preproc.i >preproc.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'arch_flags_mthumb_good'
+  Level: CORE
+  Input: preproc.i
+  Output: preproc.out
+  Options: -mthumb -o linked-object.gb object.arm
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This tests the -mthumb flag that should activate ARM-32 mode. The object
+    file 'object.arm' was compiled from 'source.c' with goto-cc along with
+    an ARM cross-compiler on a 64-bit platform with the following command
+    line:
+    
+      goto-cc -o object.arm --native-compiler=arm-none-eabi-gcc -mthumb -c source.c
+    
+    To regenerate object.arm on an x86_64 machine, you will need to install
+    an ARM-32 cross compiler and pass the name of that compiler to the
+    --native-compiler flag. On Ubuntu, you can get a suitable compiler
+    using:
+    
+      sudo apt install gcc-arm-none-eabi
+    
+    which will install arm-none-eabi-gcc (amongst other things).
+    
+    preproc.i is already pre-processed so that it can be linked in without
+    needing to invoke a pre-processor from a cross-compile toolchain on your
+    local machine. Linking it together with the ARM object file, while
+    passing -mthumb on the command line, should succeed.
+Running cbmc -mthumb -o linked-object.gb object.arm preproc.i >preproc.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'arithmetic_right_shift1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'array_initialization1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'array_initialization2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'array_initialization3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'array_initialization4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(1|64)$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(1|64)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'asm1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'asm2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'asm3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: other.c.i
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc other.c.i main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'builtin_ia32_undef'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+
+Test 'builtin_nontemporal_load_store'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+
+Test 'character_literals1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'cprover_bool1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'decl_initialization1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    ^function must return value$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+^function must return value\r\\?$ [OK]
+
+Test 'decl_initialization2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    ^function must return value$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+^function must return value\r\\?$ [OK]
+
+Test 'enum1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'enum2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'enum3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'enum4'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'enum5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'enum6'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'enum7'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Execution [SKIPPED]
+
+Test 'enum8'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'envp1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'extern1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'extern2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'extern_inline1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'float_constant1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'float_constant2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'for_scope1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: -std=c99
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc -std=c99 main.c.i >main.c.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'forceinline1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --i386-win32
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc --i386-win32 main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'function_return1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --verbosity 2
+  Results:
+    : function has return void but a return statement returning signed int$
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc --verbosity 2 main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+: function has return void but a return statement returning signed int\r\\?$ [FAILED]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc___auto_type1'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes10'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes11'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes12'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes13'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes2'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes3'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes4'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes5'
+  Level: KNOWNBUG  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes6'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes7'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes8'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_attributes9'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtin_constant_p1'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 10
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtins1'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtins2'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtins3'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtins4'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtins5'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_builtins6'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_float_types1'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_types_compatible_p1'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_types_compatible_p2'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_types_compatible_p3'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_types_compatible_p4'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'gcc_vector1'
+  Level: CORE  
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'goto_convert_break'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=1$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=1\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'goto_convert_continue'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=1$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=1\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'goto_convert_invalid_goto_label'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^CONVERSION ERROR$
+    ^EXIT=1$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^EXIT=1\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'goto_convert_switch_range_bounds'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^CONVERSION ERROR$
+    ^EXIT=1$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+^EXIT=1\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'goto_convert_switch_range_case_valid'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^Invariant check failed
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^Invariant check failed [OK]
+
+Test 'goto_convert_switch_range_empty'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^Invariant check failed
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^Invariant check failed [OK]
+
+Test 'goto_convert_switch_range_empty_nodefault'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^Invariant check failed
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^Invariant check failed [OK]
+
+Test 'goto_convert_switch_range_operands_count'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=1$
+    ^SIGNAL=0$
+    ^PARSING ERROR$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=1\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^PARSING ERROR\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
+Test 'integer_constant1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'integer_constant2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'linker_script_start+end'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: -o out.gb -T script.ld -nostdlib
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    Tesing the functionality of goto-cc's linker script parsing
+    functionality, ensuring that it can get the values of symbols that are
+    defined in linker scripts.
+    
+    This test ensures that goto-cc and ls-parse can:
+    
+    - get the value of a symbol whose value indicates the start of a section;
+    - get the value of a symbol whose value indicates the end of a section.
+Running cbmc -o out.gb -T script.ld -nostdlib main.c.i >main.c.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'linker_script_start+size'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: -o out.gb -T script.ld -nostdlib
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    Tesing the functionality of goto-cc's linker script parsing
+    functionality, ensuring that it can get the values of symbols that are
+    defined in linker scripts.
+    
+    This test ensures that goto-cc and ls-parse can:
+    
+    - get the value of a symbol whose value indicates the start of a section;
+    - get the value of a symbol whose value indicates the size of a section,
+      and whose value has been generated through a basic arithmetic
+      expression in the linker script.
+Running cbmc -o out.gb -T script.ld -nostdlib main.c.i >main.c.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'linker_script_symbol-only'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: -o out.gb -T script.ld -nostdlib
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    Tesing the functionality of goto-cc's linker script parsing
+    functionality, ensuring that it can get the values of symbols that are
+    defined in linker scripts.
+    
+    This test ensures that goto-cc and ls-parse can get the value of a
+    symbol whose value indicates the start of a section.
+Running cbmc -o out.gb -T script.ld -nostdlib main.c.i >main.c.out 2>&1
+  Exit: 64
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'linking1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: module.c
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc module.c main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'linking_conflicts1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: other.c
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    ^CONVERSION ERROR$
+    error: conflicting function declarations `bar'
+    error: conflicting function declarations `bar2'
+    --
+    ^warning: ignoring
+Running cbmc other.c main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [FAILED]
+error: conflicting function declarations `bar' [FAILED]
+error: conflicting function declarations `bar2' [FAILED]
+^warning: ignoring [OK]
+
+Test 'message_handling1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --verbosity 2
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    encountered goto `bla' that enters one or more lexical blocks
+Running cbmc --verbosity 2 main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+encountered goto `bla' that enters one or more lexical blocks [OK]
+
+Test 'pointer_arithmetic1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'pragma_pack1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'pragma_pack2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'pragma_pack3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'return_void'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'sizeof1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'sizeof2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'sizeof3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'sizeof4'
+  Level: KNOWNBUG
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Execution [SKIPPED]
+
+Test 'sizeof5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'static1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: --function fun
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc --function fun main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'static2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: main2.c --function foo
+  Results:
+    ^main symbol `foo' is ambiguous$
+    ^EXIT=(1|64)$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc main2.c --function foo main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^main symbol `foo' is ambiguous\r\\?$ [FAILED]
+^EXIT=(1|64)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'static3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: main2.c --function foo
+  Results:
+    ^main symbol `foo' is ambiguous$
+    ^EXIT=(1|64)$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc main2.c --function foo main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^main symbol `foo' is ambiguous\r\\?$ [FAILED]
+^EXIT=(1|64)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'static_inline1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+
+Test 'struct2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'struct3'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'struct5'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'struct6'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    : incomplete type not permitted here$
+    ^CONVERSION ERROR$
+    --
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+: incomplete type not permitted here\r\\?$ [FAILED]
+^CONVERSION ERROR\r\\?$ [FAILED]
+
+Test 'struct7'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=(64|1)$
+    ^SIGNAL=0$
+    : duplicate member .*$
+    ^CONVERSION ERROR$
+    --
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=(64|1)\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+: duplicate member .*\r\\?$ [FAILED]
+^CONVERSION ERROR\r\\?$ [FAILED]
+
+Test 'switch1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'typedef1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'typedef2'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'typedef_code'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'typeof1'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'windows_h_VS_2005'
+  Level: CORE
+  Input: main.i.i
+  Output: main.i.out
+  Options: --i386-win32
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This is windows.h from MS Visual Studio 8 (2005) after preprocessing
+Running cbmc --i386-win32 main.i.i >main.i.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'windows_h_VS_2008'
+  Level: CORE
+  Input: main.i.i
+  Output: main.i.out
+  Options: --i386-win32
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This is windows.h from MS Visual Studio 9 (2008) after preprocessing
+Running cbmc --i386-win32 main.i.i >main.i.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'windows_h_VS_2010'
+  Level: CORE
+  Input: main.i.i
+  Output: main.i.out
+  Options: --i386-win32
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This is windows.h from MS Visual Studio 10 (2010) after preprocessing
+Running cbmc --i386-win32 main.i.i >main.i.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'windows_h_VS_2012'
+  Level: CORE
+  Input: main.i.i
+  Output: main.i.out
+  Options: --i386-win32
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This is windows.h from MS Visual Studio 11 (2012) after preprocessing
+Running cbmc --i386-win32 main.i.i >main.i.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+
+Test 'windows_h_VS_2013'
+  Level: CORE
+  Input: main.i.i
+  Output: main.i.out
+  Options: --i386-win32
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    --
+    ^warning: ignoring
+    ^CONVERSION ERROR$
+    --
+    This is windows.h from MS Visual Studio 12 (2013) after preprocessing
+Running cbmc --i386-win32 main.i.i >main.i.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^warning: ignoring [OK]
+^CONVERSION ERROR\r\\?$ [OK]
+

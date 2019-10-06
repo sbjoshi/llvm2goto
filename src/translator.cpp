@@ -55,7 +55,19 @@ exprt translator::get_expr_const(const Constant &C) {
 			expr = list_expr;
 		}
 		else if (isa<ConstantStruct>(C)) {
-
+			const auto &CS = cast<ConstantStruct>(C);
+			exprt list_expr;
+			if (C.getType()->isArrayTy())
+				list_expr =
+						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
+			else
+				list_expr =
+						struct_exprt(to_struct_type(symbol_util::get_goto_type(C.getType())));
+			for (unsigned i = 0; i < CS.getNumOperands(); i++) {
+				const auto &V = CS.getAggregateElement(i);
+				list_expr.add_to_operands(get_expr(*V));
+			}
+			expr = list_expr;
 		}
 		else if (isa<ConstantVector>(C)) {
 
@@ -146,6 +158,13 @@ exprt translator::get_expr_const(const Constant &C) {
 		else if (isa<ConstantTokenNone>(C)) {
 		}
 		else if (isa<UndefValue>(C)) {
+			auto symbol = symbol_util::create_symbol(C.getType());
+			symbol_table.add(symbol);
+			auto dclr_instr = goto_program.add_instruction();
+			dclr_instr->make_decl();
+			dclr_instr->code = code_declt(symbol.symbol_expr());
+			goto_program.update();
+			expr = symbol.symbol_expr();
 		}
 	}
 	else if (isa<ConstantExpr>(C)) {
@@ -448,7 +467,14 @@ exprt translator::get_expr_bitcast(const BitCastInst &BI) {
 	const auto &ll_op1 = BI.getOperand(0);
 	const auto &ll_op2 = BI.getDestTy();
 	expr = get_expr(*ll_op1);
-	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
+	if (expr.type().id() == ID_pointer)
+		expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
+	else {
+		expr = address_of_exprt(expr);
+		expr = typecast_exprt(expr,
+				pointer_type(symbol_util::get_goto_type(ll_op2)));
+		expr = dereference_exprt(expr);
+	}
 	return expr;
 }
 
@@ -474,6 +500,17 @@ exprt translator::get_expr_fpext(const FPExtInst &FPEI) {
 	return expr;
 }
 
+exprt translator::get_expr_fptosi(const FPToSIInst &FPTSI) {
+	exprt expr;
+	const auto &ll_op1 = FPTSI.getOperand(0);
+	const auto &ll_op2 = FPTSI.getDestTy();
+	expr = get_expr(*ll_op1);
+	expr = floatbv_typecast_exprt(expr,
+			from_integer(0, signed_int_type()),
+			symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
 exprt translator::get_expr_ptrtoint(const PtrToIntInst &P2I) {
 	exprt expr;
 	const auto &ll_op1 = P2I.getOperand(0);
@@ -489,6 +526,18 @@ exprt translator::get_expr_inttoptr(const IntToPtrInst &I2P) {
 	const auto &ll_op2 = I2P.getDestTy();
 	expr = get_expr(*ll_op1);
 	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
+exprt translator::get_expr_select(const SelectInst &SI) {
+	exprt expr;
+	const auto &ll_op1 = SI.getOperand(0);
+	const auto &ll_op2 = SI.getOperand(1);
+	const auto &ll_op3 = SI.getOperand(2);
+	auto cond_expr = get_expr(*ll_op1);
+	auto op1_expr = get_expr(*ll_op2);
+	auto op2_expr = get_expr(*ll_op3);
+	expr = ternary_exprt(ID_if, cond_expr, op1_expr, op2_expr, op1_expr.type());
 	return expr;
 }
 
@@ -650,6 +699,11 @@ exprt translator::get_expr(const Value &V) {
 			expr = get_expr_fpext(*FPEI);
 			break;
 		}
+		case Instruction::FPToSI: {
+			const auto &FPTSI = cast<FPToSIInst>(&I);
+			expr = get_expr_fptosi(*FPTSI);
+			break;
+		}
 		case Instruction::PtrToInt: {
 			const auto &P2I = cast<PtrToIntInst>(&I);
 			expr = get_expr_ptrtoint(*P2I);
@@ -658,6 +712,11 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::IntToPtr: {
 			const auto &I2P = cast<IntToPtrInst>(&I);
 			expr = get_expr_inttoptr(*I2P);
+			break;
+		}
+		case Instruction::Select: {
+			const auto &SI = cast<SelectInst>(&I);
+			expr = get_expr_select(*SI);
 			break;
 		}
 		case Instruction::FAdd:
@@ -733,6 +792,11 @@ exprt translator::get_expr(const Value &V) {
 			expr = symbol_table.lookup(call_ret_sym_map[CI])->symbol_expr();
 			break;
 		}
+		case Instruction::InsertValue: {
+			const auto &IVI = cast<InsertValueInst>(&I);
+			expr = ins_value_name_map[IVI];
+			break;
+		}
 		default:
 			I.dump();
 			assert(false && "Unhandled Instruction type in get_expr()");
@@ -799,6 +863,36 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	goto_program.update();
 }
 
+void translator::trans_insertvalue(const InsertValueInst &IVI) {
+	const auto &ll_op1 = IVI.getOperand(0);
+	const auto &ll_op2 = IVI.getOperand(1);
+	auto tgt_expr = get_expr(*ll_op1);
+	ins_value_name_map[&IVI] = tgt_expr;
+	auto src_expr = get_expr(*ll_op2);
+	auto indices = IVI.getIndices();
+	for (auto i = 0u, n = IVI.getNumIndices(); i < n; i++) {
+		auto index = indices[i];
+		auto index_expr = from_integer(index, index_type());
+		if (tgt_expr.type().id() == ID_pointer)
+			tgt_expr = dereference_exprt(plus_exprt(tgt_expr, index_expr));
+		else if (tgt_expr.type().id() == ID_array)
+			tgt_expr = index_exprt(tgt_expr, index_expr);
+		else if (tgt_expr.type().id() == ID_struct
+				|| tgt_expr.type().id() == ID_struct_tag) {
+			const auto struct_t = to_struct_type(tgt_expr.type());
+			auto component = struct_t.components().at(index);
+			tgt_expr = member_exprt(tgt_expr, component);
+		}
+		else
+			assert(false);
+	}
+	auto asgn_instr = goto_program.add_instruction();
+	asgn_instr->make_assignment();
+	asgn_instr->code = code_assignt(tgt_expr, src_expr);
+	asgn_instr->source_location = get_location(IVI);
+	goto_program.update();
+}
+
 /// Translates and adds a function call instruction.
 void translator::trans_call(const CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
@@ -818,6 +912,15 @@ void translator::trans_call(const CallInst &CI) {
 			assert_instr->make_assertion(false_exprt());
 			assert_instr->source_location = location;
 			assert_instr->source_location.set_comment(comment.str());
+			goto_program.update();
+		}
+		else if (!called_func->getName().str().compare("assert_")) { ///__assert_fail is a special assert by llvm which is equivalent to assert(fail && "Message").
+			auto assert_inst = goto_program.add_instruction();
+			auto guard_expr =
+					typecast_exprt(dereference_exprt(get_expr(*CI.getOperand(0))),
+							bool_typet());
+			assert_inst->make_assertion(guard_expr);
+			assert_inst->source_location = location;
 			goto_program.update();
 		}
 		else if (!called_func->getName().str().substr(0, 11).compare("llvm.memcpy")) {
@@ -871,7 +974,8 @@ void translator::trans_call(const CallInst &CI) {
 	}
 	else {	///These are functions whose semantics are unknown.
 		L1: auto called_val = CI.getCalledValue()->stripPointerCasts();
-		if (!called_val->getName().str().compare("assert")) {
+		if (!called_val->getName().str().compare("assert")
+				|| !called_val->getName().str().compare("assert_")) {
 			auto assert_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
@@ -1072,7 +1176,7 @@ void translator::trans_instruction(const Instruction &I) {
 		break;
 	}
 	case Instruction::Call: {
-		if (isa<DbgDeclareInst>(I)) {
+		if (isa<DbgDeclareInst>(I) || isa<DbgValueInst>(I)) {
 			break;
 		}
 		const CallInst &CI = cast<CallInst>(I);
@@ -1082,6 +1186,11 @@ void translator::trans_instruction(const Instruction &I) {
 	case Instruction::Switch: {
 		const SwitchInst &SI = cast<SwitchInst>(I);
 		trans_switch(SI);
+		break;
+	}
+	case Instruction::InsertValue: {
+		const InsertValueInst &IVI = cast<InsertValueInst>(I);
+		trans_insertvalue(IVI);
 		break;
 	}
 	case Instruction::FAdd:
@@ -1095,6 +1204,10 @@ void translator::trans_instruction(const Instruction &I) {
 	case Instruction::SDiv:
 	case Instruction::And:
 	case Instruction::Or:
+	case Instruction::Xor:
+	case Instruction::AShr:
+	case Instruction::LShr:
+	case Instruction::Shl:
 	case Instruction::Trunc:
 	case Instruction::ZExt:
 	case Instruction::SExt:
@@ -1108,6 +1221,9 @@ void translator::trans_instruction(const Instruction &I) {
 	case Instruction::PtrToInt:
 	case Instruction::IntToPtr:
 	case Instruction::FPExt:
+	case Instruction::Select:
+	case Instruction::FPToSI:
+	case Instruction::ExtractValue:
 		break;
 	default:
 		I.dump();
@@ -1313,6 +1429,9 @@ void translator::add_function_symbols() {
 		symbol_util::set_var_counter(1);
 		if (F.isDeclaration()) {
 			continue;
+		}
+		if (!F.getName().str().compare("MAIN_")) {
+			F.setName("main");
 		}
 		if (!F.getName().str().compare("main"))
 			assert(F.arg_size() <= 2

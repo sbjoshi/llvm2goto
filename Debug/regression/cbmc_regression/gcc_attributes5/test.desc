@@ -1,0 +1,8 @@
+KNOWNBUG  
+main.c.i
+
+^EXIT=0$
+^SIGNAL=0$
+--
+^warning: ignoring
+^CONVERSION ERROR$

@@ -18,6 +18,7 @@ private:
 	static symbol_tablet symbol_table;
 
 	std::map<const llvm::Instruction*, std::string> var_name_map; ///<map from instructions to their symbol names
+	std::map<const llvm::InsertValueInst*, exprt> ins_value_name_map; ///<map from instructions to their symbol names
 	static std::map<const llvm::Argument*, std::string> func_arg_name_map; ///<map from func args to their symbol names
 	std::map<const llvm::AllocaInst*, llvm::DbgDeclareInst*> alloca_dbg_map; ///<map from Allocas to their DbgDeclare if exists
 	std::map<const llvm::CallInst*, std::string> call_ret_sym_map; ///<map from Call Instructions to their return symbol names
@@ -50,6 +51,7 @@ private:
 	void trans_ret(const llvm::ReturnInst&);
 	void trans_br(const llvm::BranchInst&);
 	void trans_switch(const llvm::SwitchInst&);
+	void trans_insertvalue(const llvm::InsertValueInst&);
 
 	exprt get_expr(const llvm::Value&);
 	exprt get_expr_phi(const llvm::PHINode&);
@@ -74,9 +76,11 @@ private:
 	exprt get_expr_zext(const llvm::ZExtInst&);
 	exprt get_expr_sext(const llvm::SExtInst&);
 	exprt get_expr_fpext(const llvm::FPExtInst&);
+	exprt get_expr_fptosi(const llvm::FPToSIInst&);
 	exprt get_expr_ptrtoint(const llvm::PtrToIntInst&);
 	exprt get_expr_inttoptr(const llvm::IntToPtrInst&);
 	exprt get_expr_const(const llvm::Constant&);
+	exprt get_expr_select(const llvm::SelectInst&);
 
 	void move_symbol(symbolt&, symbolt*&);
 	void add_argc_argv(const symbolt&);
