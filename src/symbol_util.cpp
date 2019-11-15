@@ -93,6 +93,7 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 				components.push_back(component);
 			}
 			type = struct_type;
+			current_struct_eval.erase(ll_type);
 			break;
 		}
 		else
@@ -134,6 +135,7 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 //		else
 //			assert(false);
 		type = tag_symbol->type;
+		current_struct_eval.erase(ll_type);
 		break;
 	}
 	case Type::ArrayTyID: {

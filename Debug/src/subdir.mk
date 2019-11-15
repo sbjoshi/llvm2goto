@@ -35,7 +35,7 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -std=c++0x -I"`llvm-config --includedir`" -I"/home/akash/Documents/LLVM/llvm-project/llvm/include" -I"/home/akash/Documents/CBMC/cbmc/src" -O0 -g3 -Wall -Wextra -c -fmessage-length=0 `llvm-config --cppflags` -Wno-deprecated-declarations -Wno-unused-parameter `llvm-config --cxxflags` -fexceptions -pthread -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -std=c++0x -I"`llvm-config --includedir`" -I"/home/akash/Documents/CBMC/cbmc/src" -O0 -g3 -Wall -Wextra -c -fmessage-length=0 `llvm-config --cppflags` -Wno-deprecated-declarations -Wno-unused-parameter `llvm-config --cxxflags` -fexceptions -pthread -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
