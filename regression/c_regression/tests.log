@@ -650,7 +650,7 @@ Execution [OK]
 ^warning: ignoring [OK]
 
 Test 'Pointer_diff'
-  Level: KNOWNBUG
+  Level: CORE
   Input: main.c.i
   Output: main.c.out
   Options: --pointer-check
@@ -660,7 +660,15 @@ Test 'Pointer_diff'
     ^VERIFICATION SUCCESSFUL$
     --
     ^warning: ignoring
-Execution [SKIPPED]
+Running cbmc --pointer-check main.c.i >main.c.out 2>&1
+  Exit: 0
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
+^warning: ignoring [OK]
 
 Test 'akash_struct_1'
   Level: CORE
@@ -1332,58 +1340,6 @@ Execution [OK]
 ^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
 
-Test 'function_next'
-  Level: KNOWNBUG
-  Input: main.c.i
-  Output: main.c.out
-  Options: 
-  Results:
-    ^EXIT=0$
-    ^SIGNAL=0$
-    ^VERIFICATION SUCCESSFUL$
-    --
-    ^warning: ignoring
-Execution [SKIPPED]
-
-Test 'function_next_fail'
-  Level: KNOWNBUG
-  Input: main.c.i
-  Output: main.c.out
-  Options: 
-  Results:
-    ^EXIT=10$
-    ^SIGNAL=0$
-    ^VERIFICATION FAILED$
-    --
-    ^warning: ignoring
-Execution [SKIPPED]
-
-Test 'function_overload'
-  Level: KNOWNBUG
-  Input: main.c.i
-  Output: main.c.out
-  Options: 
-  Results:
-    ^EXIT=0$
-    ^SIGNAL=0$
-    ^VERIFICATION SUCCESSFUL$
-    --
-    ^warning: ignoring
-Execution [SKIPPED]
-
-Test 'function_overload_fail'
-  Level: KNOWNBUG
-  Input: main.c.i
-  Output: main.c.out
-  Options: 
-  Results:
-    ^EXIT=10$
-    ^SIGNAL=0$
-    ^VERIFICATION FAILED$
-    --
-    ^warning: ignoring
-Execution [SKIPPED]
-
 Test 'function_pointer1'
   Level: CORE
   Input: main.c.i
@@ -1755,32 +1711,6 @@ Execution [OK]
 ^SIGNAL=0\r\\?$ [OK]
 ^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 ^warning: ignoring [OK]
-
-Test 'nested_struct_pointer'
-  Level: KNOWNBUG
-  Input: main.c.i
-  Output: main.c.out
-  Options: 
-  Results:
-    ^EXIT=0$
-    ^SIGNAL=0$
-    ^VERIFICATION SUCCESSFUL$
-    --
-    ^warning: ignoring
-Execution [SKIPPED]
-
-Test 'nested_struct_ptr_fail'
-  Level: KNOWNBUG
-  Input: main.c.i
-  Output: main.c.out
-  Options: 
-  Results:
-    ^EXIT=0$
-    ^SIGNAL=0$
-    ^VERIFICATION SUCCESSFUL$
-    --
-    ^warning: ignoring
-Execution [SKIPPED]
 
 Test 'pointer_difference'
   Level: CORE

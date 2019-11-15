@@ -1,3 +1,4 @@
+#include<assert.h>
 int array[100];
 
 int main()
