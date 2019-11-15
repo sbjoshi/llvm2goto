@@ -1969,6 +1969,27 @@ Execution [OK]
 ^SIGNAL=0\r\\?$ [OK]
 ^VERIFICATION FAILED\r\\?$ [OK]
 
+Test 'struct_recursive'
+  Level: CORE
+  Input: main.c.i
+  Output: main.c.out
+  Options: 
+  Results:
+    ^EXIT=0$
+    ^SIGNAL=0$
+    ^VERIFICATION SUCCESSFUL$
+    --
+    ^warning: ignoring
+Running cbmc  main.c.i >main.c.out 2>&1
+  Exit: 6
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=0\r\\?$ [FAILED]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [FAILED]
+^warning: ignoring [OK]
+
 Test 'switch_default'
   Level: CORE
   Input: main.c.i

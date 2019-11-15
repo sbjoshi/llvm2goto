@@ -43,8 +43,7 @@ all: llvm2goto-2.0
 # Tool invocations
 llvm2goto-2.0: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@echo 'Invoking: GCC C++ Linker'
-	g++ -L"`llvm-config --libdir`" -L"/home/akash/Documents/CBMC/cbmc" -pthread -o "llvm2goto-2.0" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs`
+	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "llvm2goto-2.0" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs`
 	@echo 'Finished building target: $@'
 	@echo ' '
 
