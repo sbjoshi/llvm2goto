@@ -4,6 +4,11 @@ Debug/llvm2goto-2.0
 .project
 .settings
 
+# Makefiles
+makefile
+Debug/makefile
+*.mk
+
 # IR files
 *.ll
 *.gb
