@@ -1,12 +1,12 @@
 # Project files
-Debug/llvm2goto-2.0
+build/llvm2goto-2.0
 .cproject
 .project
 .settings
 
 # Makefiles
 makefile
-Debug/makefile
+build/makefile
 *.mk
 
 # IR files
