@@ -38,10 +38,10 @@ private:
 		add_initial_symbols();
 	}
 	void analyse_ir();
-	void trans_instruction(const llvm::Instruction&);
-	void trans_block(const llvm::BasicBlock&);
-	void trans_function(llvm::Function&);
-	void trans_module();
+	bool trans_instruction(const llvm::Instruction&);
+	bool trans_block(const llvm::BasicBlock&);
+	bool trans_function(llvm::Function&);
+	bool trans_module();
 	void set_branches();
 	void set_switches();
 

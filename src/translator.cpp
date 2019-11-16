@@ -252,7 +252,7 @@ exprt translator::get_expr_fcmp(const FCmpInst &FCI) {
 		break;
 	}
 	default:
-		assert(false && "Unknown FCmp Instr Predicate");
+		error_state = "Unknown FCmp Instr Predicate";
 	}
 	return expr;
 }
@@ -322,7 +322,7 @@ exprt translator::get_expr_icmp(const ICmpInst &ICI) {
 		break;
 	}
 	default:
-		assert(false && "Unknown ICmp Instr Predicate");
+		error_state = "Unknown ICmp Instr Predicate";
 	}
 	return expr;
 }
@@ -592,7 +592,8 @@ exprt translator::get_expr_extractvalue(const ExtractValueInst &EVI) {
 			expr = member_exprt(expr, component);
 		}
 		else
-			assert(false);
+			error_state =
+					"Unexpected exprt type in: translator::get_expr_extractvalue";
 	}
 	return expr;
 }
@@ -616,7 +617,7 @@ exprt translator::get_expr_gep(const GetElementPtrInst &GEPI) {
 			expr = member_exprt(expr, component);
 		}
 		else
-			assert(false);
+			error_state = "Unexpected exprt type in: translator::get_expr_gep";
 	return expr;
 }
 
@@ -644,8 +645,8 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 			}
 		}
 		else
-			assert(false
-					&& "Akash Last instruction of PHINode Incoming Block must be BranchInst!");
+			error_state =
+					"Expected terminator of PHINode Incoming Block to be a BranchInst!";
 	}
 	return expr;
 }
@@ -799,7 +800,8 @@ exprt translator::get_expr(const Value &V) {
 		}
 		default:
 			I.dump();
-			assert(false && "Unhandled Instruction type in get_expr()");
+			error_state =
+					"Unsupported llvm::Instruction in translator::get_expr";
 		}
 	}
 	else if (isa<Constant>(V)) {
@@ -884,7 +886,8 @@ void translator::trans_insertvalue(const InsertValueInst &IVI) {
 			tgt_expr = member_exprt(tgt_expr, component);
 		}
 		else
-			assert(false);
+			error_state =
+					"Unexpected exprt type in: translator::trans_insertvalue";
 	}
 	auto asgn_instr = goto_program.add_instruction();
 	asgn_instr->make_assignment();
@@ -1153,7 +1156,7 @@ void translator::set_switches() {
 
 /// We only translate instructions that resemble a
 /// a state change, like store instructions, etc, else skip.
-void translator::trans_instruction(const Instruction &I) {
+bool translator::trans_instruction(const Instruction &I) {
 	switch (I.getOpcode()) {
 	case Instruction::Ret: {
 		const ReturnInst &RI = cast<ReturnInst>(I);
@@ -1226,17 +1229,19 @@ void translator::trans_instruction(const Instruction &I) {
 	case Instruction::ExtractValue:
 		break;
 	default:
-		I.dump();
-		errs() << "Invalid instruction type...\n ";
+		error_state = "Unknown llvmInstruction";
 	}
+	return ll2gb_in_error();
 }
 
 /// Calls trans_instruction for each I in BB
-void translator::trans_block(const BasicBlock &BB) {
-	for (auto iter = BB.begin(), ie = BB.end(); iter != ie; ++iter) {
+bool translator::trans_block(const BasicBlock &BB) {
+	for (auto iter = BB.begin(), ie = BB.end(); iter != ie && !ll2gb_in_error();
+			++iter) {
 		auto &I = *iter;
 		trans_instruction(I);
 	}
+	return ll2gb_in_error();
 }
 
 /// Once all BB haven been translated, we go back and
@@ -1267,7 +1272,7 @@ void translator::set_branches() {
 void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
 	symbol.mode = ID_C;
 	if (symbol_table.move(symbol, new_symbol)) {
-		assert(false && "failed to move symbol");
+		error_state = "Move symbol failed in translator::move_symbol";
 	}
 }
 
@@ -1280,7 +1285,9 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 	if (parameters.empty()) return;
 
 	if (parameters.size() != 2 && parameters.size() != 3) {
-		assert(false && "main expected to have no or two or three parameters");
+		error_state =
+				"Expected main function to have no or two or three parameters";
+		return;
 	}
 
 	symbolt *argc_new_symbol;
@@ -1299,7 +1306,8 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 
 		if (argc_symbol.type.id() != ID_signedbv
 				&& argc_symbol.type.id() != ID_unsignedbv) {
-			assert(false && "argc argument expected to be integer type");
+			error_state = "argc argument expected to be integer type";
+			return;
 		}
 
 		move_symbol(argc_symbol, argc_new_symbol);
@@ -1308,8 +1316,9 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 	{
 		if (op1.type().id() != ID_pointer
 				|| op1.type().subtype().id() != ID_pointer) {
-			assert(false
-					&& "argv argument expected to be pointer-to-pointer type");
+			error_state =
+					"argv argument expected to be pointer-to-pointer type";
+			return;
 		}
 
 		// we make the type of this thing an array of pointers
@@ -1347,7 +1356,8 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 		move_symbol(envp_size_symbol, envp_new_size_symbol);
 
 		if (envp_symbol.type.id() != ID_pointer) {
-			assert(false && "envp argument expected to be pointer type");
+			error_state = "envp argument expected to be pointer type";
+			return;
 		}
 
 		exprt size_expr = envp_new_size_symbol->symbol_expr();
@@ -1361,7 +1371,7 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 }
 
 /// Translates and entire function and writes it to the goto_program.
-void translator::trans_function(Function &F) {
+bool translator::trans_function(Function &F) {
 	symbol_util::set_var_counter(F.arg_size() + 1);
 	scope_tree st;
 	scope_name_map.clear();
@@ -1372,7 +1382,9 @@ void translator::trans_function(Function &F) {
 		target->make_skip();
 		block_target_map[&BB] = target;
 		trans_block(BB);
+		if (ll2gb_in_error()) return true;
 	}
+	if (ll2gb_in_error()) return true;
 	goto_program.add_instruction(END_FUNCTION);
 	set_branches();
 	set_switches();
@@ -1384,6 +1396,7 @@ void translator::trans_function(Function &F) {
 //		i->first->make_goto(then_pair->second, guard);
 //	}
 	goto_program.update();
+	return ll2gb_in_error();
 }
 
 /// This adds all the global symbols to
@@ -1433,9 +1446,10 @@ void translator::add_function_symbols() {
 		if (!F.getName().str().compare("MAIN_")) {
 			F.setName("main");
 		}
-		if (!F.getName().str().compare("main"))
-			assert(F.arg_size() <= 2
-					&& "main function can't take more than two arguments!");
+		if (!F.getName().str().compare("main") && F.arg_size() > 2) {
+			error_state = "Expected main function to accept <= 2 arguments";
+			return;
+		}
 		for (auto &arg : F.args()) {
 			symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
 			arg_symbol.name = F.getName().str() + "::"
@@ -1462,19 +1476,22 @@ void translator::write_goto(const string &filename) {
 
 /// Translates and entire module and writes it
 ///	to the goto_functions.
-void translator::trans_module() {
+bool translator::trans_module() {
 	for (auto F = llvm_module->getFunctionList().begin();
-			F != llvm_module->getFunctionList().end(); F++) {
+			F != llvm_module->getFunctionList().end() && !ll2gb_in_error();
+			F++) {
 		if (F->isDeclaration()) {
 			continue;
 		}
 		trans_function(*F);
+		if (ll2gb_in_error()) return true;
 		const auto *fn = symbol_table.lookup(F->getName().str());
 		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
 		(*goto_functions.function_map.find(F->getName().str())).second.type =
 				to_code_type(fn->type);
 		goto_program.clear();
 	}
+	if (ll2gb_in_error()) return true;
 	const auto &main_func = symbol_table.lookup("main");
 	if (main_func) add_argc_argv(*main_func); ///Takes care of the argc and argv arguments for main.
 
@@ -1483,6 +1500,7 @@ void translator::trans_module() {
 	set_entry_point(goto_functions, symbol_table);
 	config.set_from_symbol_table(symbol_table);
 	namespacet ns(symbol_table);
+	return ll2gb_in_error();
 }
 
 bool translator::generate_goto() {
@@ -1493,7 +1511,7 @@ bool translator::generate_goto() {
 	analyse_ir();
 	trans_module();
 	dbgs() << "GOTO Binary generated successfully\n";
-	return true;
+	return ll2gb_in_error();
 }
 
 translator::~translator() {
@@ -1501,5 +1519,6 @@ translator::~translator() {
 	func_arg_name_map.clear();
 	scope_name_map.clear();
 	symbol_util::clear();
+	error_state = "";
 //	delete context;
 }

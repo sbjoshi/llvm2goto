@@ -38,10 +38,10 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: llvm2goto-2.0
+all: llvm2goto
 
 # Tool invocations
-llvm2goto-2.0: $(OBJS) $(USER_OBJS)
+llvm2goto: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "llvm2goto" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs`
 	@echo 'Finished building target: $@'
@@ -49,7 +49,7 @@ llvm2goto-2.0: $(OBJS) $(USER_OBJS)
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) llvm2goto-2.0
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) llvm2goto
 	-@echo ' '
 
 .PHONY: all clean dependents

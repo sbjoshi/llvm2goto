@@ -8,6 +8,7 @@
 
 #include "llvm2goto.h"
 #include "translator.h"
+#include <signal.h>
 
 using namespace std;
 using namespace llvm;
@@ -23,8 +24,14 @@ int main(int argc, char **argv) {
 		LLVMContext context;
 		auto ir_module = get_llvm_ir(in_irfile, context);
 		translator T(ir_module);
-		if (!T.generate_goto()) {
-			errs() << "Encountered an error in generating goto-binary!\nProgram will now terminate.\n";
+
+		struct sigaction act;
+		act.sa_handler = print_error;
+		sigemptyset(&act.sa_mask);
+		act.sa_flags = 0;
+		sigaction(SIGSEGV, &act, 0);
+
+		if (T.generate_goto()) {
 			exit(3);
 		}
 		T.write_goto(out_gbfile);

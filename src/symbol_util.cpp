@@ -78,7 +78,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	case Type::StructTyID: {
 		string strct_name;
 		if (current_struct_eval.find(ll_type) != current_struct_eval.end()) {
-			assert(false && "Recursive structs not handled!!!");
+			error_state = "Recursive structs not supported";
+			return type;
 		}
 		current_struct_eval.insert(ll_type);
 		if (cast<StructType>(ll_type)->isLiteral()) {
@@ -163,8 +164,7 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	default: {
-		errs() << "TYPE ID: " << ll_type->getTypeID() << '\n';
-		assert(false && "Unhandled llvm::TypeID");
+		error_state = "Unknown llvm::Type";
 	}
 	}
 	return type;

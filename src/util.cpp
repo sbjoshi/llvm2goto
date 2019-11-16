@@ -11,10 +11,19 @@ using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
+bool ll2gb::ll2gb_in_error() {
+	return error_state.compare("");
+}
+
+void ll2gb::print_error(int sig) {
+	errs() << "\nERROR :: " << error_state << "\nProgram will now terminate.\n";
+	exit(3);
+}
+
 void ll2gb::print_help() {
 	outs() << "Version: 2.0\n"
-			<< "Usage: llvm2goto <ir_file> -o <op_file_name>\n"
-			<< "       llvm2goto <ir_file_1> <ir_file_2> ...\n";
+			<< "    Usage: llvm2goto <ir_file> -o <op_file_name>\n"
+			<< "           llvm2goto <ir_file_1> <ir_file_2> ...\n";
 	exit(1);
 }
 
@@ -35,14 +44,34 @@ void ll2gb::parse_input(int argc,
 		else if (!string(argv[2]).compare("-o")) {
 			file_names.push_back(make_pair(argv[1], argv[3]));
 		}
+		else if (!string(argv[1]).compare("-v")
+				|| !string(argv[2]).compare("-v"))
+			goto L1;
 		else
 			print_help();
 	}
 	else {
-		for (auto i = 1; i < argc; i++) {
+		L1: for (auto i = 1; i < argc; i++) {
 			string temp(argv[i]);
 			if (!temp.compare("-o")) {
 				print_help();
+			}
+			if (!temp.compare("-v")) {
+				if (argc > i + 1) {
+					char *p;
+					auto t = strtoul(argv[i + 1], &p, 10);
+					if (*p) {
+						verbosity = 1;
+					}
+					else {
+						verbosity = t;
+						i++;
+					}
+				}
+				else {
+					verbosity = 1;
+				}
+				continue;
 			}
 			auto index = temp.find(".ll");
 			if (index != temp.npos)
@@ -141,4 +170,3 @@ void ll2gb::set_entry_point(goto_functionst &goto_functions,
 	INITIALIZE_FUNCTION, goto_functionst::goto_functiont()));
 	add_function_definitions(INITIALIZE_FUNCTION, goto_functions, symbol_table);
 }
-
