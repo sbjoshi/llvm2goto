@@ -91,11 +91,16 @@ private:
 	class scope_tree; ///<A sub-class to implement the scoping rules.
 
 public:
+	static std::string error_state;
 	translator(std::unique_ptr<llvm::Module> &M) :
 			llvm_module { M } {
 	}
 	bool generate_goto();
 	void write_goto(const std::string&);
+
+	static bool ll2gb_in_error() {
+		return error_state.size();
+	}
 	~translator();
 };
 

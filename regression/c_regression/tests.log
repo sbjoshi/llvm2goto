@@ -1871,7 +1871,7 @@ Test 'struct_recursive'
     --
     ^warning: ignoring
 Running cbmc  main.c.i >main.c.out 2>&1
-  Exit: 6
+  Exit: 134
   Signal: 0
   Core: 0
 Execution [OK]

@@ -6,20 +6,12 @@
  */
 
 #include "llvm2goto.h"
+#include "translator.h"
 #include <signal.h>
 
 using namespace std;
 using namespace llvm;
 using namespace ll2gb;
-
-bool ll2gb::ll2gb_in_error() {
-	return error_state.compare("");
-}
-
-void ll2gb::print_error(int sig) {
-	errs() << "\nERROR :: " << error_state << "\nProgram will now terminate.\n";
-	exit(3);
-}
 
 void ll2gb::print_help() {
 	outs() << "Version: 2.0\n"
@@ -172,9 +164,22 @@ void ll2gb::set_entry_point(goto_functionst &goto_functions,
 	add_function_definitions(INITIALIZE_FUNCTION, goto_functions, symbol_table);
 }
 
+void ll2gb::print_error() {
+	llvm::errs() << "\nERROR :: "
+			<< translator::error_state
+			<< "\nProgram will now terminate.\n";
+}
+
+void ll2gb::panic(int sig) {
+	llvm::errs() << "\nERROR :: "
+			<< translator::error_state
+			<< "\nProgram will now terminate.\n";
+	exit(3);
+}
+
 void ll2gb::secret() {
 	static struct sigaction act;
-	act.sa_handler = print_error;
+	act.sa_handler = panic;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 	sigaction(SIGSEGV, &act, 0);

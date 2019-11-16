@@ -19,6 +19,7 @@ symbol_tablet translator::symbol_table = symbol_tablet();
 map<const Argument*, string> translator::func_arg_name_map = map<
 		const Argument*, string>();
 map<DIScope*, string> translator::scope_name_map = map<DIScope*, string>();
+string translator::error_state = "";
 
 /// If DebugInfo is present then return a
 /// location specification.
@@ -1510,7 +1511,6 @@ bool translator::generate_goto() {
 	add_function_symbols();
 	analyse_ir();
 	trans_module();
-	dbgs() << "GOTO Binary generated successfully\n";
 	return ll2gb_in_error();
 }
 
@@ -1520,5 +1520,4 @@ translator::~translator() {
 	scope_name_map.clear();
 	symbol_util::clear();
 	error_state = "";
-//	delete context;
 }

@@ -25,7 +25,10 @@ int main(int argc, char **argv) {
 
 		translator T(ir_module);
 		if (T.generate_goto()) {
-			exit(3);
+			print_error();
+		}
+		else {
+			dbgs() << "GOTO Binary generated successfully\n";
 		}
 		T.write_goto(out_gbfile);
 	}
