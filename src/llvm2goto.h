@@ -42,7 +42,6 @@ namespace ll2gb {
 
 static unsigned verbosity;
 static std::string error_state;
-
 class translator;
 
 std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile,
@@ -59,6 +58,7 @@ void parse_input(int argc,
 bool ll2gb_in_error();
 void print_error(int sig);
 
+void secret();
 }
 
 #endif /* LLVM2GOTO_H */

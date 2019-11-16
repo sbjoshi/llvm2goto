@@ -6,6 +6,7 @@
  */
 
 #include "llvm2goto.h"
+#include <signal.h>
 
 using namespace std;
 using namespace llvm;
@@ -169,4 +170,12 @@ void ll2gb::set_entry_point(goto_functionst &goto_functions,
 			goto_functionst::goto_functiont>(
 	INITIALIZE_FUNCTION, goto_functionst::goto_functiont()));
 	add_function_definitions(INITIALIZE_FUNCTION, goto_functions, symbol_table);
+}
+
+void ll2gb::secret() {
+	static struct sigaction act;
+	act.sa_handler = print_error;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	sigaction(SIGSEGV, &act, 0);
 }
