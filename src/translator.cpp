@@ -1495,3 +1495,11 @@ bool translator::generate_goto() {
 	dbgs() << "GOTO Binary generated successfully\n";
 	return true;
 }
+
+translator::~translator() {
+	symbol_table.clear();
+	func_arg_name_map.clear();
+	scope_name_map.clear();
+	symbol_util::clear();
+//	delete context;
+}

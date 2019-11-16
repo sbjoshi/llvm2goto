@@ -1,5 +1,5 @@
 # Project files
-build/llvm2goto-2.0
+build/llvm2goto
 .cproject
 .project
 .settings

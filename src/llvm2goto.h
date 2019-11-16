@@ -42,7 +42,8 @@ namespace ll2gb {
 
 class translator;
 
-std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile);
+std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile,
+		llvm::LLVMContext &context);
 
 void set_function_symbol_value(goto_functionst::function_mapt&, symbol_tablet&);
 void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
@@ -51,8 +52,7 @@ void set_entry_point(goto_functionst&, symbol_tablet&);
 void print_help();
 void parse_input(int argc,
 		char **argv,
-		std::string &in_irfile,
-		std::string &out_gbfile);
+		std::vector<std::pair<std::string, std::string>>&);
 }
 
 #endif /* LLVM2GOTO_H */

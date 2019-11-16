@@ -10,8 +10,7 @@ using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
-unique_ptr<Module> ll2gb::get_llvm_ir(string in_irfile) {
-	static LLVMContext context;
+unique_ptr<Module> ll2gb::get_llvm_ir(string in_irfile, LLVMContext &context) {
 	SMDiagnostic err;
 	auto M = parseIRFile(in_irfile, err, context);
 

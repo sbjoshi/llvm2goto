@@ -14,15 +14,20 @@ using namespace llvm;
 using namespace ll2gb;
 
 int main(int argc, char **argv) {
-	string in_irfile, out_gbfile;
-	parse_input(argc, argv, in_irfile, out_gbfile);
+	vector<pair<string, string>> file_names;
+	parse_input(argc, argv, file_names);
 
-	auto ir_module = get_llvm_ir(in_irfile);
-	translator T(ir_module);
-	if (!T.generate_goto()) {
-		errs() << "Encountered an error in generating goto-binary!\nProgram will now terminate.\n";
-		exit(3);
+	for (auto a : file_names) {
+		auto in_irfile = a.first;
+		auto out_gbfile = a.second;
+		LLVMContext context;
+		auto ir_module = get_llvm_ir(in_irfile, context);
+		translator T(ir_module);
+		if (!T.generate_goto()) {
+			errs() << "Encountered an error in generating goto-binary!\nProgram will now terminate.\n";
+			exit(3);
+		}
+		T.write_goto(out_gbfile);
 	}
-	T.write_goto(out_gbfile);
 	return 0;
 }

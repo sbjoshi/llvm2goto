@@ -96,6 +96,7 @@ public:
 	}
 	bool generate_goto();
 	void write_goto(const std::string&);
+	~translator();
 };
 
 #endif /* TRANSLATOR_H */
