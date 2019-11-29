@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
 		}
 		else {
 			dbgs() << "GOTO Binary generated successfully\n";
+			T.write_goto(out_gbfile);
 		}
-		T.write_goto(out_gbfile);
 	}
 	return 0;
 }
