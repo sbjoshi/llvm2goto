@@ -897,12 +897,40 @@ void translator::trans_insertvalue(const InsertValueInst &IVI) {
 	goto_program.update();
 }
 
+void translator::trans_call_intrinsic(const IntrinsicInst &ICI) {
+	auto location = get_location(ICI);
+	switch (ICI.getIntrinsicID()) {
+	case Intrinsic::memcpy: {
+		const auto &x = cast<MemCpyInst>(ICI);
+		const auto &ll_target = x.getDest();
+		const auto &ll_source = cast<Constant>(x.getSource())->getOperand(0);
+		auto target_expr = dereference_exprt(get_expr(*ll_target));
+		auto source_expr = get_expr(*ll_source);
+		auto assgn_instr = goto_program.add_instruction();
+		assgn_instr->make_assignment();
+		assgn_instr->code = code_assignt(target_expr, source_expr);
+		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		assgn_instr->source_location = location;
+		break;
+	}
+	case Intrinsic::dbg_label:
+		break;
+
+	default:
+		error_state = "Unknown llvmIntrinsic type";
+	}
+}
+
 /// Translates and adds a function call instruction.
 void translator::trans_call(const CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
 	auto location = get_location(CI);
 	if (called_func) {
-		if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is a special assert by llvm which is equivalent to assert(fail && "Message").
+		if (called_func->isIntrinsic()) {
+			const auto &ICI = cast<IntrinsicInst>(CI);
+			trans_call_intrinsic(ICI);
+		}
+		else if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is instrinsic assert of llvm which is equivalent to assert(fail && "Message").
 			auto assert_instr = goto_program.add_instruction();
 			auto asrt_comment =
 					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(0))->getOperand(0)->getOperand(0))->getAsCString();
@@ -918,27 +946,13 @@ void translator::trans_call(const CallInst &CI) {
 			assert_instr->source_location.set_comment(comment.str());
 			goto_program.update();
 		}
-		else if (!called_func->getName().str().compare("assert_")) { ///__assert_fail is a special assert by llvm which is equivalent to assert(fail && "Message").
+		else if (is_assert_function(called_func->getName().str())) {
 			auto assert_inst = goto_program.add_instruction();
-			auto guard_expr =
-					typecast_exprt(dereference_exprt(get_expr(*CI.getOperand(0))),
-							bool_typet());
+			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
+					bool_typet());
 			assert_inst->make_assertion(guard_expr);
 			assert_inst->source_location = location;
 			goto_program.update();
-		}
-		else if (!called_func->getName().str().substr(0, 11).compare("llvm.memcpy")) {
-			const auto &x = cast<MemCpyInst>(CI);
-			const auto &ll_target = x.getDest();
-			const auto &ll_source =
-					cast<Constant>(x.getSource())->getOperand(0);
-			auto target_expr = dereference_exprt(get_expr(*ll_target));
-			auto source_expr = get_expr(*ll_source);
-			auto assgn_instr = goto_program.add_instruction();
-			assgn_instr->make_assignment();
-			assgn_instr->code = code_assignt(target_expr, source_expr);
-			assgn_instr->function = irep_idt(CI.getFunction()->getName().str());
-			assgn_instr->source_location = location;
 		}
 		else if (called_func->isDeclaration())
 			goto L1;
@@ -978,8 +992,7 @@ void translator::trans_call(const CallInst &CI) {
 	}
 	else {	///These are functions whose semantics are unknown.
 		L1: auto called_val = CI.getCalledValue()->stripPointerCasts();
-		if (!called_val->getName().str().compare("assert")
-				|| !called_val->getName().str().compare("assert_")) {
+		if (is_assert_function(called_val->getName().str())) {
 			auto assert_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
@@ -987,7 +1000,7 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->source_location = location;
 			goto_program.update();
 		}
-		else if (!called_val->getName().str().compare("__CPROVER_assume")) {
+		else if (is_assume_function(called_val->getName().str())) {
 			auto assert_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());

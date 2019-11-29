@@ -48,6 +48,7 @@ private:
 	void trans_store(const llvm::StoreInst&);
 	void trans_alloca(const llvm::AllocaInst&);
 	void trans_call(const llvm::CallInst&);
+	void trans_call_intrinsic(const llvm::IntrinsicInst&);
 	void trans_ret(const llvm::ReturnInst&);
 	void trans_br(const llvm::BranchInst&);
 	void trans_switch(const llvm::SwitchInst&);

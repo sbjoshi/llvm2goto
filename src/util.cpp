@@ -91,7 +91,22 @@ void ll2gb::set_function_symbol_value(goto_functionst::function_mapt &function_m
 	}
 }
 
-void ll2gb::add_function_definitions(std::string name,
+bool ll2gb::is_assert_function(const string &func_name) {
+	if (!func_name.compare("assert")) return true;
+	if (!func_name.compare("assert_")) return true;
+	if (!func_name.compare("__CPROVER_assert")) return true;
+	if (!func_name.compare("__VERIFIER_assert")) return true;
+	return false;
+}
+
+bool ll2gb::is_assume_function(const string &func_name) {
+	if (!func_name.compare("assume")) return true;
+	if (!func_name.compare("__CPROVER_assume")) return true;
+	if (!func_name.compare("__VERIFIER_assume")) return true;
+	return false;
+}
+
+void ll2gb::add_function_definitions(string name,
 		goto_functionst &goto_functions,
 		symbol_tablet &symbol_table) {
 	goto_programt gp;
@@ -154,11 +169,11 @@ void ll2gb::set_entry_point(goto_functionst &goto_functions,
 	ansi_c_entry_point(symbol_table,
 			parse_options.get_message_handler(),
 			object_factory_params);
-	goto_functions.function_map.insert(std::pair<const dstringt,
+	goto_functions.function_map.insert(pair<const dstringt,
 			goto_functionst::goto_functiont>("__CPROVER__start",
 			goto_functionst::goto_functiont()));
 	add_function_definitions("__CPROVER__start", goto_functions, symbol_table);
-	goto_functions.function_map.insert(std::pair<const dstringt,
+	goto_functions.function_map.insert(pair<const dstringt,
 			goto_functionst::goto_functiont>(
 	INITIALIZE_FUNCTION, goto_functionst::goto_functiont()));
 	add_function_definitions(INITIALIZE_FUNCTION, goto_functions, symbol_table);
@@ -171,9 +186,7 @@ void ll2gb::print_error() {
 }
 
 void ll2gb::panic(int sig) {
-	llvm::errs() << "\nERROR :: "
-			<< translator::error_state
-			<< "\nProgram will now terminate.\n";
+	llvm::errs() << "\nI Panicked :(\n";
 	exit(3);
 }
 

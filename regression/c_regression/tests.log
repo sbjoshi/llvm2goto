@@ -435,18 +435,18 @@ Test 'Multi_Dimensional_Array3'
   Output: main.c.out
   Options: 
   Results:
-    ^EXIT=10$
+    ^EXIT=0$
     ^SIGNAL=0$
-    ^VERIFICATION FAILED$
+    ^VERIFICATION SUCCESSFUL$
     --
 Running cbmc  main.c.i >main.c.out 2>&1
-  Exit: 10
+  Exit: 0
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [OK]
+^EXIT=0\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [OK]
+^VERIFICATION SUCCESSFUL\r\\?$ [OK]
 
 Test 'Multi_Dimensional_Array5'
   Level: CORE
@@ -1871,7 +1871,7 @@ Test 'struct_recursive'
     --
     ^warning: ignoring
 Running cbmc  main.c.i >main.c.out 2>&1
-  Exit: 134
+  Exit: 6
   Signal: 0
   Core: 0
 Execution [OK]

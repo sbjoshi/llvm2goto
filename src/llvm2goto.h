@@ -15,10 +15,12 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/IR/InstrTypes.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/DebugInfoMetadata.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/Intrinsics.h>
 
 #include <goto-programs/goto_model.h>
 #include <goto-programs/write_goto_binary.h>
@@ -49,6 +51,8 @@ std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile,
 void set_function_symbol_value(goto_functionst::function_mapt&, symbol_tablet&);
 void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
 void set_entry_point(goto_functionst&, symbol_tablet&);
+bool is_assume_function(const std::string&);
+bool is_assert_function(const std::string&);
 
 void print_help();
 void parse_input(int argc,
