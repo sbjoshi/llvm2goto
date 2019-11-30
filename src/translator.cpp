@@ -181,6 +181,7 @@ exprt translator::get_expr_const(const Constant &C) {
 	return expr;
 }
 
+/// Translates and returns a float comparission expr.
 exprt translator::get_expr_fcmp(const FCmpInst &FCI) {
 	exprt expr;
 	const auto &ll_op1 = FCI.getOperand(0);
@@ -403,6 +404,8 @@ exprt translator::get_expr_udiv(const Instruction &UDI) {
 	return expr;
 }
 
+/// Translates ANDInstr.
+///	By using the infinity gauntlet.
 exprt translator::get_expr_and(const Instruction &AI) {
 	exprt expr;
 	const auto &ll_op1 = AI.getOperand(0);
@@ -413,6 +416,8 @@ exprt translator::get_expr_and(const Instruction &AI) {
 	return expr;
 }
 
+/// Translates ORInstr.
+///	By using the Death Star.
 exprt translator::get_expr_or(const Instruction &OI) {
 	exprt expr;
 	const auto &ll_op1 = OI.getOperand(0);
@@ -423,6 +428,8 @@ exprt translator::get_expr_or(const Instruction &OI) {
 	return expr;
 }
 
+/// Translates XORInstr.
+///	By using the one ring.
 exprt translator::get_expr_xor(const Instruction &XI) {
 	exprt expr;
 	const auto &ll_op1 = XI.getOperand(0);
@@ -433,6 +440,8 @@ exprt translator::get_expr_xor(const Instruction &XI) {
 	return expr;
 }
 
+/// Translates ShiftLeftInstr.
+///	By using the elder wand.
 exprt translator::get_expr_shl(const Instruction &SLI) {
 	exprt expr;
 	const auto &ll_op1 = SLI.getOperand(0);
@@ -443,6 +452,8 @@ exprt translator::get_expr_shl(const Instruction &SLI) {
 	return expr;
 }
 
+/// Translates LogicalShiftRightInstr.
+///	By performing dark arts.
 exprt translator::get_expr_lshr(const Instruction &LSRI) {
 	exprt expr;
 	const auto &ll_op1 = LSRI.getOperand(0);
@@ -453,6 +464,8 @@ exprt translator::get_expr_lshr(const Instruction &LSRI) {
 	return expr;
 }
 
+/// Translates ArithShiftRightInstr.
+///	By magic.
 exprt translator::get_expr_ashr(const Instruction &ASRI) {
 	exprt expr;
 	const auto &ll_op1 = ASRI.getOperand(0);
@@ -463,6 +476,11 @@ exprt translator::get_expr_ashr(const Instruction &ASRI) {
 	return expr;
 }
 
+/// Translates a BitCastInst. By
+///	typecasting the address of the value,
+///	followed by a derefernce.
+///	Intuition:	(float)a != *(float*)&a
+///	Here we want the latter.
 exprt translator::get_expr_bitcast(const BitCastInst &BI) {
 	exprt expr;
 	const auto &ll_op1 = BI.getOperand(0);
@@ -479,39 +497,38 @@ exprt translator::get_expr_bitcast(const BitCastInst &BI) {
 	return expr;
 }
 
-/// Translates and returns a sign extended integer.
-/// Sign extension is dont by a simple typecast.
-exprt translator::get_expr_sext(const SExtInst &SI) {
-	exprt expr;
-	const auto &ll_op1 = SI.getOperand(0);
-	const auto &ll_op2 = SI.getDestTy();
-	expr = get_expr(*ll_op1);
-	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
-	return expr;
-}
-
+/// Translates FPExtInst. By doing
+///	a floatbv_typecast on it.
 exprt translator::get_expr_fpext(const FPExtInst &FPEI) {
 	exprt expr;
 	const auto &ll_op1 = FPEI.getOperand(0);
 	const auto &ll_op2 = FPEI.getDestTy();
 	expr = get_expr(*ll_op1);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
 	expr = floatbv_typecast_exprt(expr,
-			from_integer(0, signed_int_type()),
+			rounding_mode,
 			symbol_util::get_goto_type(ll_op2));
 	return expr;
 }
 
+/// Translates FPToSIInst. By doing
+///	a floatbv_typecast on it.
 exprt translator::get_expr_fptosi(const FPToSIInst &FPTSI) {
 	exprt expr;
 	const auto &ll_op1 = FPTSI.getOperand(0);
 	const auto &ll_op2 = FPTSI.getDestTy();
 	expr = get_expr(*ll_op1);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
 	expr = floatbv_typecast_exprt(expr,
-			from_integer(0, signed_int_type()),
+			rounding_mode,
 			symbol_util::get_goto_type(ll_op2));
 	return expr;
 }
 
+/// Translates PtrToIntInst. By simply,
+///	typecasting it.
 exprt translator::get_expr_ptrtoint(const PtrToIntInst &P2I) {
 	exprt expr;
 	const auto &ll_op1 = P2I.getOperand(0);
@@ -521,6 +538,8 @@ exprt translator::get_expr_ptrtoint(const PtrToIntInst &P2I) {
 	return expr;
 }
 
+/// Translates IntToPtrInst. By simply,
+///	typecasting it.
 exprt translator::get_expr_inttoptr(const IntToPtrInst &I2P) {
 	exprt expr;
 	const auto &ll_op1 = I2P.getOperand(0);
@@ -530,6 +549,8 @@ exprt translator::get_expr_inttoptr(const IntToPtrInst &I2P) {
 	return expr;
 }
 
+/// Translates SelectInst. This is equivalent
+/// to a ternary operator.
 exprt translator::get_expr_select(const SelectInst &SI) {
 	exprt expr;
 	const auto &ll_op1 = SI.getOperand(0);
@@ -539,6 +560,17 @@ exprt translator::get_expr_select(const SelectInst &SI) {
 	auto op1_expr = get_expr(*ll_op2);
 	auto op2_expr = get_expr(*ll_op3);
 	expr = ternary_exprt(ID_if, cond_expr, op1_expr, op2_expr, op1_expr.type());
+	return expr;
+}
+
+/// Translates and returns a sign extended integer.
+/// Sign extension is dont by a simple typecast.
+exprt translator::get_expr_sext(const SExtInst &SI) {
+	exprt expr;
+	const auto &ll_op1 = SI.getOperand(0);
+	const auto &ll_op2 = SI.getDestTy();
+	expr = get_expr(*ll_op1);
+	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
 	return expr;
 }
 
@@ -564,9 +596,17 @@ exprt translator::get_expr_zext(const ZExtInst &ZI) {
 	return expr;
 }
 
-/// Since everything in llvm is a pointer, we ignore the
-///	first load instr, but every successive load must be
-///	dereferenced.
+/// Translates load instruction. By returning
+///	the derefernce value, intuitively the first,
+///	load to any value should not be dereferenced
+///	since all values are pointers in llvm, which is
+///	not the case in GOTO. But skipping the first
+///	load introduces when a value was read, before,
+///	a preceding load on it, this is essentially,
+///	reading the address of the value, hence,
+/// we always dereference on a load and instead,
+///	all value producing instructions must return
+///	the address to ther value instead.
 exprt translator::get_expr_load(const LoadInst &LI) {
 	exprt expr;
 	const auto &ll_op1 = LI.getOperand(0);
@@ -574,6 +614,8 @@ exprt translator::get_expr_load(const LoadInst &LI) {
 	return expr;
 }
 
+/// Translates ExtractValueInst. By returning
+///	the value at the appropriate index of the array.
 exprt translator::get_expr_extractvalue(const ExtractValueInst &EVI) {
 	exprt expr;
 	const auto &ll_op1 = EVI.getOperand(0);
@@ -599,6 +641,10 @@ exprt translator::get_expr_extractvalue(const ExtractValueInst &EVI) {
 	return expr;
 }
 
+///	Translates GEP instructions.
+///	This one of the most complicated
+///	translations, take extra CAUTION
+///	before changing it, or anything around it.
 exprt translator::get_expr_gep(const GetElementPtrInst &GEPI) {
 	exprt expr;
 	const auto &ll_op1 = GEPI.getOperand(0);
@@ -622,6 +668,8 @@ exprt translator::get_expr_gep(const GetElementPtrInst &GEPI) {
 	return expr;
 }
 
+///	Translates PHINodes. By modeling them as
+///	ternary operators.
 exprt translator::get_expr_phi(const PHINode &PI) {
 	exprt expr;
 	for (int i = PI.getNumOperands() - 1; i >= 0; i--) {
@@ -652,7 +700,7 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 	return expr;
 }
 
-/// This translates and returns the equivalent expr
+/// Translates and returns the equivalent expr
 /// to represent an llvm Value.
 exprt translator::get_expr(const Value &V) {
 	exprt expr;
@@ -817,19 +865,6 @@ exprt translator::get_expr(const Value &V) {
 	return expr;
 }
 
-/// Translate and add an Assignment Instruction.
-void translator::trans_store(const StoreInst &SI) {
-	const auto &ll_op1 = SI.getOperand(0);
-	const auto &ll_op2 = SI.getOperand(1);
-	auto src_expr = get_expr(*ll_op1);
-	auto tgt_expr = dereference_exprt(get_expr(*ll_op2));
-	auto asgn_instr = goto_program.add_instruction();
-	asgn_instr->make_assignment();
-	asgn_instr->code = code_assignt(tgt_expr, src_expr);
-	asgn_instr->source_location = get_location(SI);
-	goto_program.update();
-}
-
 /// Add a new symbol to the symbol_table. Naming is done
 /// respecting the following precedence:
 /// Debug_Name >> IR_Name >> var<x>, where x in var<x>
@@ -866,62 +901,36 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	goto_program.update();
 }
 
-void translator::trans_insertvalue(const InsertValueInst &IVI) {
-	const auto &ll_op1 = IVI.getOperand(0);
-	const auto &ll_op2 = IVI.getOperand(1);
-	auto tgt_expr = get_expr(*ll_op1);
-	ins_value_name_map[&IVI] = tgt_expr;
-	auto src_expr = get_expr(*ll_op2);
-	auto indices = IVI.getIndices();
-	for (auto i = 0u, n = IVI.getNumIndices(); i < n; i++) {
-		auto index = indices[i];
-		auto index_expr = from_integer(index, index_type());
-		if (tgt_expr.type().id() == ID_pointer)
-			tgt_expr = dereference_exprt(plus_exprt(tgt_expr, index_expr));
-		else if (tgt_expr.type().id() == ID_array)
-			tgt_expr = index_exprt(tgt_expr, index_expr);
-		else if (tgt_expr.type().id() == ID_struct
-				|| tgt_expr.type().id() == ID_struct_tag) {
-			const auto struct_t = to_struct_type(tgt_expr.type());
-			auto component = struct_t.components().at(index);
-			tgt_expr = member_exprt(tgt_expr, component);
-		}
-		else
-			error_state =
-					"Unexpected exprt type in: translator::trans_insertvalue";
+/// This adds one or two skip instuctions. Since the target
+/// BB may not have been translated yet, we add skips, and later
+/// once the BB has been translated we will change the skips to
+/// GOTO instructions.
+void translator::trans_br(const BranchInst &BI) {
+	auto location = get_location(BI);
+	if (BI.isConditional()) {
+		auto cond_true = goto_program.add_instruction();
+		auto cond_false = goto_program.add_instruction();
+		br_instr_target_map[&BI] = pair<goto_programt::targett,
+				goto_programt::targett>(cond_true, cond_false);
+		cond_true->source_location = location;
+		cond_false->source_location = location;
 	}
-	auto asgn_instr = goto_program.add_instruction();
-	asgn_instr->make_assignment();
-	asgn_instr->code = code_assignt(tgt_expr, src_expr);
-	asgn_instr->source_location = get_location(IVI);
+	else {
+		auto br_ins = goto_program.add_instruction();
+		br_instr_target_map[&BI] = pair<goto_programt::targett,
+				goto_programt::targett>(br_ins, br_ins);
+		br_ins->source_location = location;
+	}
 	goto_program.update();
 }
 
-void translator::trans_call_intrinsic(const IntrinsicInst &ICI) {
-	auto location = get_location(ICI);
-	switch (ICI.getIntrinsicID()) {
-	case Intrinsic::memcpy: {
-		const auto &x = cast<MemCpyInst>(ICI);
-		const auto &ll_target = x.getDest();
-		const auto &ll_source = cast<Constant>(x.getSource())->getOperand(0);
-		auto target_expr = dereference_exprt(get_expr(*ll_target));
-		auto source_expr = get_expr(*ll_source);
-		auto assgn_instr = goto_program.add_instruction();
-		assgn_instr->make_assignment();
-		assgn_instr->code = code_assignt(target_expr, source_expr);
-		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		assgn_instr->source_location = location;
-		break;
-	}
-	case Intrinsic::dbg_label:
-		break;
-
-	default:
-		error_state = "Unknown llvmIntrinsic type";
-	}
-}
-
 /// Translates and adds a function call instruction.
+/// Special cases:
+///		__assert_fail: add proper comments since they are available.
+///		intrinsic: use trans_call_intrinsic to translate intrinsics.
+///		function_ptr: these are translated in cbmc style, by adding if condtions.
+///		assert: Instead of a function call, assert instruction must be added.
+///		assume: Instead of a function call, assume instruction must be added.
 void translator::trans_call(const CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
 	auto location = get_location(CI);
@@ -1094,7 +1103,69 @@ void translator::trans_call(const CallInst &CI) {
 	}
 }
 
-/// This translates and adds a return instr.
+/// Translates all the intrinsics of llvm.
+/// dbg intrinsics are ignored
+/// memcpy is implemented as an assignment.
+void translator::trans_call_intrinsic(const IntrinsicInst &ICI) {
+	auto location = get_location(ICI);
+	switch (ICI.getIntrinsicID()) {
+	case Intrinsic::memcpy: {
+		const auto &x = cast<MemCpyInst>(ICI);
+		const auto &ll_target = x.getDest();
+		const auto &ll_source = cast<Constant>(x.getSource())->getOperand(0);
+		auto target_expr = dereference_exprt(get_expr(*ll_target));
+		auto source_expr = get_expr(*ll_source);
+		auto assgn_instr = goto_program.add_instruction();
+		assgn_instr->make_assignment();
+		assgn_instr->code = code_assignt(target_expr, source_expr);
+		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		assgn_instr->source_location = location;
+		break;
+	}
+	case Intrinsic::dbg_declare:
+	case Intrinsic::dbg_value:
+	case Intrinsic::dbg_label:
+		break;
+
+	default:
+		error_state = "Unknown llvmIntrinsic type";
+	}
+}
+
+/// Translates InsertValueInst.
+///	This is modeled as an assignment to an array.
+void translator::trans_insertvalue(const InsertValueInst &IVI) {
+	const auto &ll_op1 = IVI.getOperand(0);
+	const auto &ll_op2 = IVI.getOperand(1);
+	auto tgt_expr = get_expr(*ll_op1);
+	ins_value_name_map[&IVI] = tgt_expr;
+	auto src_expr = get_expr(*ll_op2);
+	auto indices = IVI.getIndices();
+	for (auto i = 0u, n = IVI.getNumIndices(); i < n; i++) {
+		auto index = indices[i];
+		auto index_expr = from_integer(index, index_type());
+		if (tgt_expr.type().id() == ID_pointer)
+			tgt_expr = dereference_exprt(plus_exprt(tgt_expr, index_expr));
+		else if (tgt_expr.type().id() == ID_array)
+			tgt_expr = index_exprt(tgt_expr, index_expr);
+		else if (tgt_expr.type().id() == ID_struct
+				|| tgt_expr.type().id() == ID_struct_tag) {
+			const auto struct_t = to_struct_type(tgt_expr.type());
+			auto component = struct_t.components().at(index);
+			tgt_expr = member_exprt(tgt_expr, component);
+		}
+		else
+			error_state =
+					"Unexpected exprt type in: translator::trans_insertvalue";
+	}
+	auto asgn_instr = goto_program.add_instruction();
+	asgn_instr->make_assignment();
+	asgn_instr->code = code_assignt(tgt_expr, src_expr);
+	asgn_instr->source_location = get_location(IVI);
+	goto_program.update();
+}
+
+/// Translates and adds a return instr.
 void translator::trans_ret(const ReturnInst &RI) {
 	if (const auto &ll_op1 = RI.getReturnValue()) {
 		auto ret_expr = get_expr(*ll_op1);
@@ -1108,30 +1179,20 @@ void translator::trans_ret(const ReturnInst &RI) {
 	}
 }
 
-/// This adds one or two skip instuctions. Since the target
-/// BB may not have been translated yet, we add skips, and later
-/// once the BB has been translated we will change the skips to
-/// GOTO instructions.
-void translator::trans_br(const BranchInst &BI) {
-	auto location = get_location(BI);
-	if (BI.isConditional()) {
-		auto cond_true = goto_program.add_instruction();
-		auto cond_false = goto_program.add_instruction();
-		br_instr_target_map[&BI] = pair<goto_programt::targett,
-				goto_programt::targett>(cond_true, cond_false);
-		cond_true->source_location = location;
-		cond_false->source_location = location;
-	}
-	else {
-		auto br_ins = goto_program.add_instruction();
-		br_instr_target_map[&BI] = pair<goto_programt::targett,
-				goto_programt::targett>(br_ins, br_ins);
-		br_ins->source_location = location;
-	}
+/// Translate and add an Assignment Instruction.
+void translator::trans_store(const StoreInst &SI) {
+	const auto &ll_op1 = SI.getOperand(0);
+	const auto &ll_op2 = SI.getOperand(1);
+	auto src_expr = get_expr(*ll_op1);
+	auto tgt_expr = dereference_exprt(get_expr(*ll_op2));
+	auto asgn_instr = goto_program.add_instruction();
+	asgn_instr->make_assignment();
+	asgn_instr->code = code_assignt(tgt_expr, src_expr);
+	asgn_instr->source_location = get_location(SI);
 	goto_program.update();
 }
 
-/// Add Skip instructions for each switch case + 1 for
+/// Add skip instructions for each switch case + 1 for
 /// the default/epilog case.
 void translator::trans_switch(const SwitchInst &SI) {
 	auto location = get_location(SI);
@@ -1147,28 +1208,7 @@ void translator::trans_switch(const SwitchInst &SI) {
 	goto_program.update();
 }
 
-/// Once all blocks have been translated
-/// add the goto statements for each case.
-void translator::set_switches() {
-	for (auto sw_inst_iter = switch_instr_target_map.begin(), ie =
-			switch_instr_target_map.end(); sw_inst_iter != ie; sw_inst_iter++) {
-		auto SI = sw_inst_iter->first;
-		auto select_expr = get_expr(*SI->getCondition());
-		auto target_vector = sw_inst_iter->second;
-		for (auto i = 1u, n = SI->getNumCases(); i <= n; i++) {
-			auto guard_expr = equal_exprt(select_expr,
-					get_expr(*SI->getOperand(i * 2)));
-			auto target = block_target_map[SI->getSuccessor(i)];
-			target_vector[i - 1]->make_goto(target, guard_expr);
-		}
-		auto default_inst = target_vector.back();
-		auto default_target = block_target_map[SI->getDefaultDest()];
-		default_inst->make_goto(default_target, true_exprt());
-	}
-	switch_instr_target_map.clear();
-}
-
-/// We only translate instructions that resemble a
+/// We only translate instructions that resemble as
 /// a state change, like store instructions, etc, else skip.
 bool translator::trans_instruction(const Instruction &I) {
 	switch (I.getOpcode()) {
@@ -1193,9 +1233,6 @@ bool translator::trans_instruction(const Instruction &I) {
 		break;
 	}
 	case Instruction::Call: {
-		if (isa<DbgDeclareInst>(I) || isa<DbgValueInst>(I)) {
-			break;
-		}
 		const CallInst &CI = cast<CallInst>(I);
 		trans_call(CI);
 		break;
@@ -1282,6 +1319,27 @@ void translator::set_branches() {
 	br_instr_target_map.clear();
 }
 
+/// Once all blocks have been translated
+/// add the goto statements for each case.
+void translator::set_switches() {
+	for (auto sw_inst_iter = switch_instr_target_map.begin(), ie =
+			switch_instr_target_map.end(); sw_inst_iter != ie; sw_inst_iter++) {
+		auto SI = sw_inst_iter->first;
+		auto select_expr = get_expr(*SI->getCondition());
+		auto target_vector = sw_inst_iter->second;
+		for (auto i = 1u, n = SI->getNumCases(); i <= n; i++) {
+			auto guard_expr = equal_exprt(select_expr,
+					get_expr(*SI->getOperand(i * 2)));
+			auto target = block_target_map[SI->getSuccessor(i)];
+			target_vector[i - 1]->make_goto(target, guard_expr);
+		}
+		auto default_inst = target_vector.back();
+		auto default_target = block_target_map[SI->getDefaultDest()];
+		default_inst->make_goto(default_target, true_exprt());
+	}
+	switch_instr_target_map.clear();
+}
+
 /// Moves new symbol to symbol.
 void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
 	symbol.mode = ID_C;
@@ -1291,7 +1349,7 @@ void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
 }
 
 /// Taken from cbmc code base to transform
-/// the argc and argv symbols.
+/// the argc and argv symbols of main function.
 void translator::add_argc_argv(const symbolt &main_symbol) {
 	const code_typet::parameterst &parameters =
 			to_code_type(main_symbol.type).parameters();
@@ -1335,9 +1393,9 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 			return;
 		}
 
-		// we make the type of this thing an array of pointers
-		// need to add one to the size -- the array is terminated
-		// with NULL
+		/// we make the type of this thing an array of pointers
+		/// need to add one to the size -- the array is terminated
+		/// with NULL
 		exprt one_expr = from_integer(1, argc_new_symbol->type);
 
 		const plus_exprt size_expr(argc_new_symbol->symbol_expr(), one_expr);
@@ -1384,7 +1442,8 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 	}
 }
 
-/// Translates and entire function and writes it to the goto_program.
+/// Translates and entire function and writes it
+///to the 'goto_program'.
 bool translator::trans_function(Function &F) {
 	symbol_util::set_var_counter(F.arg_size() + 1);
 	scope_tree st;
@@ -1402,15 +1461,9 @@ bool translator::trans_function(Function &F) {
 	goto_program.add_instruction(END_FUNCTION);
 	set_branches();
 	set_switches();
-//	for (auto i = branch_dest_block_map_switch.begin();
-//			i != branch_dest_block_map_switch.end(); i++) {
-//		map<const BasicBlock*, goto_programt::targett>::iterator then_pair =
-//				block_target_map.find(dyn_cast<BasicBlock>(i->second));
-//		auto guard = i->first->guard;
-//		i->first->make_goto(then_pair->second, guard);
-//	}
 	goto_program.update();
 	remove_skip(goto_program);
+
 	if (verbose >= 10) {
 		outs().changeColor(outs().BLUE, true);
 		outs() << "Function: ";
@@ -1431,21 +1484,33 @@ bool translator::trans_function(Function &F) {
 	return ll2gb_in_error();
 }
 
-/// This adds all the global symbols to
-/// the symbol table.
-void translator::add_global_symbols() {
-	symbolt symbol;
-	symbol_util::reset_var_counter();
-	for (auto &G : llvm_module->globals()) {
-		symbol = symbol_util::create_symbol(G.getValueType());
-		if (G.hasName()) {
-			symbol.base_name = G.getName().str();
-			symbol.name = symbol.base_name.c_str();
-			symbol.value = get_expr(*G.getOperand(0));
-			symbol.is_static_lifetime = true;
+/// Translates and entire module and writes it
+///	to the goto_functions.
+bool translator::trans_module() {
+	for (auto F = llvm_module->getFunctionList().begin();
+			F != llvm_module->getFunctionList().end() && !ll2gb_in_error();
+			F++) {
+		if (F->isDeclaration()) {
+			continue;
 		}
-		symbol_table.add(symbol);
+		trans_function(*F);
+		if (ll2gb_in_error()) return true;
+		const auto *fn = symbol_table.lookup(F->getName().str());
+		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
+		(*goto_functions.function_map.find(F->getName().str())).second.type =
+				to_code_type(fn->type);
+		goto_program.clear();
 	}
+	if (ll2gb_in_error()) return true;
+	const auto &main_func = symbol_table.lookup("main");
+	if (main_func) add_argc_argv(*main_func); ///Takes care of the argc and argv arguments for main.
+
+	remove_skip(goto_functions); ///Remove and unncecessary skip instructions that we might have added.
+	goto_functions.update();
+	set_entry_point(goto_functions, symbol_table);
+	config.set_from_symbol_table(symbol_table);
+	namespacet ns(symbol_table);
+	return ll2gb_in_error();
 }
 
 /// Does some preliminary analysis. Things like
@@ -1467,7 +1532,7 @@ void translator::analyse_ir() {
 				}
 }
 
-/// This adds all the function symbols to the
+/// This inserts all the function symbols to the
 ///	symbol table.
 void translator::add_function_symbols() {
 	for (Function &F : *llvm_module) {
@@ -1496,6 +1561,54 @@ void translator::add_function_symbols() {
 		goto_functions.function_map[func_symbol.name] =
 				goto_functionst::goto_functiont();
 	}
+}
+
+/// This adds all the global symbols to
+/// the symbol table.
+void translator::add_global_symbols() {
+	symbolt symbol;
+	symbol_util::reset_var_counter();
+	for (auto &G : llvm_module->globals()) {
+		symbol = symbol_util::create_symbol(G.getValueType());
+		if (G.hasName()) {
+			symbol.base_name = G.getName().str();
+			symbol.name = symbol.base_name.c_str();
+			symbol.value = get_expr(*G.getOperand(0));
+			symbol.is_static_lifetime = true;
+		}
+		symbol_table.add(symbol);
+	}
+}
+
+/// Returns false on successful
+/// translation, true on failure.
+/// Read 'error_state' for insights
+/// on what caused the error.
+bool translator::generate_goto() {
+	if (verbose && verbose < 10) {
+		outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
+		outs() << "Generating GOTO Binary";
+		outs().resetColor();
+	}
+	initialize_goto();
+	add_global_symbols();
+	add_function_symbols();
+	analyse_ir();
+	trans_module();
+	if (verbose && verbose < 10) {
+		outs() << "  [";
+		if (ll2gb_in_error()) {
+			outs().changeColor(raw_ostream::Colors::RED, true);
+			outs() << "FAILED";
+		}
+		else {
+			outs().changeColor(raw_ostream::Colors::GREEN, true);
+			outs() << "OK";
+		}
+		outs().resetColor();
+		outs() << "]\n";
+	}
+	return ll2gb_in_error();
 }
 
 /// This writes the goto_functions to a new file with name
@@ -1528,62 +1641,9 @@ void translator::write_goto(const string &filename) {
 	}
 }
 
-/// Translates and entire module and writes it
-///	to the goto_functions.
-bool translator::trans_module() {
-	for (auto F = llvm_module->getFunctionList().begin();
-			F != llvm_module->getFunctionList().end() && !ll2gb_in_error();
-			F++) {
-		if (F->isDeclaration()) {
-			continue;
-		}
-		trans_function(*F);
-		if (ll2gb_in_error()) return true;
-		const auto *fn = symbol_table.lookup(F->getName().str());
-		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
-		(*goto_functions.function_map.find(F->getName().str())).second.type =
-				to_code_type(fn->type);
-		goto_program.clear();
-	}
-	if (ll2gb_in_error()) return true;
-	const auto &main_func = symbol_table.lookup("main");
-	if (main_func) add_argc_argv(*main_func); ///Takes care of the argc and argv arguments for main.
-
-	remove_skip(goto_functions); ///Remove and unncecessary skip instructions that we might have added.
-	goto_functions.update();
-	set_entry_point(goto_functions, symbol_table);
-	config.set_from_symbol_table(symbol_table);
-	namespacet ns(symbol_table);
-	return ll2gb_in_error();
-}
-
-bool translator::generate_goto() {
-	if (verbose && verbose < 10) {
-		outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
-		outs() << "Generating GOTO Binary";
-		outs().resetColor();
-	}
-	initialize_goto();
-	add_global_symbols();
-	add_function_symbols();
-	analyse_ir();
-	trans_module();
-	if (verbose && verbose < 10) {
-		outs() << "  [";
-		if (ll2gb_in_error()) {
-			outs().changeColor(raw_ostream::Colors::RED, true);
-			outs() << "FAILED";
-		}
-		else {
-			outs().changeColor(raw_ostream::Colors::GREEN, true);
-			outs() << "OK";
-		}
-		outs().resetColor();
-		outs() << "]\n";
-	}
-	return ll2gb_in_error();
-}
-
+/// Clears the symbol_util and
+/// some other data_structures
+/// to translate multiple irs at once.
 translator::~translator() {
 	symbol_table.clear();
 	func_arg_name_map.clear();

@@ -1,4 +1,5 @@
 # Project files
+doxygen
 build/llvm2goto
 .cproject
 .project

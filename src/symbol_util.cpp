@@ -36,6 +36,8 @@ string translator::symbol_util::lookup_namespace(string str) {
 	return str;
 }
 
+/// Returns the corresponding GOTO type
+/// for the input llvm type.
 typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	typet type;
 	switch (ll_type->getTypeID()) {
@@ -170,6 +172,9 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	return type;
 }
 
+/// Creates and returns a new GOTO symbol
+/// of the corresponding GOTO type from the
+/// input llvm type.
 symbolt translator::symbol_util::create_symbol(const Type *ll_type) {
 	symbolt symbol;
 	symbol.is_file_local = true;
@@ -184,6 +189,9 @@ symbolt translator::symbol_util::create_symbol(const Type *ll_type) {
 	return symbol;
 }
 
+/// Creates and returns a new GOTO function
+/// symbol of the corresponding GOTO type from the
+/// input llvm function.
 symbolt translator::symbol_util::create_goto_func_symbol(const Function &F) {
 	symbolt symbol;
 	symbol.clear();

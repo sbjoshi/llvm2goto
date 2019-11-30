@@ -28,33 +28,34 @@ private:
 	std::map<const llvm::SwitchInst*, std::vector<goto_programt::targett>> switch_instr_target_map; ///<map from SwitchInst to their goto targets
 	static std::map<llvm::DIScope*, std::string> scope_name_map;
 
-	void add_global_symbols();
-	void set_config();
-	void add_initial_symbols();
+	bool trans_instruction(const llvm::Instruction&);
+	bool trans_block(const llvm::BasicBlock&);
+	void set_branches();
+	void set_switches();
+	bool trans_function(llvm::Function&);
+	bool trans_module();
+	void analyse_ir();
 	void add_function_symbols();
+	void add_global_symbols();
+	void add_initial_symbols();
+	void set_config();
 	void initialize_goto() {
 		register_language(new_ansi_c_language);
 		set_config();
 		add_initial_symbols();
 	}
-	void analyse_ir();
-	bool trans_instruction(const llvm::Instruction&);
-	bool trans_block(const llvm::BasicBlock&);
-	bool trans_function(llvm::Function&);
-	bool trans_module();
-	void set_branches();
-	void set_switches();
 
-	void trans_store(const llvm::StoreInst&);
 	void trans_alloca(const llvm::AllocaInst&);
+	void trans_br(const llvm::BranchInst&);
 	void trans_call(const llvm::CallInst&);
 	void trans_call_intrinsic(const llvm::IntrinsicInst&);
-	void trans_ret(const llvm::ReturnInst&);
-	void trans_br(const llvm::BranchInst&);
-	void trans_switch(const llvm::SwitchInst&);
 	void trans_insertvalue(const llvm::InsertValueInst&);
+	void trans_ret(const llvm::ReturnInst&);
+	void trans_store(const llvm::StoreInst&);
+	void trans_switch(const llvm::SwitchInst&);
 
 	exprt get_expr(const llvm::Value&);
+
 	exprt get_expr_phi(const llvm::PHINode&);
 	exprt get_expr_extractvalue(const llvm::ExtractValueInst&);
 	exprt get_expr_gep(const llvm::GetElementPtrInst&);
@@ -92,15 +93,16 @@ private:
 	class scope_tree; ///<A sub-class to implement the scoping rules.
 
 public:
-	static std::string error_state;
+	static std::string error_state; ///< If any error is encountered, the errmsg is stored in this string.
 	translator(std::unique_ptr<llvm::Module> &M) :
 			llvm_module { M } {
 	}
 	bool generate_goto();
 	void write_goto(const std::string&);
 
+	/// If the 'error_state' is not empty, then error has been encountered.
 	static bool ll2gb_in_error() {
-		return error_state.size();
+		return !error_state.empty();
 	}
 	~translator();
 };
