@@ -1410,6 +1410,24 @@ bool translator::trans_function(Function &F) {
 //		i->first->make_goto(then_pair->second, guard);
 //	}
 	goto_program.update();
+	remove_skip(goto_program);
+	if (verbose >= 10) {
+		outs().changeColor(outs().BLUE, true);
+		outs() << "Function: ";
+		outs().resetColor();
+		outs().changeColor(outs().SAVEDCOLOR, true);
+		outs() << llvm_module->getName() << "::" << F.getName() << "\n";
+		outs().changeColor(outs().YELLOW, true);
+		outs() << "------------------------------------------------------\n";
+		outs().resetColor();
+		stringstream ss;
+		goto_program.output(ss);
+		outs() << ss.str();
+		outs().changeColor(outs().YELLOW, true);
+		outs() << "------------------------------------------------------\n";
+		outs().resetColor();
+		outs().flush();
+	}
 	return ll2gb_in_error();
 }
 
@@ -1483,9 +1501,31 @@ void translator::add_function_symbols() {
 /// This writes the goto_functions to a new file with name
 ///	<filename>
 void translator::write_goto(const string &filename) {
+	if (verbose) {
+		outs().changeColor(outs().SAVEDCOLOR, true);
+		outs() << "Writing GOTO Binary to: " << filename;
+		outs().resetColor();
+	}
 	ofstream out(filename, ios::binary);
-	write_goto_binary(out, symbol_table, goto_functions);
-	dbgs() << "GOTO Binary written to file: " << filename << '\n';
+	if (write_goto_binary(out, symbol_table, goto_functions)) {
+		if (!verbose) {
+			outs().changeColor(outs().SAVEDCOLOR, true);
+			outs() << "Writing GOTO Binary to: " << filename;
+			outs().resetColor();
+		}
+		outs() << "  [";
+		outs().changeColor(outs().RED, true);
+		outs() << "FAILED";
+		outs().resetColor();
+		outs() << "]\n\n";
+	}
+	else if (verbose) {
+		outs() << "  [";
+		outs().changeColor(outs().GREEN, true);
+		outs() << "OK";
+		outs().resetColor();
+		outs() << "]\n\n";
+	}
 }
 
 /// Translates and entire module and writes it
@@ -1518,12 +1558,29 @@ bool translator::trans_module() {
 }
 
 bool translator::generate_goto() {
-	dbgs() << "Generating GOTO Binary\n";
+	if (verbose && verbose < 10) {
+		outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
+		outs() << "Generating GOTO Binary";
+		outs().resetColor();
+	}
 	initialize_goto();
 	add_global_symbols();
 	add_function_symbols();
 	analyse_ir();
 	trans_module();
+	if (verbose && verbose < 10) {
+		outs() << "  [";
+		if (ll2gb_in_error()) {
+			outs().changeColor(raw_ostream::Colors::RED, true);
+			outs() << "FAILED";
+		}
+		else {
+			outs().changeColor(raw_ostream::Colors::GREEN, true);
+			outs() << "OK";
+		}
+		outs().resetColor();
+		outs() << "]\n";
+	}
 	return ll2gb_in_error();
 }
 

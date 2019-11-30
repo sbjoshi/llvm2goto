@@ -27,10 +27,8 @@ int main(int argc, char **argv) {
 		if (T.generate_goto()) {
 			print_error();
 		}
-		else {
-			dbgs() << "GOTO Binary generated successfully\n";
+		else
 			T.write_goto(out_gbfile);
-		}
 	}
 	return 0;
 }

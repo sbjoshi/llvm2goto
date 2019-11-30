@@ -42,7 +42,7 @@
 
 namespace ll2gb {
 
-extern unsigned verbosity;
+extern unsigned verbose;
 class translator;
 
 std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile,

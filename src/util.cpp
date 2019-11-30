@@ -13,7 +13,7 @@ using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
-unsigned ll2gb::verbosity = 0;
+unsigned ll2gb::verbose = 0;
 
 void ll2gb::print_help() {
 	outs() << "Version: 2.0\n"
@@ -46,34 +46,48 @@ void ll2gb::parse_input(int argc,
 			print_help();
 	}
 	else {
-		L1: for (auto i = 1; i < argc; i++) {
+		L1: string out_file;
+		for (auto i = 1; i < argc; i++) {
 			string temp(argv[i]);
 			if (!temp.compare("-o")) {
-				print_help();
+				if (argc > i + 1) {
+					out_file = argv[i + 1];
+					i++;
+				}
+				else {
+					print_help();
+				}
+				continue;
 			}
 			if (!temp.compare("-v")) {
 				if (argc > i + 1) {
 					char *p;
 					auto t = strtoul(argv[i + 1], &p, 10);
 					if (*p) {
-						verbosity = 1;
+						verbose = 1;
 					}
 					else {
-						verbosity = t;
+						verbose = t;
 						i++;
 					}
 				}
 				else {
-					verbosity = 1;
+					verbose = 1;
 				}
 				continue;
 			}
-			auto index = temp.find(".ll");
-			if (index != temp.npos)
-				file_names.push_back(make_pair(argv[i],
-						string(argv[i]).substr(0, index) + ".gb"));
-			else
-				file_names.push_back(make_pair(argv[i], temp + ".gb"));
+			if (!out_file.empty()) {
+				file_names.push_back(make_pair(argv[i], out_file));
+				out_file.clear();
+			}
+			else {
+				auto index = temp.find(".ll");
+				if (index != temp.npos)
+					file_names.push_back(make_pair(argv[i],
+							string(argv[i]).substr(0, index) + ".gb"));
+				else
+					file_names.push_back(make_pair(argv[i], temp + ".gb"));
+			}
 		}
 	}
 }
@@ -182,13 +196,18 @@ void ll2gb::set_entry_point(goto_functionst &goto_functions,
 }
 
 void ll2gb::print_error() {
-	llvm::errs() << "\nERROR :: "
-			<< translator::error_state
-			<< "\nProgram will now terminate.\n";
+	errs().changeColor(errs().RED, true);
+	errs() << "error: ";
+	errs().resetColor();
+	errs().changeColor(errs().SAVEDCOLOR, true);
+	errs() << translator::error_state << "\n\n";
+	errs().resetColor();
 }
 
 void ll2gb::panic(int sig) {
-	llvm::errs() << "\nI Panicked :(\n";
+	errs().changeColor(errs().MAGENTA, true);
+	errs() << "\nI Panicked :(\n\n";
+	errs().resetColor();
 	exit(3);
 }
 

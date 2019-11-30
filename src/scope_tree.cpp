@@ -92,7 +92,6 @@ void translator::scope_tree::add_node(DIScope *new_scope) {
 			add_node(dyn_cast<DIScope>(new_scope->getScope()));
 		}
 		scope_node *node = new scope_node();
-//		new_scope->getScope()->resolve();
 		scope_node *parent =
 				scope_scope_node_map.find(new_scope->getScope())->second;
 		scope_node *left_sibling = parent->last_child;
