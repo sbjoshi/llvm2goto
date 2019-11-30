@@ -13,6 +13,8 @@ using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
+unsigned ll2gb::verbosity = 0;
+
 void ll2gb::print_help() {
 	outs() << "Version: 2.0\n"
 			<< "    Usage: llvm2goto <ir_file> -o <op_file_name>\n"

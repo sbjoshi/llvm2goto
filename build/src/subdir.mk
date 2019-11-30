@@ -34,7 +34,7 @@ CPP_DEPS += \
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
-	@$(CXX) -std=c++0x -I"`llvm-config --includedir`" -I$(CBMC_DIR)/src -O2 $(CXX_FLAGS) -Wall -Wextra -c -fmessage-length=0 `llvm-config --cppflags` -Wno-deprecated-declarations -Wno-unused-parameter `llvm-config --cxxflags` -fexceptions -pthread -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	@$(CXX) -std=c++0x -I"`llvm-config --includedir`" -I$(CBMC_DIR)/src $(CXX_FLAGS) -Wall -Wextra -c -fmessage-length=0 `llvm-config --cppflags` -Wno-deprecated-declarations -Wno-unused-parameter `llvm-config --cxxflags` -fexceptions -pthread -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 
 
