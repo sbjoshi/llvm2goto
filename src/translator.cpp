@@ -972,7 +972,7 @@ void translator::trans_call(const CallInst &CI) {
 				const auto &arg_val = arg.get();
 				call_expr.arguments().push_back(get_expr(*arg_val));
 			}
-			if (!called_func->getReturnType()->isVoidTy()) { ///We should add a new variable to capture the return value of the func.
+			if (!called_func->getReturnType()->isVoidTy()) { /// We should add a new variable to capture the return value of the func.
 				auto ret_symbol =
 						symbol_util::create_symbol(called_func->getReturnType());
 				if (CI.hasName()) {
@@ -998,7 +998,7 @@ void translator::trans_call(const CallInst &CI) {
 			call_instr->source_location = location;
 		}
 	}
-	else {	///These are functions whose semantics are unknown.
+	else {	/// These are functions whose semantics are unknown.
 		L1: auto called_val = CI.getCalledValue()->stripPointerCasts();
 		if (is_assert_function(called_val->getName().str())) {
 			auto assert_inst = goto_program.add_instruction();
@@ -1015,6 +1015,36 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->make_assumption(guard_expr);
 			assert_inst->source_location = location;
 			goto_program.update();
+		}
+		else if (!called_val->getName().str().compare("malloc")) {
+			code_function_callt call_expr;
+			call_expr.function() = symbol_table.lookup("malloc")->symbol_expr();
+			for (const auto &arg : CI.args()) {
+				const auto &arg_val = arg.get();
+				call_expr.arguments().push_back(get_expr(*arg_val));
+			}
+			auto ret_symbol =
+					symbol_util::create_symbol(called_func->getReturnType());
+			if (CI.hasName()) {
+				ret_symbol.base_name = CI.getName().str();
+				ret_symbol.name = CI.getFunction()->getName().str() + "::"
+						+ ret_symbol.base_name.c_str();
+			}
+			else
+				ret_symbol.name = CI.getFunction()->getName().str() + "::"
+						+ ret_symbol.name.c_str();
+			ret_symbol.location = location;
+			symbol_table.add(ret_symbol);
+			call_expr.lhs() = ret_symbol.symbol_expr();
+			call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+			auto dclr_instr = goto_program.add_instruction();
+			dclr_instr->make_decl();
+			dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+			dclr_instr->source_location = location;
+			goto_program.update();
+			auto call_instr = goto_program.add_instruction();
+			call_instr->make_function_call(call_expr);
+			call_instr->source_location = location;
 		}
 		else {
 			auto ll_func_type =
@@ -1486,6 +1516,7 @@ bool translator::trans_function(Function &F) {
 /// Translates and entire module and writes it
 ///	to the goto_functions.
 bool translator::trans_module() {
+	add_malloc_support();
 	for (auto F = llvm_module->getFunctionList().begin();
 			F != llvm_module->getFunctionList().end() && !ll2gb_in_error();
 			F++) {
