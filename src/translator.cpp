@@ -848,7 +848,6 @@ exprt translator::get_expr(const Value &V) {
 			break;
 		}
 		default:
-			I.dump();
 			error_state =
 					"Unsupported llvm::Instruction in translator::get_expr";
 		}

@@ -44,7 +44,7 @@ all: llvm2goto
 # Tool invocations
 llvm2goto: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "llvm2goto" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs`
+	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "llvm2goto" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs --system-libs irreader`
 	@echo 'Finished building target: $@'
 	@echo ' '
 
