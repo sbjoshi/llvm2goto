@@ -5,7 +5,7 @@
  *      Author: Akash Banerjee
  */
 
-#include "llvm2goto.h"
+#include "ll2gb.h"
 #include "translator.h"
 #include <signal.h>
 
@@ -17,8 +17,8 @@ unsigned ll2gb::verbose = 0;
 
 void ll2gb::print_help() {
 	outs() << "Version: 2.0\n"
-			<< "    Usage: llvm2goto <ir_file> -o <op_file_name>\n"
-			<< "           llvm2goto <ir_file_1> <ir_file_2> ...\n";
+			<< "    Usage: ll2gb <ir_file> -o <op_file_name>\n"
+			<< "           ll2gb <ir_file_1> <ir_file_2> ...\n";
 	exit(1);
 }
 

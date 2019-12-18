@@ -1,5 +1,5 @@
 /*
- * llvm2goto_translator.cpp
+ * translator.cpp
  *
  *  Created on: 21-Feb-2019
  *      Author: Akash Banerjee

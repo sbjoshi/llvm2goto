@@ -4,7 +4,7 @@
  *  Created on: 16-Aug-2019
  *      Author: Akash Banerjee
  */
-#include "llvm2goto.h"
+#include "ll2gb.h"
 
 using namespace std;
 using namespace llvm;

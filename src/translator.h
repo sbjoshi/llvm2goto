@@ -8,7 +8,7 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
-#include "llvm2goto.h"
+#include "ll2gb.h"
 
 class ll2gb::translator {
 private:

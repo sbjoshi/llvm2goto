@@ -5,7 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/initialize_goto.cpp \
-../src/llvm2goto-2.0.cpp \
+../src/ll2gb.cpp \
 ../src/preprocess.cpp \
 ../src/scope_tree.cpp \
 ../src/symbol_util.cpp \
@@ -14,7 +14,7 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/initialize_goto.o \
-./src/llvm2goto-2.0.o \
+./src/ll2gb.o \
 ./src/preprocess.o \
 ./src/scope_tree.o \
 ./src/symbol_util.o \
@@ -23,7 +23,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/initialize_goto.d \
-./src/llvm2goto-2.0.d \
+./src/ll2gb.d \
 ./src/preprocess.d \
 ./src/scope_tree.d \
 ./src/symbol_util.d \

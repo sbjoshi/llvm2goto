@@ -5,7 +5,7 @@
  *      Author: Akash Banerjee
  */
 
-#include "llvm2goto.h"
+#include "ll2gb.h"
 #include "translator.h"
 
 using namespace std;

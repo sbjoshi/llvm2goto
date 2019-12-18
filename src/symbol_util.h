@@ -12,7 +12,7 @@
 
 /// Utility class for symbols and types.
 /// It provides the commonly used translations
-/// for llvm2goto types and symbols.
+/// for ll2gb types and symbols.
 class ll2gb::translator::symbol_util {
 	static std::set<std::string> typedef_tag_set; ///< Stores names of typdefs whose type symbols have already been added.
 	static std::set<const llvm::Type*> current_struct_eval; ///< Used to evaluate the type of recursive structs.

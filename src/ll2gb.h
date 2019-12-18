@@ -1,12 +1,12 @@
 /*
- * llvm2goto.h
+ * ll2gb.h
  *
  *  Created on: 21-Feb-2019
  *      Author: Akash Banerjee
  */
 
-#ifndef LLVM2GOTO_H
-#define LLVM2GOTO_H
+#ifndef LL2GB_H
+#define LL2GB_H
 
 #include <llvm-c/Core.h>
 #include <llvm/Support/raw_ostream.h>
@@ -36,10 +36,6 @@
 #include <linking/static_lifetime_init.h>
 #include <cbmc/cbmc_parse_options.h>
 
-//#include "pointer-analysis/dereference_callback.h"
-//#include <util/arith_tools.h>
-//#include <util/c_types.h>
-
 namespace ll2gb {
 
 extern unsigned verbose;
@@ -63,4 +59,4 @@ void panic(int);
 void secret();
 }
 
-#endif /* LLVM2GOTO_H */
+#endif /* LL2GB_H */

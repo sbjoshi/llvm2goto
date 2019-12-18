@@ -7,5 +7,5 @@ do
    #sed -i 3's/$/ --bfs &/'  ${file}
    rm ${file}".i"
    clang -S -g -emit-llvm ${file} -o ${file}".ll" -Wno-implicit-function-declaration
-   llvm2goto -o ${file}".i" ${file}".ll" -v
+   ll2gb -o ${file}".i" ${file}".ll" -v
 done
