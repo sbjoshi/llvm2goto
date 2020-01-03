@@ -115,6 +115,11 @@ bool ll2gb::is_assert_function(const string &func_name) {
 	return false;
 }
 
+bool ll2gb::is_assert_fail_function(const string &func_name) {
+	if (!func_name.compare("__ll2gb_assert_fail_")) return true;
+	return false;
+}
+
 bool ll2gb::is_assume_function(const string &func_name) {
 	if (!func_name.compare("assume")) return true;
 	if (!func_name.compare("__CPROVER_assume")) return true;

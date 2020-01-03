@@ -49,6 +49,7 @@ void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
 void set_entry_point(goto_functionst&, symbol_tablet&);
 bool is_assume_function(const std::string&);
 bool is_assert_function(const std::string&);
+bool is_assert_fail_function(const std::string&);
 
 void print_help();
 void parse_input(int argc,

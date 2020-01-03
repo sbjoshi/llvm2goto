@@ -962,6 +962,12 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->source_location = location;
 			goto_program.update();
 		}
+		else if (is_assert_fail_function(called_func->getName().str())) {
+			auto assert_inst = goto_program.add_instruction();
+			assert_inst->make_assertion(false_exprt());
+			assert_inst->source_location = location;
+			goto_program.update();
+		}
 		else if (called_func->isDeclaration())
 			goto L1;
 		else {
