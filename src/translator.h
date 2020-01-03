@@ -44,7 +44,7 @@ private:
 		set_config();
 		add_initial_symbols();
 	}
-	void add_malloc_support();
+	void add_malloc_support(bool reset_status = false);
 
 	void trans_alloca(const llvm::AllocaInst&);
 	void trans_br(const llvm::BranchInst&);

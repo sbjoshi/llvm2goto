@@ -874,6 +874,7 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	symbol = symbol_util::create_symbol(AI.getAllocatedType());
 	if (alloca_dbg_map.find(&AI) != alloca_dbg_map.end()) {
 		auto DI = alloca_dbg_map[&AI]->getVariable();
+		if (!DI->getName().str().compare("")) goto L1;
 		symbol.name =
 				scope_name_map.find(dyn_cast<DILocalScope>(DI->getScope())->getNonLexicalBlockFileScope())->second
 						+ "::" + DI->getName().str();
@@ -887,7 +888,7 @@ void translator::trans_alloca(const AllocaInst &AI) {
 					+ symbol.base_name.c_str();
 		}
 		else
-			symbol.name = AI.getFunction()->getName().str() + "::"
+			L1: symbol.name = AI.getFunction()->getName().str() + "::"
 					+ symbol.name.c_str();
 	}
 	auto &I = cast<Instruction>(AI);
@@ -1023,6 +1024,7 @@ void translator::trans_call(const CallInst &CI) {
 			goto_program.update();
 		}
 		else if (!called_val->getName().str().compare("malloc")) {
+			add_malloc_support();
 			code_function_callt call_expr;
 			call_expr.function() = symbol_table.lookup("malloc")->symbol_expr();
 			for (const auto &arg : CI.args()) {
@@ -1522,7 +1524,6 @@ bool translator::trans_function(Function &F) {
 /// Translates and entire module and writes it
 ///	to the goto_functions.
 bool translator::trans_module() {
-	add_malloc_support();
 	for (auto F = llvm_module->getFunctionList().begin();
 			F != llvm_module->getFunctionList().end() && !ll2gb_in_error();
 			F++) {
@@ -1562,8 +1563,10 @@ void translator::analyse_ir() {
 							cast<MetadataAsValue>(CI->getOperand(0))->getMetadata();
 					if (isa<ValueAsMetadata>(M)) {
 						auto *V = cast<ValueAsMetadata>(M)->getValue();
-						auto *AI = cast<AllocaInst>(V);
-						alloca_dbg_map[AI] = cast<DbgDeclareInst>(CI);
+						if (isa<AllocaInst>(V)) {
+							auto *AI = cast<AllocaInst>(V);
+							alloca_dbg_map[AI] = cast<DbgDeclareInst>(CI);
+						}
 					}
 				}
 }
@@ -1686,4 +1689,5 @@ translator::~translator() {
 	scope_name_map.clear();
 	symbol_util::clear();
 	error_state = "";
+	add_malloc_support(true);
 }

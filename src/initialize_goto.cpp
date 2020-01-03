@@ -86,7 +86,16 @@ void translator::add_initial_symbols() {
 	symbol_table.add(cprover_malloc_size);
 }
 
-void translator::add_malloc_support() {
+void translator::add_malloc_support(bool reset_status) {
+	static bool support_added = false;
+	if (reset_status) {
+		support_added = false;
+		return;
+	}
+	if (support_added)
+		return;
+	else
+		support_added = true;
 	symbolt cprover_malloc_is_new_array;
 	cprover_malloc_is_new_array.name = "__CPROVER_malloc_is_new_array";
 	cprover_malloc_is_new_array.base_name = "__CPROVER_malloc_is_new_array";
