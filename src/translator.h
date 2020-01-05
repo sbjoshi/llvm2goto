@@ -102,7 +102,7 @@ public:
 	void write_goto(const std::string&);
 
 	/// If the 'error_state' is not empty, then error has been encountered.
-	static bool ll2gb_in_error() {
+	static bool check_state() {
 		return !error_state.empty();
 	}
 	~translator();

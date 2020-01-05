@@ -961,6 +961,8 @@ void translator::trans_call(const CallInst &CI) {
 					bool_typet());
 			assert_inst->make_assertion(guard_expr);
 			assert_inst->source_location = location;
+			assert_inst->source_location.set_comment("assertion "
+					+ from_expr(guard_expr));
 			goto_program.update();
 		}
 		else if (is_assert_fail_function(called_func->getName().str())) {
@@ -1013,6 +1015,8 @@ void translator::trans_call(const CallInst &CI) {
 					bool_typet());
 			assert_inst->make_assertion(guard_expr);
 			assert_inst->source_location = location;
+			assert_inst->source_location.set_comment("assertion "
+					+ from_expr(guard_expr));
 			goto_program.update();
 		}
 		else if (is_assume_function(called_val->getName().str())) {
@@ -1319,17 +1323,17 @@ bool translator::trans_instruction(const Instruction &I) {
 	default:
 		error_state = "Unknown llvmInstruction";
 	}
-	return ll2gb_in_error();
+	return check_state();
 }
 
 /// Calls trans_instruction for each I in BB
 bool translator::trans_block(const BasicBlock &BB) {
-	for (auto iter = BB.begin(), ie = BB.end(); iter != ie && !ll2gb_in_error();
+	for (auto iter = BB.begin(), ie = BB.end(); iter != ie && !check_state();
 			++iter) {
 		auto &I = *iter;
 		trans_instruction(I);
 	}
-	return ll2gb_in_error();
+	return check_state();
 }
 
 /// Once all BB haven been translated, we go back and
@@ -1492,9 +1496,9 @@ bool translator::trans_function(Function &F) {
 		target->make_skip();
 		block_target_map[&BB] = target;
 		trans_block(BB);
-		if (ll2gb_in_error()) return true;
+		if (check_state()) return true;
 	}
-	if (ll2gb_in_error()) return true;
+	if (check_state()) return true;
 	goto_program.add_instruction(END_FUNCTION);
 	set_branches();
 	set_switches();
@@ -1518,27 +1522,27 @@ bool translator::trans_function(Function &F) {
 		outs().resetColor();
 		outs().flush();
 	}
-	return ll2gb_in_error();
+	return check_state();
 }
 
 /// Translates and entire module and writes it
 ///	to the goto_functions.
 bool translator::trans_module() {
 	for (auto F = llvm_module->getFunctionList().begin();
-			F != llvm_module->getFunctionList().end() && !ll2gb_in_error();
+			F != llvm_module->getFunctionList().end() && !check_state();
 			F++) {
 		if (F->isDeclaration()) {
 			continue;
 		}
 		trans_function(*F);
-		if (ll2gb_in_error()) return true;
+		if (check_state()) return true;
 		const auto *fn = symbol_table.lookup(F->getName().str());
 		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
 		(*goto_functions.function_map.find(F->getName().str())).second.type =
 				to_code_type(fn->type);
 		goto_program.clear();
 	}
-	if (ll2gb_in_error()) return true;
+	if (check_state()) return true;
 	const auto &main_func = symbol_table.lookup("main");
 	if (main_func) add_argc_argv(*main_func); ///Takes care of the argc and argv arguments for main.
 
@@ -1547,7 +1551,7 @@ bool translator::trans_module() {
 	set_entry_point(goto_functions, symbol_table);
 	config.set_from_symbol_table(symbol_table);
 	namespacet ns(symbol_table);
-	return ll2gb_in_error();
+	return check_state();
 }
 
 /// Does some preliminary analysis. Things like
@@ -1636,7 +1640,7 @@ bool translator::generate_goto() {
 	trans_module();
 	if (verbose && verbose < 10) {
 		outs() << "  [";
-		if (ll2gb_in_error()) {
+		if (check_state()) {
 			outs().changeColor(raw_ostream::Colors::RED, true);
 			outs() << "FAILED";
 		}
@@ -1647,7 +1651,7 @@ bool translator::generate_goto() {
 		outs().resetColor();
 		outs() << "]\n";
 	}
-	return ll2gb_in_error();
+	return check_state();
 }
 
 /// This writes the goto_functions to a new file with name

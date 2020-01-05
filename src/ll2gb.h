@@ -31,6 +31,7 @@
 #include <util/namespace.h>
 #include <util/string_constant.h>
 #include <langapi/mode.h>
+#include <langapi/language_util.h>
 #include <ansi-c/ansi_c_language.h>
 #include <ansi-c/ansi_c_entry_point.h>
 #include <linking/static_lifetime_init.h>
