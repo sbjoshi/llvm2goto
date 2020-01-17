@@ -166,6 +166,25 @@ Execution [OK]
 ^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
+Test 'if3_switch_fail'
+  Level: CORE
+  Input: main.f90.i
+  Output: main.f90.out
+  Options: 
+  Results:
+    ^EXIT=10$
+    ^SIGNAL=0$
+    ^VERIFICATION FAILED$
+    --
+Running cbmc  main.f90.i >main.f90.out 2>&1
+  Exit: 10
+  Signal: 0
+  Core: 0
+Execution [OK]
+^EXIT=10\r\\?$ [OK]
+^SIGNAL=0\r\\?$ [OK]
+^VERIFICATION FAILED\r\\?$ [OK]
+
 Test 'simple_fail'
   Level: CORE
   Input: main.f90.i

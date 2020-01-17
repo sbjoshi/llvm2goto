@@ -1020,11 +1020,11 @@ void translator::trans_call(const CallInst &CI) {
 			goto_program.update();
 		}
 		else if (is_assume_function(called_val->getName().str())) {
-			auto assert_inst = goto_program.add_instruction();
+			auto assume_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
-			assert_inst->make_assumption(guard_expr);
-			assert_inst->source_location = location;
+			assume_inst->make_assumption(guard_expr);
+			assume_inst->source_location = location;
 			goto_program.update();
 		}
 		else if (!called_val->getName().str().compare("malloc")) {

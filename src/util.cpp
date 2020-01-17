@@ -117,6 +117,7 @@ bool ll2gb::is_assert_function(const string &func_name) {
 
 bool ll2gb::is_assert_fail_function(const string &func_name) {
 	if (!func_name.compare("__ll2gb_assert_fail_")) return true;
+	if (!func_name.compare("__VERIFIER_error")) return true;
 	return false;
 }
 
