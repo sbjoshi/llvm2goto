@@ -39,8 +39,7 @@ void ll2gb::parse_input(int argc,
 		else if (!string(argv[2]).compare("-o")) {
 			file_names.push_back(make_pair(argv[1], argv[3]));
 		}
-		else if (!string(argv[1]).compare("-v")
-				|| !string(argv[2]).compare("-v"))
+		else if (!string(argv[1]).compare("-v") || !string(argv[2]).compare("-v"))
 			goto L1;
 		else
 			print_help();
@@ -223,4 +222,38 @@ void ll2gb::secret() {
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 	sigaction(SIGSEGV, &act, 0);
+}
+
+bool ll2gb::is_intrinsic(const string &intrinsic_name) {
+	if (!intrinsic_name.compare("__fpclassifyf")) return true;
+	return false;
+}
+
+exprt ll2gb::get_intrinsics(const string &intrinsic_name,
+		const vector<exprt> &args) {
+	exprt expr;
+	if (!intrinsic_name.compare("__fpclassifyf")) {
+		auto e = args[0];
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(e),
+				from_integer(0, signedbv_typet(32)),
+				ternary_exprt(ID_if,
+						isinf_exprt(e),
+						from_integer(1, signedbv_typet(32)),
+						ternary_exprt(ID_if,
+								isnormal_exprt(e),
+								from_integer(4, signedbv_typet(32)),
+								ternary_exprt(ID_if,
+										ieee_float_equal_exprt(e, from_integer(0, e.type())),
+										from_integer(2, signedbv_typet(32)),
+										from_integer(3, signedbv_typet(32)),
+										signedbv_typet(32)),
+								signedbv_typet(32)),
+						signedbv_typet(32)),
+				signedbv_typet(32));
+	}
+	else {
+		translator::error_state = "Unreachable in func ll2gb::get_intrinsics";
+	}
+	return expr;
 }

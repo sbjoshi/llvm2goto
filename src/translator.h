@@ -49,7 +49,7 @@ private:
 	void trans_alloca(const llvm::AllocaInst&);
 	void trans_br(const llvm::BranchInst&);
 	void trans_call(const llvm::CallInst&);
-	void trans_call_intrinsic(const llvm::IntrinsicInst&);
+	void trans_call_llvm_intrinsic(const llvm::IntrinsicInst&);
 	void trans_insertvalue(const llvm::InsertValueInst&);
 	void trans_ret(const llvm::ReturnInst&);
 	void trans_store(const llvm::StoreInst&);

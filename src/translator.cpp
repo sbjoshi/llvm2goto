@@ -335,8 +335,7 @@ exprt translator::get_expr_trunc(const TruncInst &TI) {
 	const auto &ll_op1 = TI.getOperand(0);
 	const auto &ll_op2 = TI.getDestTy();
 	auto expr_op1 = get_expr(*ll_op1);
-	expr = typecast_exprt(expr_op1,
-			signedbv_typet(ll_op2->getIntegerBitWidth()));
+	expr = typecast_exprt(expr_op1, signedbv_typet(ll_op2->getIntegerBitWidth()));
 	return expr;
 }
 
@@ -651,8 +650,7 @@ exprt translator::get_expr_gep(const GetElementPtrInst &GEPI) {
 	expr = get_expr(*ll_op1);
 	for (auto i = 1u, n = GEPI.getNumOperands(); i < n; i++)
 		if (expr.type().id() == ID_pointer)
-			expr = dereference_exprt(plus_exprt(expr,
-					get_expr(*GEPI.getOperand(i))));
+			expr = dereference_exprt(plus_exprt(expr, get_expr(*GEPI.getOperand(i))));
 		else if (expr.type().id() == ID_array)
 			expr = index_exprt(expr, get_expr(*GEPI.getOperand(i)));
 		else if (expr.type().id() == ID_struct
@@ -848,8 +846,7 @@ exprt translator::get_expr(const Value &V) {
 			break;
 		}
 		default:
-			error_state =
-					"Unsupported llvm::Instruction in translator::get_expr";
+			error_state = "Unsupported llvm::Instruction in translator::get_expr";
 		}
 	}
 	else if (isa<Constant>(V)) {
@@ -937,7 +934,7 @@ void translator::trans_call(const CallInst &CI) {
 	if (called_func) {
 		if (called_func->isIntrinsic()) {
 			const auto &ICI = cast<IntrinsicInst>(CI);
-			trans_call_intrinsic(ICI);
+			trans_call_llvm_intrinsic(ICI);
 		}
 		else if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is instrinsic assert of llvm which is equivalent to assert(fail && "Message").
 			auto assert_instr = goto_program.add_instruction();
@@ -948,8 +945,8 @@ void translator::trans_call(const CallInst &CI) {
 			auto func_name =
 					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(3))->getOperand(0)->getOperand(0))->getAsCString();
 			auto line_no = cast<ConstantInt>(CI.getOperand(2))->getZExtValue();
-			auto comment = file_name + ":" + to_string(line_no) + ": "
-					+ func_name + ": " + asrt_comment;
+			auto comment = file_name + ":" + to_string(line_no) + ": " + func_name
+					+ ": " + asrt_comment;
 			assert_instr->make_assertion(false_exprt());
 			assert_instr->source_location = location;
 			assert_instr->source_location.set_comment(comment.str());
@@ -1027,6 +1024,31 @@ void translator::trans_call(const CallInst &CI) {
 			assume_inst->source_location = location;
 			goto_program.update();
 		}
+		else if (is_intrinsic(called_val->getName().str())) {
+			vector<exprt> args;
+			for (const auto &arg : CI.args()) {
+				const auto &arg_val = arg.get();
+				args.push_back(get_expr(*arg_val));
+			}
+			auto expr = get_intrinsics(called_val->getName().str(), args);
+			auto ret_symbol =
+					symbol_util::create_symbol(called_func->getReturnType());
+			if (CI.hasName()) {
+				ret_symbol.base_name = CI.getName().str();
+				ret_symbol.name = CI.getFunction()->getName().str() + "::"
+						+ ret_symbol.base_name.c_str();
+			}
+			else
+				ret_symbol.name = CI.getFunction()->getName().str() + "::"
+						+ ret_symbol.name.c_str();
+			ret_symbol.location = location;
+			symbol_table.add(ret_symbol);
+			call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+			auto asgn_instr = goto_program.add_instruction();
+			asgn_instr->make_assignment();
+			asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
+			asgn_instr->source_location = location;
+		}
 		else if (!called_val->getName().str().compare("malloc")) {
 			add_malloc_support();
 			code_function_callt call_expr;
@@ -1074,8 +1096,7 @@ void translator::trans_call(const CallInst &CI) {
 			symbolt ret_symbol;
 			code_function_callt call_expr;
 			if (!ll_func_type->getReturnType()->isVoidTy()) {
-				ret_symbol =
-						symbol_util::create_symbol(ll_func_type->getReturnType());
+				ret_symbol = symbol_util::create_symbol(ll_func_type->getReturnType());
 				if (CI.hasName()) {
 					ret_symbol.base_name = CI.getName().str();
 					ret_symbol.name = CI.getFunction()->getName().str() + "::"
@@ -1139,7 +1160,6 @@ void translator::trans_call(const CallInst &CI) {
 				goto_end_targets[i]->make_goto(end);
 				i++;
 			}
-
 		}
 	}
 }
@@ -1147,7 +1167,7 @@ void translator::trans_call(const CallInst &CI) {
 /// Translates all the intrinsics of llvm.
 /// dbg intrinsics are ignored
 /// memcpy is implemented as an assignment.
-void translator::trans_call_intrinsic(const IntrinsicInst &ICI) {
+void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	auto location = get_location(ICI);
 	switch (ICI.getIntrinsicID()) {
 	case Intrinsic::memcpy: {
@@ -1196,8 +1216,7 @@ void translator::trans_insertvalue(const InsertValueInst &IVI) {
 			tgt_expr = member_exprt(tgt_expr, component);
 		}
 		else
-			error_state =
-					"Unexpected exprt type in: translator::trans_insertvalue";
+			error_state = "Unexpected exprt type in: translator::trans_insertvalue";
 	}
 	auto asgn_instr = goto_program.add_instruction();
 	asgn_instr->make_assignment();
@@ -1429,8 +1448,7 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 	{
 		if (op1.type().id() != ID_pointer
 				|| op1.type().subtype().id() != ID_pointer) {
-			error_state =
-					"argv argument expected to be pointer-to-pointer type";
+			error_state = "argv argument expected to be pointer-to-pointer type";
 			return;
 		}
 
@@ -1529,8 +1547,7 @@ bool translator::trans_function(Function &F) {
 ///	to the goto_functions.
 bool translator::trans_module() {
 	for (auto F = llvm_module->getFunctionList().begin();
-			F != llvm_module->getFunctionList().end() && !check_state();
-			F++) {
+			F != llvm_module->getFunctionList().end() && !check_state(); F++) {
 		if (F->isDeclaration()) {
 			continue;
 		}
@@ -1563,8 +1580,7 @@ void translator::analyse_ir() {
 			for (auto &I : BB)
 				if (isa<DbgDeclareInst>(&I)) {
 					auto *CI = cast<CallInst>(&I);
-					auto *M =
-							cast<MetadataAsValue>(CI->getOperand(0))->getMetadata();
+					auto *M = cast<MetadataAsValue>(CI->getOperand(0))->getMetadata();
 					if (isa<ValueAsMetadata>(M)) {
 						auto *V = cast<ValueAsMetadata>(M)->getValue();
 						if (isa<AllocaInst>(V)) {
@@ -1592,8 +1608,7 @@ void translator::add_function_symbols() {
 		}
 		for (auto &arg : F.args()) {
 			symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
-			arg_symbol.name = F.getName().str() + "::"
-					+ arg_symbol.name.c_str();
+			arg_symbol.name = F.getName().str() + "::" + arg_symbol.name.c_str();
 			arg_symbol.is_parameter = true;
 			arg_symbol.is_state_var = true;
 			func_arg_name_map[&arg] = arg_symbol.name.c_str();
