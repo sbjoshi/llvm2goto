@@ -435,7 +435,10 @@ exprt translator::get_expr_xor(const Instruction &XI) {
 	const auto &ll_op2 = XI.getOperand(1);
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
-	expr = bitxor_exprt(expr_op1, expr_op2);
+	if (expr_op1.type().id() == ID_bool && expr_op2.type().id() == ID_bool)
+		expr = xor_exprt(expr_op1, expr_op2);
+	else
+		expr = bitxor_exprt(expr_op1, expr_op2);
 	return expr;
 }
 
@@ -1030,7 +1033,6 @@ void translator::trans_call(const CallInst &CI) {
 				const auto &arg_val = arg.get();
 				args.push_back(get_expr(*arg_val));
 			}
-			auto expr = get_intrinsics(called_val->getName().str(), args);
 			auto ret_symbol =
 					symbol_util::create_symbol(called_func->getReturnType());
 			if (CI.hasName()) {
@@ -1044,10 +1046,23 @@ void translator::trans_call(const CallInst &CI) {
 			ret_symbol.location = location;
 			symbol_table.add(ret_symbol);
 			call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+
+			auto dclr_instr = goto_program.add_instruction();
+			dclr_instr->make_decl();
+			dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+			dclr_instr->source_location = location;
+			goto_program.update();
+
+			auto expr = get_intrinsics(called_val->getName().str(),
+					args,
+					symbol_table,
+					goto_program);
+
 			auto asgn_instr = goto_program.add_instruction();
 			asgn_instr->make_assignment();
 			asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
 			asgn_instr->source_location = location;
+			goto_program.update();
 		}
 		else if (!called_val->getName().str().compare("malloc")) {
 			add_malloc_support();

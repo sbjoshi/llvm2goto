@@ -54,7 +54,10 @@ bool is_assume_function(const std::string&);
 bool is_assert_function(const std::string&);
 bool is_assert_fail_function(const std::string&);
 bool is_intrinsic(const std::string&);
-exprt get_intrinsics(const std::string&, const std::vector<exprt>&);
+exprt get_intrinsics(const std::string&,
+		const std::vector<exprt>&,
+		const symbol_tablet&,
+		goto_programt&);
 
 void print_help();
 void parse_input(int argc,

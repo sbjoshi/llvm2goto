@@ -226,11 +226,18 @@ void ll2gb::secret() {
 
 bool ll2gb::is_intrinsic(const string &intrinsic_name) {
 	if (!intrinsic_name.compare("__fpclassifyf")) return true;
+	if (!intrinsic_name.compare("fesetround")) return true;
+	if (!intrinsic_name.compare("__isinff")) return true;
+	if (!intrinsic_name.compare("__isinfl")) return true;
+	if (!intrinsic_name.compare("__isinf")) return true;
+	if (!intrinsic_name.compare("__isnan")) return true;
 	return false;
 }
 
 exprt ll2gb::get_intrinsics(const string &intrinsic_name,
-		const vector<exprt> &args) {
+		const vector<exprt> &args,
+		const symbol_tablet &symbol_table,
+		goto_programt &goto_program) {
 	exprt expr;
 	if (!intrinsic_name.compare("__fpclassifyf")) {
 		auto e = args[0];
@@ -251,6 +258,48 @@ exprt ll2gb::get_intrinsics(const string &intrinsic_name,
 								signedbv_typet(32)),
 						signedbv_typet(32)),
 				signedbv_typet(32));
+	}
+	else if (!intrinsic_name.compare("fesetround")) {
+		auto e = args[0];
+		auto rnd_mod =
+				symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+		expr = ternary_exprt(ID_if,
+				equal_exprt(e, from_integer(0x400, e.type())),
+				from_integer(1, e.type()),
+				ternary_exprt(ID_if,
+						equal_exprt(e, from_integer(0, e.type())),
+						from_integer(0, e.type()),
+						ternary_exprt(ID_if,
+								equal_exprt(e, from_integer(0xc00, e.type())),
+								from_integer(3, e.type()),
+								ternary_exprt(ID_if,
+										equal_exprt(e, from_integer(0x800, e.type())),
+										from_integer(2, e.type()),
+										from_integer(0, e.type()),
+										e.type()),
+								e.type()),
+						e.type()),
+				e.type());
+		auto asgn_inst = goto_program.add_instruction();
+		asgn_inst->make_assignment();
+		asgn_inst->code = code_assignt(rnd_mod, expr);
+		expr = from_integer(0, e.type());
+	}
+	else if (!intrinsic_name.compare("__isinff")) {
+		auto e = args[0];
+		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
+	}
+	else if (!intrinsic_name.compare("__isinfl")) {
+		auto e = args[0];
+		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
+	}
+	else if (!intrinsic_name.compare("__isinf")) {
+		auto e = args[0];
+		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
+	}
+	else if (!intrinsic_name.compare("__isnan")) {
+		auto e = args[0];
+		expr = typecast_exprt(isnan_exprt(e), signedbv_typet(32));
 	}
 	else {
 		translator::error_state = "Unreachable in func ll2gb::get_intrinsics";
