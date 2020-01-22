@@ -38,6 +38,7 @@
 #include <ansi-c/ansi_c_entry_point.h>
 #include <linking/static_lifetime_init.h>
 #include <cbmc/cbmc_parse_options.h>
+#include <solvers/floatbv/float_bv.h>
 
 namespace ll2gb {
 

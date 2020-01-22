@@ -225,12 +225,12 @@ void ll2gb::secret() {
 }
 
 bool ll2gb::is_intrinsic(const string &intrinsic_name) {
-	if (!intrinsic_name.compare("__fpclassifyf")) return true;
+	if (intrinsic_name.find("__fpclassify") != string::npos) return true;
 	if (!intrinsic_name.compare("fesetround")) return true;
-	if (!intrinsic_name.compare("__isinff")) return true;
-	if (!intrinsic_name.compare("__isinfl")) return true;
-	if (!intrinsic_name.compare("__isinf")) return true;
+	if (intrinsic_name.find("__isinf") != string::npos) return true;
 	if (!intrinsic_name.compare("__isnan")) return true;
+	if (intrinsic_name.find("__signbit") != string::npos) return true;
+	if (!intrinsic_name.compare("abort")) return true;
 	return false;
 }
 
@@ -239,7 +239,7 @@ exprt ll2gb::get_intrinsics(const string &intrinsic_name,
 		const symbol_tablet &symbol_table,
 		goto_programt &goto_program) {
 	exprt expr;
-	if (!intrinsic_name.compare("__fpclassifyf")) {
+	if (intrinsic_name.find("__fpclassify") != string::npos) {
 		auto e = args[0];
 		expr = ternary_exprt(ID_if,
 				isnan_exprt(e),
@@ -284,22 +284,26 @@ exprt ll2gb::get_intrinsics(const string &intrinsic_name,
 		asgn_inst->make_assignment();
 		asgn_inst->code = code_assignt(rnd_mod, expr);
 		expr = from_integer(0, e.type());
+		goto_program.update();
 	}
-	else if (!intrinsic_name.compare("__isinff")) {
-		auto e = args[0];
-		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
-	}
-	else if (!intrinsic_name.compare("__isinfl")) {
-		auto e = args[0];
-		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
-	}
-	else if (!intrinsic_name.compare("__isinf")) {
+	else if (intrinsic_name.find("__isinf") != string::npos) {
 		auto e = args[0];
 		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
 	}
 	else if (!intrinsic_name.compare("__isnan")) {
 		auto e = args[0];
 		expr = typecast_exprt(isnan_exprt(e), signedbv_typet(32));
+	}
+	else if (intrinsic_name.find("__signbit") != string::npos) {
+		auto e = args[0];
+		expr = typecast_exprt(extractbit_exprt(e,
+				to_bitvector_type(e.type()).get_width() - 1),
+				signedbv_typet(32));
+	}
+	else if (!intrinsic_name.compare("abort")) {
+		auto assume_instr = goto_program.add_instruction();
+		assume_instr->make_assumption(false_exprt());
+		goto_program.update();
 	}
 	else {
 		translator::error_state = "Unreachable in func ll2gb::get_intrinsics";

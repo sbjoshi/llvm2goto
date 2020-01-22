@@ -116,10 +116,29 @@ exprt translator::get_expr_const(const Constant &C) {
 				expr = ieee_fl.to_expr();
 			}
 			else if (CF.getType()->isX86_FP80Ty()) {
+				char buf[128];
+				CF.getValueAPF().convertToHexString(buf,
+						0,
+						false,
+						APFloat::rmNearestTiesToEven);
+				string s(buf);
+				auto val = strtold(s.c_str(), NULL);
+
 				type = ieee_float_spect::x86_80().to_type();
-				auto val = CF.getValueAPF().convertToDouble();
 				ieee_floatt ieee_fl(type);
-				ieee_fl.from_double(val);
+
+				if (CF.getValueAPF().isNaN())
+					ieee_fl.make_NaN();
+				else if (CF.getValueAPF().isInfinity()) {
+					if (CF.getValueAPF().isNegative())
+						ieee_fl.make_minus_infinity();
+					else
+						ieee_fl.make_plus_infinity();
+				}
+				else if (CF.getValueAPF().isZero()) {
+					ieee_fl.make_zero();
+				}
+
 				expr = ieee_fl.to_expr();
 			}
 			else if (CF.getType()->isDoubleTy()) {
@@ -1033,36 +1052,37 @@ void translator::trans_call(const CallInst &CI) {
 				const auto &arg_val = arg.get();
 				args.push_back(get_expr(*arg_val));
 			}
-			auto ret_symbol =
-					symbol_util::create_symbol(called_func->getReturnType());
-			if (CI.hasName()) {
-				ret_symbol.base_name = CI.getName().str();
-				ret_symbol.name = CI.getFunction()->getName().str() + "::"
-						+ ret_symbol.base_name.c_str();
-			}
-			else
-				ret_symbol.name = CI.getFunction()->getName().str() + "::"
-						+ ret_symbol.name.c_str();
-			ret_symbol.location = location;
-			symbol_table.add(ret_symbol);
-			call_ret_sym_map[&CI] = ret_symbol.name.c_str();
-
-			auto dclr_instr = goto_program.add_instruction();
-			dclr_instr->make_decl();
-			dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-			dclr_instr->source_location = location;
-			goto_program.update();
-
 			auto expr = get_intrinsics(called_val->getName().str(),
 					args,
 					symbol_table,
 					goto_program);
 
-			auto asgn_instr = goto_program.add_instruction();
-			asgn_instr->make_assignment();
-			asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
-			asgn_instr->source_location = location;
-			goto_program.update();
+			if (!called_func->getReturnType()->isVoidTy()) {
+				auto ret_symbol =
+						symbol_util::create_symbol(called_func->getReturnType());
+				if (CI.hasName()) {
+					ret_symbol.base_name = CI.getName().str();
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.base_name.c_str();
+				}
+				else
+					ret_symbol.name = CI.getFunction()->getName().str() + "::"
+							+ ret_symbol.name.c_str();
+				ret_symbol.location = location;
+				symbol_table.add(ret_symbol);
+				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+
+				auto dclr_instr = goto_program.add_instruction();
+				dclr_instr->make_decl();
+				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+				dclr_instr->source_location = location;
+				goto_program.update();
+				auto asgn_instr = goto_program.add_instruction();
+				asgn_instr->make_assignment();
+				asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
+				asgn_instr->source_location = location;
+				goto_program.update();
+			}
 		}
 		else if (!called_val->getName().str().compare("malloc")) {
 			add_malloc_support();
