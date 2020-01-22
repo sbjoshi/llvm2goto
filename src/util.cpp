@@ -228,7 +228,7 @@ bool ll2gb::is_intrinsic(const string &intrinsic_name) {
 	if (intrinsic_name.find("__fpclassify") != string::npos) return true;
 	if (!intrinsic_name.compare("fesetround")) return true;
 	if (intrinsic_name.find("__isinf") != string::npos) return true;
-	if (!intrinsic_name.compare("__isnan")) return true;
+	if (intrinsic_name.find("__isnan") != string::npos) return true;
 	if (intrinsic_name.find("__signbit") != string::npos) return true;
 	if (!intrinsic_name.compare("abort")) return true;
 	return false;
@@ -290,7 +290,7 @@ exprt ll2gb::get_intrinsics(const string &intrinsic_name,
 		auto e = args[0];
 		expr = typecast_exprt(isinf_exprt(e), signedbv_typet(32));
 	}
-	else if (!intrinsic_name.compare("__isnan")) {
+	else if (intrinsic_name.find("__isnan") != string::npos) {
 		auto e = args[0];
 		expr = typecast_exprt(isnan_exprt(e), signedbv_typet(32));
 	}

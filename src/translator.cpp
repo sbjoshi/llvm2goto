@@ -116,13 +116,13 @@ exprt translator::get_expr_const(const Constant &C) {
 				expr = ieee_fl.to_expr();
 			}
 			else if (CF.getType()->isX86_FP80Ty()) {
-				char buf[128];
-				CF.getValueAPF().convertToHexString(buf,
-						0,
-						false,
-						APFloat::rmNearestTiesToEven);
-				string s(buf);
-				auto val = strtold(s.c_str(), NULL);
+//				char buf[128];
+//				CF.getValueAPF().convertToHexString(buf,
+//						0,
+//						false,
+//						APFloat::rmNearestTiesToEven);
+//				string s(buf);
+//				auto val = strtold(s.c_str(), NULL);
 
 				type = ieee_float_spect::x86_80().to_type();
 				ieee_floatt ieee_fl(type);
@@ -548,6 +548,67 @@ exprt translator::get_expr_fptosi(const FPToSIInst &FPTSI) {
 	return expr;
 }
 
+/// Translates SIToFPInst. By doing
+///	a floatbv_typecast on it.
+exprt translator::get_expr_sitofp(const SIToFPInst &SITFP) {
+	exprt expr;
+	const auto &ll_op1 = SITFP.getOperand(0);
+	const auto &ll_op2 = SITFP.getDestTy();
+	expr = get_expr(*ll_op1);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = floatbv_typecast_exprt(expr,
+			rounding_mode,
+			symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
+/// Translates FPToUIInst. By doing
+///	a floatbv_typecast on it.
+exprt translator::get_expr_fptoui(const FPToUIInst &FPTUI) {
+	exprt expr;
+	const auto &ll_op1 = FPTUI.getOperand(0);
+	const auto &ll_op2 = FPTUI.getDestTy();
+	expr = get_expr(*ll_op1);
+	auto rounding_mode = from_integer(3, signed_int_type());
+	expr = typecast_exprt(floatbv_typecast_exprt(expr,
+			rounding_mode,
+			unsignedbv_typet(ll_op2->getIntegerBitWidth())),
+			symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
+/// Translates UIToFPInst. By doing
+///	a floatbv_typecast on it.
+exprt translator::get_expr_uitofp(const UIToFPInst &UITFP) {
+	exprt expr;
+	const auto &ll_op1 = UITFP.getOperand(0);
+	const auto &ll_op2 = UITFP.getDestTy();
+	expr = dereference_exprt(typecast_exprt(address_of_exprt(get_expr(*ll_op1)),
+			pointer_type(unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()))));
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = floatbv_typecast_exprt(expr,
+			rounding_mode,
+			symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
+/// Translates FPTruncInst. By doing
+///	a floatbv_typecast on it.
+exprt translator::get_expr_fptrunc(const FPTruncInst &FPTI) {
+	exprt expr;
+	const auto &ll_op1 = FPTI.getOperand(0);
+	const auto &ll_op2 = FPTI.getDestTy();
+	expr = get_expr(*ll_op1);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = floatbv_typecast_exprt(expr,
+			rounding_mode,
+			symbol_util::get_goto_type(ll_op2));
+	return expr;
+}
+
 /// Translates PtrToIntInst. By simply,
 ///	typecasting it.
 exprt translator::get_expr_ptrtoint(const PtrToIntInst &P2I) {
@@ -772,6 +833,26 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::FPToSI: {
 			const auto &FPTSI = cast<FPToSIInst>(&I);
 			expr = get_expr_fptosi(*FPTSI);
+			break;
+		}
+		case Instruction::SIToFP: {
+			const auto &SITFP = cast<SIToFPInst>(&I);
+			expr = get_expr_sitofp(*SITFP);
+			break;
+		}
+		case Instruction::FPToUI: {
+			const auto &FPTUI = cast<FPToUIInst>(&I);
+			expr = get_expr_fptoui(*FPTUI);
+			break;
+		}
+		case Instruction::UIToFP: {
+			const auto &UITFP = cast<UIToFPInst>(&I);
+			expr = get_expr_uitofp(*UITFP);
+			break;
+		}
+		case Instruction::FPTrunc: {
+			const auto &FPTI = cast<FPTruncInst>(&I);
+			expr = get_expr_fptrunc(*FPTI);
 			break;
 		}
 		case Instruction::PtrToInt: {
@@ -1372,7 +1453,11 @@ bool translator::trans_instruction(const Instruction &I) {
 	case Instruction::FPExt:
 	case Instruction::Select:
 	case Instruction::FPToSI:
+	case Instruction::SIToFP:
+	case Instruction::FPToUI:
+	case Instruction::UIToFP:
 	case Instruction::ExtractValue:
+	case Instruction::FPTrunc:
 		break;
 	default:
 		error_state = "Unknown llvmInstruction";

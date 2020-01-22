@@ -80,6 +80,10 @@ private:
 	exprt get_expr_sext(const llvm::SExtInst&);
 	exprt get_expr_fpext(const llvm::FPExtInst&);
 	exprt get_expr_fptosi(const llvm::FPToSIInst&);
+	exprt get_expr_sitofp(const llvm::SIToFPInst&);
+	exprt get_expr_fptoui(const llvm::FPToUIInst&);
+	exprt get_expr_uitofp(const llvm::UIToFPInst&);
+	exprt get_expr_fptrunc(const llvm::FPTruncInst&);
 	exprt get_expr_ptrtoint(const llvm::PtrToIntInst&);
 	exprt get_expr_inttoptr(const llvm::IntToPtrInst&);
 	exprt get_expr_const(const llvm::Constant&);
