@@ -224,7 +224,7 @@ void ll2gb::secret() {
 	sigaction(SIGSEGV, &act, 0);
 }
 
-bool ll2gb::is_intrinsic(const string &intrinsic_name) {
+bool ll2gb::is_intrinsic_function(const string &intrinsic_name) {
 	if (intrinsic_name.find("__fpclassify") != string::npos) return true;
 	if (!intrinsic_name.compare("fesetround")) return true;
 	if (intrinsic_name.find("__isinf") != string::npos) return true;

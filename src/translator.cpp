@@ -1127,7 +1127,7 @@ void translator::trans_call(const CallInst &CI) {
 			assume_inst->source_location = location;
 			goto_program.update();
 		}
-		else if (is_intrinsic(called_val->getName().str())) {
+		else if (is_intrinsic_function(called_val->getName().str())) {
 			vector<exprt> args;
 			for (const auto &arg : CI.args()) {
 				const auto &arg_val = arg.get();
@@ -1297,6 +1297,34 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		assgn_instr->code = code_assignt(target_expr, source_expr);
 		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		assgn_instr->source_location = location;
+		break;
+	}
+	case Intrinsic::fabs: {
+		auto called_func = ICI.getCalledFunction();
+		auto expr = abs_exprt(get_expr(*ICI.getOperand(0)));
+		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		if (ICI.hasName()) {
+			ret_symbol.base_name = ICI.getName().str();
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.base_name.c_str();
+		}
+		else
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.name.c_str();
+		ret_symbol.location = location;
+		symbol_table.add(ret_symbol);
+		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
+
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->make_decl();
+		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+		dclr_instr->source_location = location;
+		goto_program.update();
+		auto asgn_instr = goto_program.add_instruction();
+		asgn_instr->make_assignment();
+		asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
+		asgn_instr->source_location = location;
+		goto_program.update();
 		break;
 	}
 	case Intrinsic::dbg_declare:
