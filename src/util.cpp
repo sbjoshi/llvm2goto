@@ -227,6 +227,7 @@ void ll2gb::secret() {
 bool ll2gb::is_intrinsic_function(const string &intrinsic_name) {
 	if (intrinsic_name.find("__fpclassify") != string::npos) return true;
 	if (!intrinsic_name.compare("fesetround")) return true;
+	if (!intrinsic_name.compare("fdim")) return true;
 	if (intrinsic_name.find("__isinf") != string::npos) return true;
 	if (intrinsic_name.find("__isnan") != string::npos) return true;
 	if (intrinsic_name.find("__signbit") != string::npos) return true;
@@ -285,6 +286,17 @@ exprt ll2gb::get_intrinsics(const string &intrinsic_name,
 		asgn_inst->code = code_assignt(rnd_mod, expr);
 		expr = from_integer(0, e.type());
 		goto_program.update();
+	}
+	else if (!intrinsic_name.compare("fdim")) {
+		auto e1 = args[0];
+		auto e2 = args[1];
+		auto rounding_mode =
+				symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+		expr = ternary_exprt(ID_if,
+				binary_relation_exprt(e1, ID_gt, e2),
+				ieee_float_op_exprt(e1, ID_floatbv_minus, e2, rounding_mode),
+				from_integer(0, e1.type()),
+				e1.type());
 	}
 	else if (intrinsic_name.find("__isinf") != string::npos) {
 		auto e = args[0];

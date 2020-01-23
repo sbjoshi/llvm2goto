@@ -66,9 +66,13 @@ private:
 	exprt get_expr_trunc(const llvm::TruncInst&);
 	exprt get_expr_load(const llvm::LoadInst&);
 	exprt get_expr_add(const llvm::Instruction&);
+	exprt get_expr_fadd(const llvm::Instruction&);
 	exprt get_expr_sub(const llvm::Instruction&);
+	exprt get_expr_fsub(const llvm::Instruction&);
 	exprt get_expr_mul(const llvm::Instruction&);
+	exprt get_expr_fmul(const llvm::Instruction&);
 	exprt get_expr_sdiv(const llvm::Instruction&);
+	exprt get_expr_fdiv(const llvm::Instruction&);
 	exprt get_expr_udiv(const llvm::Instruction&);
 	exprt get_expr_and(const llvm::Instruction&);
 	exprt get_expr_or(const llvm::Instruction&);

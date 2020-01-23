@@ -217,59 +217,167 @@ exprt translator::get_expr_fcmp(const FCmpInst &FCI) {
 		break;
 	}
 	case CmpInst::Predicate::FCMP_OEQ: {
-		expr = ieee_float_equal_exprt(expr_op1, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						ieee_float_equal_exprt(expr_op1, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_OGE: {
-		expr = binary_relation_exprt(expr_op1, ID_ge, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						binary_relation_exprt(expr_op1, ID_ge, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_OGT: {
-		expr = binary_relation_exprt(expr_op1, ID_gt, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						binary_relation_exprt(expr_op1, ID_gt, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_OLE: {
-		expr = binary_relation_exprt(expr_op1, ID_le, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						binary_relation_exprt(expr_op1, ID_le, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_OLT: {
-		expr = binary_relation_exprt(expr_op1, ID_lt, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						binary_relation_exprt(expr_op1, ID_lt, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_ONE: {
-		expr = ieee_float_notequal_exprt(expr_op1, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						ieee_float_notequal_exprt(expr_op1, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_ORD: {
-		expr = true_exprt();
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				false_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						false_exprt(),
+						true_exprt(),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_UEQ: {
-		expr = ieee_float_equal_exprt(expr_op1, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						true_exprt(),
+						ieee_float_equal_exprt(expr_op1, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_UGE: {
-		expr = binary_relation_exprt(expr_op1, ID_ge, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						true_exprt(),
+						binary_relation_exprt(expr_op1, ID_ge, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_UGT: {
-		expr = binary_relation_exprt(expr_op1, ID_gt, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						true_exprt(),
+						binary_relation_exprt(expr_op1, ID_gt, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_ULE: {
-		expr = binary_relation_exprt(expr_op1, ID_le, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						true_exprt(),
+						binary_relation_exprt(expr_op1, ID_le, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_ULT: {
-		expr = binary_relation_exprt(expr_op1, ID_lt, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						true_exprt(),
+						binary_relation_exprt(expr_op1, ID_lt, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_UNE: {
-		expr = ieee_float_notequal_exprt(expr_op1, expr_op2);
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				ternary_exprt(ID_if,
+						isnan_exprt(expr_op2),
+						true_exprt(),
+						ieee_float_notequal_exprt(expr_op1, expr_op2),
+						bool_typet()),
+				bool_typet());
 		break;
 	}
 	case CmpInst::Predicate::FCMP_UNO: {
-		expr = true_exprt();
+		expr = ternary_exprt(ID_if,
+				isnan_exprt(expr_op1),
+				true_exprt(),
+				isnan_exprt(expr_op2),
+				bool_typet());
 		break;
 	}
 	default:
@@ -369,6 +477,22 @@ exprt translator::get_expr_add(const Instruction &AI) {
 	return expr;
 }
 
+/// Translates and returns a iee_fl::div expr.
+exprt translator::get_expr_fadd(const Instruction &FAI) {
+	exprt expr;
+	const auto &ll_op1 = FAI.getOperand(0);
+	const auto &ll_op2 = FAI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = ieee_float_op_exprt(expr_op1,
+			ID_floatbv_plus,
+			expr_op2,
+			rounding_mode);
+	return expr;
+}
+
 /// Translates and returns a sub expr;
 exprt translator::get_expr_sub(const Instruction &SI) {
 	exprt expr;
@@ -377,6 +501,22 @@ exprt translator::get_expr_sub(const Instruction &SI) {
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
 	expr = minus_exprt(expr_op1, expr_op2);
+	return expr;
+}
+
+/// Translates and returns a iee_fl::div expr.
+exprt translator::get_expr_fsub(const Instruction &FSI) {
+	exprt expr;
+	const auto &ll_op1 = FSI.getOperand(0);
+	const auto &ll_op2 = FSI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = ieee_float_op_exprt(expr_op1,
+			ID_floatbv_minus,
+			expr_op2,
+			rounding_mode);
 	return expr;
 }
 
@@ -391,6 +531,22 @@ exprt translator::get_expr_mul(const Instruction &MI) {
 	return expr;
 }
 
+/// Translates and returns a iee_fl::div expr.
+exprt translator::get_expr_fmul(const Instruction &FMI) {
+	exprt expr;
+	const auto &ll_op1 = FMI.getOperand(0);
+	const auto &ll_op2 = FMI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = ieee_float_op_exprt(expr_op1,
+			ID_floatbv_mult,
+			expr_op2,
+			rounding_mode);
+	return expr;
+}
+
 /// Translates and returns a div expr.
 exprt translator::get_expr_sdiv(const Instruction &SDI) {
 	exprt expr;
@@ -399,6 +555,19 @@ exprt translator::get_expr_sdiv(const Instruction &SDI) {
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
 	expr = div_exprt(expr_op1, expr_op2);
+	return expr;
+}
+
+/// Translates and returns a iee_fl::div expr.
+exprt translator::get_expr_fdiv(const Instruction &FDI) {
+	exprt expr;
+	const auto &ll_op1 = FDI.getOperand(0);
+	const auto &ll_op2 = FDI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	expr = ieee_float_op_exprt(expr_op1, ID_floatbv_div, expr_op2, rounding_mode);
 	return expr;
 }
 
@@ -542,7 +711,8 @@ exprt translator::get_expr_fptosi(const FPToSIInst &FPTSI) {
 	expr = get_expr(*ll_op1);
 //	auto rounding_mode =
 //			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
-	auto rounding_mode = from_integer(3, signed_int_type());
+	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_ZERO,
+			signed_int_type());
 	expr = floatbv_typecast_exprt(expr,
 			rounding_mode,
 			symbol_util::get_goto_type(ll_op2));
@@ -571,7 +741,8 @@ exprt translator::get_expr_fptoui(const FPToUIInst &FPTUI) {
 	const auto &ll_op1 = FPTUI.getOperand(0);
 	const auto &ll_op2 = FPTUI.getDestTy();
 	expr = get_expr(*ll_op1);
-	auto rounding_mode = from_integer(3, signed_int_type());
+	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_ZERO,
+			signed_int_type());
 	expr = typecast_exprt(floatbv_typecast_exprt(expr,
 			rounding_mode,
 			unsignedbv_typet(ll_op2->getIntegerBitWidth())),
@@ -871,22 +1042,34 @@ exprt translator::get_expr(const Value &V) {
 			expr = get_expr_select(*SI);
 			break;
 		}
-		case Instruction::FAdd:
+		case Instruction::FAdd: {
+			expr = get_expr_fadd(I);
+			break;
+		}
 		case Instruction::Add: {
 			expr = get_expr_add(I);
 			break;
 		}
-		case Instruction::FSub:
+		case Instruction::FSub: {
+			expr = get_expr_fsub(I);
+			break;
+		}
 		case Instruction::Sub: {
 			expr = get_expr_sub(I);
 			break;
 		}
-		case Instruction::FMul:
+		case Instruction::FMul: {
+			expr = get_expr_fmul(I);
+			break;
+		}
 		case Instruction::Mul: {
 			expr = get_expr_mul(I);
 			break;
 		}
-		case Instruction::FDiv:
+		case Instruction::FDiv: {
+			expr = get_expr_fdiv(I);
+			break;
+		}
 		case Instruction::SDiv: {
 			expr = get_expr_sdiv(I);
 			break;
@@ -1300,6 +1483,37 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		assgn_instr->source_location = location;
 		break;
 	}
+	case Intrinsic::floor: {
+		auto called_func = ICI.getCalledFunction();
+		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		if (ICI.hasName()) {
+			ret_symbol.base_name = ICI.getName().str();
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.base_name.c_str();
+		}
+		else
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.name.c_str();
+		ret_symbol.location = location;
+		symbol_table.add(ret_symbol);
+		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->make_decl();
+		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+		dclr_instr->source_location = location;
+		goto_program.update();
+		exprt rounding = from_integer(ieee_floatt::ROUND_TO_ZERO,
+				signed_int_type());
+		auto floor_expr = get_expr(*ICI.getOperand(0));
+		floor_expr = floatbv_typecast_exprt(floor_expr,
+				rounding,
+				floor_expr.type());
+		auto assgn_instr = goto_program.add_instruction();
+		assgn_instr->make_assignment();
+		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), floor_expr);
+		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		break;
+	}
 	case Intrinsic::fabs: {
 		auto called_func = ICI.getCalledFunction();
 		auto expr = abs_exprt(get_expr(*ICI.getOperand(0)));
@@ -1321,10 +1535,10 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
 		dclr_instr->source_location = location;
 		goto_program.update();
-		auto asgn_instr = goto_program.add_instruction();
-		asgn_instr->make_assignment();
-		asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
-		asgn_instr->source_location = location;
+		auto assgn_instr = goto_program.add_instruction();
+		assgn_instr->make_assignment();
+		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
+		assgn_instr->source_location = location;
 		goto_program.update();
 		break;
 	}
@@ -1332,7 +1546,6 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	case Intrinsic::dbg_value:
 	case Intrinsic::dbg_label:
 		break;
-
 	default:
 		error_state = "Unknown llvmIntrinsic type";
 	}
