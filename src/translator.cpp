@@ -310,7 +310,7 @@ exprt translator::get_expr_icmp(const ICmpInst &ICI) {
 		expr = binary_relation_exprt(expr_op1, ID_lt, expr_op2);
 		break;
 	}
-	case CmpInst::Predicate::ICMP_UGE: {
+	case CmpInst::Predicate::ICMP_UGE: { //TODO:Check if its correct to cast to unsigned like this
 		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
 				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
 		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
@@ -354,7 +354,7 @@ exprt translator::get_expr_trunc(const TruncInst &TI) {
 	const auto &ll_op1 = TI.getOperand(0);
 	const auto &ll_op2 = TI.getDestTy();
 	auto expr_op1 = get_expr(*ll_op1);
-	expr = typecast_exprt(expr_op1, signedbv_typet(ll_op2->getIntegerBitWidth()));
+	expr = typecast_exprt(expr_op1, symbol_util::get_goto_type(ll_op2));
 	return expr;
 }
 
@@ -540,8 +540,9 @@ exprt translator::get_expr_fptosi(const FPToSIInst &FPTSI) {
 	const auto &ll_op1 = FPTSI.getOperand(0);
 	const auto &ll_op2 = FPTSI.getDestTy();
 	expr = get_expr(*ll_op1);
-	auto rounding_mode =
-			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+//	auto rounding_mode =
+//			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	auto rounding_mode = from_integer(3, signed_int_type());
 	expr = floatbv_typecast_exprt(expr,
 			rounding_mode,
 			symbol_util::get_goto_type(ll_op2));
@@ -1289,9 +1290,9 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	case Intrinsic::memcpy: {
 		const auto &x = cast<MemCpyInst>(ICI);
 		const auto &ll_target = x.getDest();
-		const auto &ll_source = cast<Constant>(x.getSource())->getOperand(0);
+		const auto &ll_source = (x.getSource());
 		auto target_expr = dereference_exprt(get_expr(*ll_target));
-		auto source_expr = get_expr(*ll_source);
+		auto source_expr = dereference_exprt(get_expr(*ll_source));
 		auto assgn_instr = goto_program.add_instruction();
 		assgn_instr->make_assignment();
 		assgn_instr->code = code_assignt(target_expr, source_expr);
