@@ -227,6 +227,7 @@ void ll2gb::secret() {
 bool ll2gb::is_intrinsic_function(const string &intrinsic_name) {
 	if (intrinsic_name.find("__fpclassify") != string::npos) return true;
 	if (!intrinsic_name.compare("fesetround")) return true;
+	if (!intrinsic_name.compare("fegetround")) return true;
 	if (!intrinsic_name.compare("fdim")) return true;
 	if (intrinsic_name.find("__isinf") != string::npos) return true;
 	if (intrinsic_name.find("__isnan") != string::npos) return true;
@@ -286,6 +287,27 @@ exprt ll2gb::get_intrinsics(const string &intrinsic_name,
 		asgn_inst->code = code_assignt(rnd_mod, expr);
 		expr = from_integer(0, e.type());
 		goto_program.update();
+	}
+	else if (!intrinsic_name.compare("fegetround")) {
+		auto rounding =
+				symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+		expr = ternary_exprt(ID_if,
+				equal_exprt(rounding, from_integer(1, rounding.type())),
+				from_integer(0x400, rounding.type()),
+				ternary_exprt(ID_if,
+						equal_exprt(rounding, from_integer(0, rounding.type())),
+						from_integer(0, rounding.type()),
+						ternary_exprt(ID_if,
+								equal_exprt(rounding, from_integer(3, rounding.type())),
+								from_integer(0xc00, rounding.type()),
+								ternary_exprt(ID_if,
+										equal_exprt(rounding, from_integer(2, rounding.type())),
+										from_integer(0x800, rounding.type()),
+										from_integer(-1, rounding.type()),
+										rounding.type()),
+								rounding.type()),
+						rounding.type()),
+				rounding.type());
 	}
 	else if (!intrinsic_name.compare("fdim")) {
 		auto e1 = args[0];

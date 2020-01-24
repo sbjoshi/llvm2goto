@@ -44,7 +44,7 @@ all: ll2gb
 # Tool invocations
 ll2gb: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "ll2gb" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs --system-libs irreader`
+	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "ll2gb" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs --system-libs irreader passes`
 	@echo 'Finished building target: $@'
 	@echo ' '
 

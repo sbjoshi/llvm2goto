@@ -1852,13 +1852,13 @@ Test 'malloc_fail'
     --
     ^warning: ignoring
 Running cbmc  main.c.i >main.c.out 2>&1
-  Exit: 0
+  Exit: 10
   Signal: 0
   Core: 0
 Execution [OK]
-^EXIT=10\r\\?$ [FAILED]
+^EXIT=10\r\\?$ [OK]
 ^SIGNAL=0\r\\?$ [OK]
-^VERIFICATION FAILED\r\\?$ [FAILED]
+^VERIFICATION FAILED\r\\?$ [OK]
 ^warning: ignoring [OK]
 
 Test 'nested_struct'

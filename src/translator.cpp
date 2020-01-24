@@ -1502,12 +1502,37 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
 		dclr_instr->source_location = location;
 		goto_program.update();
-		exprt rounding = from_integer(ieee_floatt::ROUND_TO_ZERO,
-				signed_int_type());
-		auto floor_expr = get_expr(*ICI.getOperand(0));
-		floor_expr = floatbv_typecast_exprt(floor_expr,
-				rounding,
-				floor_expr.type());
+		exprt rounding = from_integer(1, signed_int_type());
+		auto arg = get_expr(*ICI.getOperand(0));
+		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
+		magic_const.from_double(4.503600e+15);
+		auto mgc_cnst_expr = magic_const.to_expr();
+		auto floor_expr = ternary_exprt(ID_if,
+				binary_relation_exprt(abs_exprt(arg), ID_ge, mgc_cnst_expr),
+				arg,
+				ternary_exprt(ID_if,
+						ieee_float_equal_exprt(arg, from_integer(0, arg.type())),
+						arg,
+						ternary_exprt(ID_if,
+								extractbit_exprt(arg,
+										to_bitvector_type(arg.type()).get_width() - 1),
+								ieee_float_op_exprt(ieee_float_op_exprt(arg,
+										ID_floatbv_minus,
+										mgc_cnst_expr,
+										rounding),
+										ID_floatbv_plus,
+										mgc_cnst_expr,
+										rounding),
+								ieee_float_op_exprt(ieee_float_op_exprt(arg,
+										ID_floatbv_plus,
+										mgc_cnst_expr,
+										rounding),
+										ID_floatbv_minus,
+										mgc_cnst_expr,
+										rounding),
+								arg.type()),
+						arg.type()),
+				arg.type());
 		auto assgn_instr = goto_program.add_instruction();
 		assgn_instr->make_assignment();
 		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), floor_expr);
@@ -1937,6 +1962,15 @@ bool translator::trans_module() {
 ///	mapping alloca instructions to their DbgDeclare
 ///	happen here.
 void translator::analyse_ir() {
+	legacy::PassManager PM;
+	PM.add(createIPSCCPPass());
+	PM.run(*llvm_module);
+
+	legacy::FunctionPassManager FPM(&*llvm_module);
+	FPM.add(createDeadCodeEliminationPass());
+	for (auto &F : *llvm_module)
+		FPM.run(F);
+
 	for (auto &F : *llvm_module)
 		for (auto &BB : F)
 			for (auto &I : BB)
