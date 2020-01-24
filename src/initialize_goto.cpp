@@ -138,6 +138,7 @@ void translator::add_malloc_support(bool reset_status) {
 	sym.clear();
 	sym.name = sym.base_name = "malloc_size";
 	sym.type = signed_long_int_type();
+	sym.is_parameter = true;
 	symbol_table.insert(sym);
 
 	sym.clear();
@@ -178,13 +179,12 @@ void translator::add_malloc_support(bool reset_status) {
 			symbol_table.lookup("__CPROVER_deallocated")->symbol_expr();
 	auto eq_expr = equal_exprt(symbol_table.lookup("malloc_res")->symbol_expr(),
 			cp_de_alloc_expr);
-	tgt->code =
-			code_assignt(cp_de_alloc_expr,
-					ternary_exprt(ID_if,
-							eq_expr,
-							null_pointer_exprt(to_pointer_type(cp_de_alloc_expr.type())),
-							cp_de_alloc_expr,
-							cp_de_alloc_expr.type()));
+	tgt->code = code_assignt(cp_de_alloc_expr,
+			ternary_exprt(ID_if,
+					eq_expr,
+					null_pointer_exprt(to_pointer_type(cp_de_alloc_expr.type())),
+					cp_de_alloc_expr,
+					cp_de_alloc_expr.type()));
 
 	sym.clear();
 	tgt = malloc_gp.add_instruction();
@@ -196,9 +196,8 @@ void translator::add_malloc_support(bool reset_status) {
 
 	tgt = malloc_gp.add_instruction();
 	tgt->make_assignment();
-	tgt->code =
-			code_assignt(symbol_table.lookup("record_malloc")->symbol_expr(),
-					side_effect_expr_nondett(bool_typet()));
+	tgt->code = code_assignt(symbol_table.lookup("record_malloc")->symbol_expr(),
+			side_effect_expr_nondett(bool_typet()));
 
 	tgt = malloc_gp.add_instruction();
 	tgt->make_assignment();
@@ -215,14 +214,13 @@ void translator::add_malloc_support(bool reset_status) {
 	tgt->make_assignment();
 	auto cp_malloc_size_expr =
 			symbol_table.lookup("__CPROVER_malloc_size")->symbol_expr();
-	tgt->code =
-			code_assignt(cp_malloc_size_expr,
-					ternary_exprt(ID_if,
-							symbol_table.lookup("record_malloc")->symbol_expr(),
-							typecast_exprt(symbol_table.lookup("malloc_size")->symbol_expr(),
-									cp_malloc_size_expr.type()),
-							cp_malloc_size_expr,
-							cp_malloc_size_expr.type()));
+	tgt->code = code_assignt(cp_malloc_size_expr,
+			ternary_exprt(ID_if,
+					symbol_table.lookup("record_malloc")->symbol_expr(),
+					typecast_exprt(symbol_table.lookup("malloc_size")->symbol_expr(),
+							cp_malloc_size_expr.type()),
+					cp_malloc_size_expr,
+					cp_malloc_size_expr.type()));
 
 	tgt = malloc_gp.add_instruction();
 	tgt->make_assignment();
@@ -266,14 +264,12 @@ void translator::add_malloc_support(bool reset_status) {
 	code_returnt cret;
 	cret.return_value() =
 			typecast_exprt(symbol_table.lookup("malloc_res")->symbol_expr(),
-					pointer_typet(signedbv_typet(8),
-							config.ansi_c.pointer_width));
+					pointer_typet(signedbv_typet(8), config.ansi_c.pointer_width));
 	tgt->code = cret;
 
 	tgt = malloc_gp.add_instruction();
 	tgt->make_dead();
-	tgt->code =
-			code_deadt(symbol_table.lookup("record_may_leak")->symbol_expr());
+	tgt->code = code_deadt(symbol_table.lookup("record_may_leak")->symbol_expr());
 
 	tgt = malloc_gp.add_instruction();
 	tgt->make_dead();
