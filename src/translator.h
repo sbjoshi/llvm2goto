@@ -44,6 +44,12 @@ private:
 		set_config();
 		add_initial_symbols();
 	}
+
+	bool is_intrinsic_function(const std::string&);
+	exprt get_intrinsics(const std::string&,
+			const std::vector<exprt>&,
+			const symbol_tablet&,
+			goto_programt&);
 	void add_malloc_support(bool reset_status = false);
 
 	void trans_alloca(const llvm::AllocaInst&);
@@ -72,8 +78,10 @@ private:
 	exprt get_expr_mul(const llvm::Instruction&);
 	exprt get_expr_fmul(const llvm::Instruction&);
 	exprt get_expr_sdiv(const llvm::Instruction&);
+	exprt get_expr_srem(const llvm::Instruction&);
 	exprt get_expr_fdiv(const llvm::Instruction&);
 	exprt get_expr_udiv(const llvm::Instruction&);
+	exprt get_expr_urem(const llvm::Instruction&);
 	exprt get_expr_and(const llvm::Instruction&);
 	exprt get_expr_or(const llvm::Instruction&);
 	exprt get_expr_xor(const llvm::Instruction&);

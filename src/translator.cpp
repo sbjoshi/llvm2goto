@@ -116,17 +116,24 @@ exprt translator::get_expr_const(const Constant &C) {
 				expr = ieee_fl.to_expr();
 			}
 			else if (CF.getType()->isX86_FP80Ty()) {
-//				char buf[128];
-//				CF.getValueAPF().convertToHexString(buf,
-//						0,
-//						false,
-//						APFloat::rmNearestTiesToEven);
-//				string s(buf);
-//				auto val = strtold(s.c_str(), NULL);
-
+				auto val = CF.getValueAPF().bitcastToAPInt();
+				uint64_t fraction { };
+				uint16_t exponent { };
+				for (auto i = 0u; i < 64; i++) {
+					uint64_t s { val[i] };
+					s <<= i;
+					fraction |= s;
+				}
+				for (auto i = 64u; i < 79; i++) {
+					uint16_t s { val[i] };
+					s <<= i;
+					exponent |= s;
+				}
+				auto sign = val[79];
 				type = ieee_float_spect::x86_80().to_type();
 				ieee_floatt ieee_fl(type);
-
+				ieee_fl.build(fraction, exponent);
+				ieee_fl.set_sign(sign);
 				if (CF.getValueAPF().isNaN())
 					ieee_fl.make_NaN();
 				else if (CF.getValueAPF().isInfinity()) {
@@ -135,9 +142,7 @@ exprt translator::get_expr_const(const Constant &C) {
 					else
 						ieee_fl.make_plus_infinity();
 				}
-				else if (CF.getValueAPF().isZero()) {
-					ieee_fl.make_zero();
-				}
+				else if (CF.getValueAPF().isZero()) ieee_fl.make_zero();
 
 				expr = ieee_fl.to_expr();
 			}
@@ -558,6 +563,17 @@ exprt translator::get_expr_sdiv(const Instruction &SDI) {
 	return expr;
 }
 
+/// Translates and returns a rem expr.
+exprt translator::get_expr_srem(const Instruction &SRI) {
+	exprt expr;
+	const auto &ll_op1 = SRI.getOperand(0);
+	const auto &ll_op2 = SRI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	expr = mod_exprt(expr_op1, expr_op2);
+	return expr;
+}
+
 /// Translates and returns a iee_fl::div expr.
 exprt translator::get_expr_fdiv(const Instruction &FDI) {
 	exprt expr;
@@ -586,6 +602,26 @@ exprt translator::get_expr_udiv(const Instruction &UDI) {
 	expr_op2 = typecast_exprt::conditional_cast(expr_op2,
 			unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
 	expr = div_exprt(expr_op1, expr_op2);
+	expr = typecast_exprt::conditional_cast(expr,
+			signedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+	return expr;
+}
+
+/// Translates and returns a rem expr. Since it is
+/// unsigned division, we must typecast both operands
+/// to unsigned, perform the rem, and then again
+/// typecast back to signed.
+exprt translator::get_expr_urem(const Instruction &URI) {
+	exprt expr;
+	const auto &ll_op1 = URI.getOperand(0);
+	const auto &ll_op2 = URI.getOperand(1);
+	auto expr_op1 = get_expr(*ll_op1);
+	auto expr_op2 = get_expr(*ll_op2);
+	expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+			unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+	expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+			unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+	expr = mod_exprt(expr_op1, expr_op2);
 	expr = typecast_exprt::conditional_cast(expr,
 			signedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
 	return expr;
@@ -709,8 +745,6 @@ exprt translator::get_expr_fptosi(const FPToSIInst &FPTSI) {
 	const auto &ll_op1 = FPTSI.getOperand(0);
 	const auto &ll_op2 = FPTSI.getDestTy();
 	expr = get_expr(*ll_op1);
-//	auto rounding_mode =
-//			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
 	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_ZERO,
 			signed_int_type());
 	expr = floatbv_typecast_exprt(expr,
@@ -756,8 +790,14 @@ exprt translator::get_expr_uitofp(const UIToFPInst &UITFP) {
 	exprt expr;
 	const auto &ll_op1 = UITFP.getOperand(0);
 	const auto &ll_op2 = UITFP.getDestTy();
-	expr = dereference_exprt(typecast_exprt(address_of_exprt(get_expr(*ll_op1)),
-			pointer_type(unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()))));
+//	expr = dereference_exprt(typecast_exprt(address_of_exprt(get_expr(*ll_op1)),
+//			pointer_type(unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()))));
+//	auto rounding_mode =
+//			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+//	expr = floatbv_typecast_exprt(expr,
+//			rounding_mode,
+//			symbol_util::get_goto_type(ll_op2));
+	expr = get_expr(*ll_op1);
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
 	expr = floatbv_typecast_exprt(expr,
@@ -1070,12 +1110,20 @@ exprt translator::get_expr(const Value &V) {
 			expr = get_expr_fdiv(I);
 			break;
 		}
+		case Instruction::UDiv: {
+			expr = get_expr_udiv(I);
+			break;
+		}
+		case Instruction::URem: {
+			expr = get_expr_urem(I);
+			break;
+		}
 		case Instruction::SDiv: {
 			expr = get_expr_sdiv(I);
 			break;
 		}
-		case Instruction::UDiv: {
-			expr = get_expr_udiv(I);
+		case Instruction::SRem: {
+			expr = get_expr_srem(I);
 			break;
 		}
 		case Instruction::And: {
@@ -1483,7 +1531,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		assgn_instr->source_location = location;
 		break;
 	}
-	case Intrinsic::floor: {
+	case Intrinsic::ceil: {
 		auto called_func = ICI.getCalledFunction();
 		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
 		if (ICI.hasName()) {
@@ -1502,7 +1550,8 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
 		dclr_instr->source_location = location;
 		goto_program.update();
-		exprt rounding = from_integer(1, signed_int_type());
+		exprt rounding = from_integer(ieee_floatt::ROUND_TO_PLUS_INF,
+				signed_int_type());
 		auto arg = get_expr(*ICI.getOperand(0));
 		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
 		magic_const.from_double(4.503600e+15);
@@ -1536,6 +1585,120 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		auto assgn_instr = goto_program.add_instruction();
 		assgn_instr->make_assignment();
 		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), floor_expr);
+		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		break;
+	}
+	case Intrinsic::floor: {
+		auto called_func = ICI.getCalledFunction();
+		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		if (ICI.hasName()) {
+			ret_symbol.base_name = ICI.getName().str();
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.base_name.c_str();
+		}
+		else
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.name.c_str();
+		ret_symbol.location = location;
+		symbol_table.add(ret_symbol);
+		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->make_decl();
+		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+		dclr_instr->source_location = location;
+		goto_program.update();
+		exprt rounding = from_integer(ieee_floatt::ROUND_TO_MINUS_INF,
+				signed_int_type());
+		auto arg = get_expr(*ICI.getOperand(0));
+		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
+		magic_const.from_double(4.503600e+15);
+		auto mgc_cnst_expr = magic_const.to_expr();
+		auto floor_expr = ternary_exprt(ID_if,
+				binary_relation_exprt(abs_exprt(arg), ID_ge, mgc_cnst_expr),
+				arg,
+				ternary_exprt(ID_if,
+						ieee_float_equal_exprt(arg, from_integer(0, arg.type())),
+						arg,
+						ternary_exprt(ID_if,
+								extractbit_exprt(arg,
+										to_bitvector_type(arg.type()).get_width() - 1),
+								ieee_float_op_exprt(ieee_float_op_exprt(arg,
+										ID_floatbv_minus,
+										mgc_cnst_expr,
+										rounding),
+										ID_floatbv_plus,
+										mgc_cnst_expr,
+										rounding),
+								ieee_float_op_exprt(ieee_float_op_exprt(arg,
+										ID_floatbv_plus,
+										mgc_cnst_expr,
+										rounding),
+										ID_floatbv_minus,
+										mgc_cnst_expr,
+										rounding),
+								arg.type()),
+						arg.type()),
+				arg.type());
+		auto assgn_instr = goto_program.add_instruction();
+		assgn_instr->make_assignment();
+		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), floor_expr);
+		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		break;
+	}
+	case Intrinsic::rint: {
+		auto called_func = ICI.getCalledFunction();
+		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		if (ICI.hasName()) {
+			ret_symbol.base_name = ICI.getName().str();
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.base_name.c_str();
+		}
+		else
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.name.c_str();
+		ret_symbol.location = location;
+		symbol_table.add(ret_symbol);
+		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->make_decl();
+		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+		dclr_instr->source_location = location;
+		goto_program.update();
+		auto rounding =
+				symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+		auto arg = get_expr(*ICI.getOperand(0));
+		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
+		magic_const.from_double(4.503600e+15);
+		auto mgc_cnst_expr = magic_const.to_expr();
+		auto rint_expr = ternary_exprt(ID_if,
+				binary_relation_exprt(abs_exprt(arg), ID_ge, mgc_cnst_expr),
+				arg,
+				ternary_exprt(ID_if,
+						ieee_float_equal_exprt(arg, from_integer(0, arg.type())),
+						arg,
+						ternary_exprt(ID_if,
+								extractbit_exprt(arg,
+										to_bitvector_type(arg.type()).get_width() - 1),
+								ieee_float_op_exprt(ieee_float_op_exprt(arg,
+										ID_floatbv_minus,
+										mgc_cnst_expr,
+										rounding),
+										ID_floatbv_plus,
+										mgc_cnst_expr,
+										rounding),
+								ieee_float_op_exprt(ieee_float_op_exprt(arg,
+										ID_floatbv_plus,
+										mgc_cnst_expr,
+										rounding),
+										ID_floatbv_minus,
+										mgc_cnst_expr,
+										rounding),
+								arg.type()),
+						arg.type()),
+				arg.type());
+		auto assgn_instr = goto_program.add_instruction();
+		assgn_instr->make_assignment();
+		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), rint_expr);
 		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		break;
 	}
@@ -1698,7 +1861,9 @@ bool translator::trans_instruction(const Instruction &I) {
 	case Instruction::Sub:
 	case Instruction::Mul:
 	case Instruction::UDiv:
+	case Instruction::URem:
 	case Instruction::SDiv:
+	case Instruction::SRem:
 	case Instruction::And:
 	case Instruction::Or:
 	case Instruction::Xor:
