@@ -45,13 +45,6 @@ private:
 		add_initial_symbols();
 	}
 
-	bool is_intrinsic_function(const std::string&);
-	exprt get_intrinsics(const std::string&,
-			const std::vector<exprt>&,
-			const symbol_tablet&,
-			goto_programt&);
-	void add_malloc_support(bool reset_status = false);
-
 	void trans_alloca(const llvm::AllocaInst&);
 	void trans_br(const llvm::BranchInst&);
 	void trans_call(const llvm::CallInst&);
@@ -101,13 +94,72 @@ private:
 	exprt get_expr_const(const llvm::Constant&);
 	exprt get_expr_select(const llvm::SelectInst&);
 
+	enum class intrinsics {
+		malloc,
+		__fpclassify,
+		__fpclassifyf,
+		__fpclassifyl,
+		fesetround,
+		fegetround,
+		fdim,
+		fmod,
+		fmodf,
+		remainder,
+		modff,
+		lrint,
+		nan,
+		__isinf,
+		__isinff,
+		__isinfl,
+		__isnan,
+		__isnanf,
+		__isnanl,
+		__signbit,
+		__signbitf,
+		abort,
+		round_to_integralf,
+		round_to_integral,
+		ll2gb_default
+	};
+	bool is_intrinsic_function(const std::string&);
+	typet get_intrinsic_return_type(const std::string&);
+	void add_intrinsic_support(const std::string&, bool reset_status = false);
+	intrinsics get_intrinsic_id(const std::string&);
+	void add_malloc_support();
+	void add_fesetround_support();
+	void add_fegetround_support();
+	void add_fpclassify_support();
+	void add_fpclassifyf_support();
+	void add_fpclassifyl_support();
+	void add_fdim_support();
+	void add_modff_support();
+	void add_round_to_integral_support();
+	void add_round_to_integralf_support();
+	void add_lrint_support();
+	void add_fmod_support();
+	void add_fmodf_support();
+	void add_remainder_support();
+	void add_isnan_support();
+	void add_isnanf_support();
+	void add_isnanl_support();
+	void add_nan_support();
+	void add_isinf_support();
+	void add_isinff_support();
+	void add_isinfl_support();
+	void add_signbit_support();
+	void add_signbitf_support();
+	void add_abort_support();
+
+	void make_func_call(const llvm::CallInst&);
 	void move_symbol(symbolt&, symbolt*&);
 	void add_argc_argv(const symbolt&);
 
 	source_locationt get_location(const llvm::Instruction&);
 
-	class symbol_util; ///<A sub-class to group all the symbol and type related methods.
-	class scope_tree; ///<A sub-class to implement the scoping rules.
+	class symbol_util;
+	///<A sub-class to group all the symbol and type related methods.
+	class scope_tree;
+	///<A sub-class to implement the scoping rules.
 
 public:
 	static std::string error_state; ///< If any error is encountered, the errmsg is stored in this string.
@@ -117,11 +169,12 @@ public:
 	bool generate_goto();
 	void write_goto(const std::string&);
 
-	/// If the 'error_state' is not empty, then error has been encountered.
+/// If the 'error_state' is not empty, then error has been encountered.
 	static bool check_state() {
 		return !error_state.empty();
 	}
 	~translator();
-};
+}
+;
 
 #endif /* TRANSLATOR_H */

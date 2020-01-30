@@ -22,6 +22,7 @@ class ll2gb::translator::symbol_util {
 public:
 	static typet get_goto_type(const llvm::Type*);
 	static symbolt create_symbol(const llvm::Type*);
+	static symbolt create_symbol(const typet&, const std::string = "");
 	static symbolt create_goto_func_symbol(const llvm::Function&);
 
 /// Set the var_counter to input value.

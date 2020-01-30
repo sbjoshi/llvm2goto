@@ -1267,9 +1267,13 @@ void translator::trans_call(const CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
 	auto location = get_location(CI);
 	if (called_func) {
-		if (called_func->isIntrinsic()) {
+		if (called_func->isIntrinsic()) {				///LLVM Intrinsic Functions
 			const auto &ICI = cast<IntrinsicInst>(CI);
 			trans_call_llvm_intrinsic(ICI);
+		}
+		else if (is_intrinsic_function(called_func->getName().str())) {
+			add_intrinsic_support(called_func->getName().str());///General Intrinsic functions, like fpclassify, fesetround, etc
+			make_func_call(CI);
 		}
 		else if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is instrinsic assert of llvm which is equivalent to assert(fail && "Message").
 			auto assert_instr = goto_program.add_instruction();
@@ -1303,41 +1307,18 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->source_location = location;
 			goto_program.update();
 		}
+		else if (is_assume_function(called_func->getName().str())) {
+			auto assume_inst = goto_program.add_instruction();
+			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
+					bool_typet());
+			assume_inst->make_assumption(guard_expr);
+			assume_inst->source_location = location;
+			goto_program.update();
+		}
 		else if (called_func->isDeclaration())
 			goto L1;
-		else {
-			code_function_callt call_expr;
-			call_expr.function() =
-					symbol_table.lookup(called_func->getName().str())->symbol_expr();
-			for (const auto &arg : CI.args()) {
-				const auto &arg_val = arg.get();
-				call_expr.arguments().push_back(get_expr(*arg_val));
-			}
-			if (!called_func->getReturnType()->isVoidTy()) { /// We should add a new variable to capture the return value of the func.
-				auto ret_symbol =
-						symbol_util::create_symbol(called_func->getReturnType());
-				if (CI.hasName()) {
-					ret_symbol.base_name = CI.getName().str();
-					ret_symbol.name = CI.getFunction()->getName().str() + "::"
-							+ ret_symbol.base_name.c_str();
-				}
-				else
-					ret_symbol.name = CI.getFunction()->getName().str() + "::"
-							+ ret_symbol.name.c_str();
-				ret_symbol.location = location;
-				symbol_table.add(ret_symbol);
-				call_expr.lhs() = ret_symbol.symbol_expr();
-				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
-				auto dclr_instr = goto_program.add_instruction();
-				dclr_instr->make_decl();
-				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-				dclr_instr->source_location = location;
-				goto_program.update();
-			}
-			auto call_instr = goto_program.add_instruction();
-			call_instr->make_function_call(call_expr);
-			call_instr->source_location = location;
-		}
+		else
+			make_func_call(CI);
 	}
 	else {	/// These are functions whose semantics are unknown.
 		L1: auto called_val = CI.getCalledValue()->stripPointerCasts();
@@ -1351,6 +1332,12 @@ void translator::trans_call(const CallInst &CI) {
 					+ from_expr(guard_expr));
 			goto_program.update();
 		}
+		else if (is_assert_fail_function(called_val->getName().str())) {
+			auto assert_inst = goto_program.add_instruction();
+			assert_inst->make_assertion(false_exprt());
+			assert_inst->source_location = location;
+			goto_program.update();
+		}
 		else if (is_assume_function(called_val->getName().str())) {
 			auto assume_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
@@ -1360,73 +1347,8 @@ void translator::trans_call(const CallInst &CI) {
 			goto_program.update();
 		}
 		else if (is_intrinsic_function(called_val->getName().str())) {
-			vector<exprt> args;
-			for (const auto &arg : CI.args()) {
-				const auto &arg_val = arg.get();
-				args.push_back(get_expr(*arg_val));
-			}
-			auto expr = get_intrinsics(called_val->getName().str(),
-					args,
-					symbol_table,
-					goto_program);
-
-			if (!called_func->getReturnType()->isVoidTy()) {
-				auto ret_symbol =
-						symbol_util::create_symbol(called_func->getReturnType());
-				if (CI.hasName()) {
-					ret_symbol.base_name = CI.getName().str();
-					ret_symbol.name = CI.getFunction()->getName().str() + "::"
-							+ ret_symbol.base_name.c_str();
-				}
-				else
-					ret_symbol.name = CI.getFunction()->getName().str() + "::"
-							+ ret_symbol.name.c_str();
-				ret_symbol.location = location;
-				symbol_table.add(ret_symbol);
-				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
-
-				auto dclr_instr = goto_program.add_instruction();
-				dclr_instr->make_decl();
-				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-				dclr_instr->source_location = location;
-				goto_program.update();
-				auto asgn_instr = goto_program.add_instruction();
-				asgn_instr->make_assignment();
-				asgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
-				asgn_instr->source_location = location;
-				goto_program.update();
-			}
-		}
-		else if (!called_val->getName().str().compare("malloc")) {
-			add_malloc_support();
-			code_function_callt call_expr;
-			call_expr.function() = symbol_table.lookup("malloc")->symbol_expr();
-			for (const auto &arg : CI.args()) {
-				const auto &arg_val = arg.get();
-				call_expr.arguments().push_back(get_expr(*arg_val));
-			}
-			auto ret_symbol =
-					symbol_util::create_symbol(called_func->getReturnType());
-			if (CI.hasName()) {
-				ret_symbol.base_name = CI.getName().str();
-				ret_symbol.name = CI.getFunction()->getName().str() + "::"
-						+ ret_symbol.base_name.c_str();
-			}
-			else
-				ret_symbol.name = CI.getFunction()->getName().str() + "::"
-						+ ret_symbol.name.c_str();
-			ret_symbol.location = location;
-			symbol_table.add(ret_symbol);
-			call_expr.lhs() = ret_symbol.symbol_expr();
-			call_ret_sym_map[&CI] = ret_symbol.name.c_str();
-			auto dclr_instr = goto_program.add_instruction();
-			dclr_instr->make_decl();
-			dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-			dclr_instr->source_location = location;
-			goto_program.update();
-			auto call_instr = goto_program.add_instruction();
-			call_instr->make_function_call(call_expr);
-			call_instr->source_location = location;
+			add_intrinsic_support(called_func->getName().str());///General Intrinsic functions, like fpclassify, fesetround, etc
+			make_func_call(CI);
 		}
 		else {
 			auto ll_func_type =
@@ -1510,6 +1432,53 @@ void translator::trans_call(const CallInst &CI) {
 			}
 		}
 	}
+}
+
+void translator::make_func_call(const CallInst &CI) {
+	auto location = get_location(CI);
+	auto called_func = CI.getCalledFunction();
+	auto called_val = CI.getCalledValue()->stripPointerCasts();
+	code_function_callt call_expr;
+	if (called_func)
+		call_expr.function() =
+				symbol_table.lookup(called_func->getName().str())->symbol_expr();
+	else
+		call_expr.function() =
+				symbol_table.lookup(called_val->getName().str())->symbol_expr();
+	for (const auto &arg : CI.args()) {
+		const auto &arg_val = arg.get();
+		call_expr.arguments().push_back(get_expr(*arg_val));
+	}
+	if (called_func ?
+			!called_func->getReturnType()->isVoidTy() :
+			get_intrinsic_return_type(called_val->getName().str()).id() != ID_void) { /// We should add a new variable to capture the return value of the func.
+		symbolt ret_symbol;
+		if (called_func)
+			ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		else
+			ret_symbol =
+					symbol_util::create_symbol(get_intrinsic_return_type(called_val->getName().str()));
+		if (CI.hasName()) {
+			ret_symbol.base_name = CI.getName().str();
+			ret_symbol.name = CI.getFunction()->getName().str() + "::"
+					+ ret_symbol.base_name.c_str();
+		}
+		else
+			ret_symbol.name = CI.getFunction()->getName().str() + "::"
+					+ ret_symbol.name.c_str();
+		ret_symbol.location = location;
+		symbol_table.add(ret_symbol);
+		call_expr.lhs() = ret_symbol.symbol_expr();
+		call_ret_sym_map[&CI] = ret_symbol.name.c_str();
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->make_decl();
+		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
+		dclr_instr->source_location = location;
+		goto_program.update();
+	}
+	auto call_instr = goto_program.add_instruction();
+	call_instr->make_function_call(call_expr);
+	call_instr->source_location = location;
 }
 
 /// Translates all the intrinsics of llvm.
@@ -1645,6 +1614,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		break;
 	}
+	case Intrinsic::nearbyint:
 	case Intrinsic::rint: {
 		auto called_func = ICI.getCalledFunction();
 		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
@@ -2269,5 +2239,5 @@ translator::~translator() {
 	scope_name_map.clear();
 	symbol_util::clear();
 	error_state = "";
-	add_malloc_support(true);
+	add_intrinsic_support("", true);
 }

@@ -87,11 +87,9 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		if (cast<StructType>(ll_type)->isLiteral()) {
 			struct_typet struct_type;
 			auto &components = struct_type.components();
-			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
-					i++) {
+			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n; i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_"
-						+ to_string(i)),
+				struct_typet::componentt component(string("ele_" + to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
@@ -104,11 +102,9 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		if (typedef_tag_set.find(strct_name) == typedef_tag_set.end()) {
 			struct_typet struct_type;
 			auto &components = struct_type.components();
-			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
-					i++) {
+			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n; i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_"
-						+ to_string(i)),
+				struct_typet::componentt component(string("ele_" + to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
@@ -120,11 +116,9 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			symbol.base_name = strct_name;
 			symbol.type.set(ID_name, symbol.name);
 			if (symbol.type.id() == ID_struct)
-				symbol.pretty_name = string("struct ")
-						+ string(symbol.name.c_str());
+				symbol.pretty_name = string("struct ") + string(symbol.name.c_str());
 			else if (symbol.type.id() == ID_union)
-				symbol.pretty_name = string("union ")
-						+ string(symbol.name.c_str());
+				symbol.pretty_name = string("union ") + string(symbol.name.c_str());
 			else
 				symbol.pretty_name = symbol.name;
 			symbol.is_type = true;
@@ -142,10 +136,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	case Type::ArrayTyID: {
-		auto arr_len = from_integer(ll_type->getArrayNumElements(),
-				size_type());
-		type = array_typet(get_goto_type(ll_type->getArrayElementType()),
-				arr_len);
+		auto arr_len = from_integer(ll_type->getArrayNumElements(), size_type());
+		type = array_typet(get_goto_type(ll_type->getArrayElementType()), arr_len);
 		break;
 	}
 	case Type::PointerTyID: {
@@ -185,6 +177,25 @@ symbolt translator::symbol_util::create_symbol(const Type *ll_type) {
 	symbol.base_name = symbol.name;
 	var_counter++;
 	symbol.type = get_goto_type(ll_type);
+	symbol.mode = ID_C;
+	return symbol;
+}
+
+/// Creates and returns a new GOTO symbol
+symbolt translator::symbol_util::create_symbol(const typet &gb_type,
+		const string name) {
+	symbolt symbol;
+	symbol.is_file_local = true;
+	symbol.is_thread_local = true;
+	symbol.is_lvalue = true;
+
+	if (name.empty())
+		symbol.name = "var" + to_string(var_counter);
+	else
+		symbol.name = name;
+	symbol.base_name = symbol.name;
+	var_counter++;
+	symbol.type = gb_type;
 	symbol.mode = ID_C;
 	return symbol;
 }
