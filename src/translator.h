@@ -105,6 +105,10 @@ private:
 		fmod,
 		fmodf,
 		remainder,
+		llvm_floor_f64,
+		llvm_ceil_f64,
+		sin,
+		cos,
 		modff,
 		lrint,
 		nan,
@@ -139,6 +143,10 @@ private:
 	void add_fmod_support();
 	void add_fmodf_support();
 	void add_remainder_support();
+	void add_floor_support();
+	void add_ceil_support();
+	void add_sin_support();
+	void add_cos_support();
 	void add_isnan_support();
 	void add_isnanf_support();
 	void add_isnanl_support();
@@ -157,9 +165,9 @@ private:
 	source_locationt get_location(const llvm::Instruction&);
 
 	class symbol_util;
-	///<A sub-class to group all the symbol and type related methods.
+///<A sub-class to group all the symbol and type related methods.
 	class scope_tree;
-	///<A sub-class to implement the scoping rules.
+///<A sub-class to implement the scoping rules.
 
 public:
 	static std::string error_state; ///< If any error is encountered, the errmsg is stored in this string.

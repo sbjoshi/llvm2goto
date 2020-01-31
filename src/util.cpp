@@ -1110,6 +1110,314 @@ void translator::add_lrint_support() {
 	goto_functions.function_map["lrint"].type = to_code_type(fn->type);
 }
 
+void translator::add_floor_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(double_type(), "llvm.floor.f64::d");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto e1 = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(double_type(), "llvm.floor.f64::ret");
+	symbol_table.insert(sym2);
+	auto rti = sym2.symbol_expr();
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl();
+	tgt->code = code_declt(rti);
+
+	code_function_callt call_expr;
+	add_intrinsic_support("CPROVER__round_to_integral");
+	call_expr.function() =
+			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
+	call_expr.arguments().push_back(from_integer(ieee_floatt::ROUND_TO_MINUS_INF,
+			signed_int_type()));
+	call_expr.arguments().push_back(e1);
+	call_expr.lhs() = rti;
+	tgt = temp_gp.add_instruction();
+	tgt->make_function_call(call_expr);
+
+	auto expr = floatbv_typecast_exprt(rti,
+			from_integer(ieee_floatt::ROUND_TO_ZERO, signed_int_type()),
+			signed_long_int_type());
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	code_returnt cret;
+	cret.return_value() = expr;
+	tgt->code = cret;
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "llvm.floor.f64";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.floor.f64");
+	goto_functions.function_map["llvm.floor.f64"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.floor.f64"].type = to_code_type(fn->type);
+}
+
+void translator::add_ceil_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(double_type(), "llvm.ceil.f64::d");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto e1 = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(double_type(), "llvm.ceil.f64::ret");
+	symbol_table.insert(sym2);
+	auto rti = sym2.symbol_expr();
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl();
+	tgt->code = code_declt(rti);
+
+	code_function_callt call_expr;
+	add_intrinsic_support("CPROVER__round_to_integral");
+	call_expr.function() =
+			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
+	call_expr.arguments().push_back(from_integer(ieee_floatt::ROUND_TO_PLUS_INF,
+			signed_int_type()));
+	call_expr.arguments().push_back(e1);
+	call_expr.lhs() = rti;
+	tgt = temp_gp.add_instruction();
+	tgt->make_function_call(call_expr);
+
+	auto expr = floatbv_typecast_exprt(rti,
+			from_integer(ieee_floatt::ROUND_TO_ZERO, signed_int_type()),
+			signed_long_int_type());
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	code_returnt cret;
+	cret.return_value() = expr;
+	tgt->code = cret;
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "ceil";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.ceil.f64");
+	goto_functions.function_map["llvm.ceil.f64"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.ceil.f64"].type = to_code_type(fn->type);
+}
+
+void translator::add_sin_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(double_type(), "sin::d");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto e1 = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(double_type(), "sin::ret");
+	symbol_table.insert(sym2);
+	auto ret = sym2.symbol_expr();
+
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl();
+	tgt->code = code_declt(ret);
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment(code_assignt(ret, side_effect_expr_nondett(ret.type())));
+
+	auto brnch_instr = temp_gp.add_instruction();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(isnan_exprt(ret));
+
+	auto goto_instr = temp_gp.add_instruction();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(binary_relation_exprt(ret,
+			ID_le,
+			floatbv_typecast_exprt(from_integer(1, signed_int_type()),
+					rounding_mode,
+					double_type())));
+
+	brnch_instr->make_goto(tgt,
+			not_exprt(or_exprt(isinf_exprt(e1), isnan_exprt(e1))));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(binary_relation_exprt(ret,
+			ID_ge,
+			floatbv_typecast_exprt(from_integer(-1, signed_int_type()),
+					rounding_mode,
+					double_type())));
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(or_exprt(ieee_float_notequal_exprt(e1,
+			floatbv_typecast_exprt(from_integer(0, signed_int_type()),
+					rounding_mode,
+					double_type())),
+			ieee_float_equal_exprt(ret,
+					floatbv_typecast_exprt(from_integer(0, signed_int_type()),
+							rounding_mode,
+							double_type()))));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	auto cret = code_returnt(ret);
+	tgt->code = cret;
+	goto_instr->make_goto(tgt, true_exprt());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "sin";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("sin");
+	goto_functions.function_map["sin"].body.swap(temp_gp);
+	goto_functions.function_map["sin"].type = to_code_type(fn->type);
+}
+
+void translator::add_cos_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(double_type(), "cos::d");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto e1 = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(double_type(), "cos::ret");
+	symbol_table.insert(sym2);
+	auto ret = sym2.symbol_expr();
+
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl();
+	tgt->code = code_declt(ret);
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment(code_assignt(ret, side_effect_expr_nondett(ret.type())));
+
+	auto brnch_instr = temp_gp.add_instruction();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(isnan_exprt(ret));
+
+	auto goto_instr = temp_gp.add_instruction();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(binary_relation_exprt(ret,
+			ID_le,
+			floatbv_typecast_exprt(from_integer(1, signed_int_type()),
+					rounding_mode,
+					double_type())));
+
+	brnch_instr->make_goto(tgt,
+			not_exprt(or_exprt(isinf_exprt(e1), isnan_exprt(e1))));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(binary_relation_exprt(ret,
+			ID_ge,
+			floatbv_typecast_exprt(from_integer(-1, signed_int_type()),
+					rounding_mode,
+					double_type())));
+	tgt = temp_gp.add_instruction();
+	tgt->make_assumption(or_exprt(ieee_float_notequal_exprt(e1,
+			floatbv_typecast_exprt(from_integer(0, signed_int_type()),
+					rounding_mode,
+					double_type())),
+			ieee_float_equal_exprt(ret,
+					floatbv_typecast_exprt(from_integer(1, signed_int_type()),
+							rounding_mode,
+							double_type()))));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	auto cret = code_returnt(ret);
+	tgt->code = cret;
+	goto_instr->make_goto(tgt, true_exprt());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "cos";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("cos");
+	goto_functions.function_map["cos"].body.swap(temp_gp);
+	goto_functions.function_map["cos"].type = to_code_type(fn->type);
+}
+
 void translator::add_fmod_support() {
 	goto_programt temp_gp;
 	goto_programt::targett tgt;
@@ -1751,6 +2059,12 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 	if (!intrinsic_name.compare("fdim")) return intrinsics::fdim;
 	if (!intrinsic_name.compare("fmod")) return intrinsics::fmod;
 	if (!intrinsic_name.compare("remainder")) return intrinsics::remainder;
+	if (!intrinsic_name.compare("llvm.floor.f64"))
+		return intrinsics::llvm_floor_f64;
+	if (!intrinsic_name.compare("llvm.ceil.f64"))
+		return intrinsics::llvm_ceil_f64;
+	if (!intrinsic_name.compare("sin")) return intrinsics::sin;
+	if (!intrinsic_name.compare("cos")) return intrinsics::cos;
 	if (!intrinsic_name.compare("modff")) return intrinsics::modff;
 	if (!intrinsic_name.compare("lrint")) return intrinsics::lrint;
 	if (!intrinsic_name.compare("nan")) return intrinsics::nan;
@@ -1860,6 +2174,18 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::remainder:
 		add_remainder_support();
+		break;
+	case intrinsics::llvm_floor_f64:
+		add_floor_support();
+		break;
+	case intrinsics::llvm_ceil_f64:
+		add_ceil_support();
+		break;
+	case intrinsics::sin:
+		add_sin_support();
+		break;
+	case intrinsics::cos:
+		add_cos_support();
 		break;
 	case intrinsics::round_to_integral:
 		add_round_to_integral_support();

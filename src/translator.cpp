@@ -1203,7 +1203,13 @@ exprt translator::get_expr(const Value &V) {
 void translator::trans_alloca(const AllocaInst &AI) {
 	symbolt symbol;
 	auto location = get_location(AI);
-	symbol = symbol_util::create_symbol(AI.getAllocatedType());
+	if (AI.isArrayAllocation())
+		symbol =
+				symbol_util::create_symbol(array_typet(symbol_util::get_goto_type(AI.getAllocatedType()),
+						get_expr(*AI.getArraySize())));
+	else
+		symbol = symbol_util::create_symbol(AI.getAllocatedType());
+
 	if (alloca_dbg_map.find(&AI) != alloca_dbg_map.end()) {
 		auto DI = alloca_dbg_map[&AI]->getVariable();
 		if (!DI->getName().str().compare("")) goto L1;
@@ -1230,6 +1236,15 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	dclr_instr->make_decl();
 	dclr_instr->code = code_declt(symbol.symbol_expr());
 	dclr_instr->source_location = location;
+//	if (AI.isArrayAllocation()) {
+//		auto aux_symbol = symbol_util::create_symbol(AI.getAllocatedType());
+//		symbol_table.insert(aux_symbol);
+//		auto instr = goto_program.add_instruction();
+//		instr->make_assignment(code_assignt(aux_symbol.symbol_expr(),
+//				typecast_exprt(address_of_exprt(symbol.symbol_expr()),
+//						aux_symbol.type)));
+//		var_name_map[&I] = aux_symbol.name.c_str();
+//	}
 	goto_program.update();
 }
 
@@ -1271,10 +1286,6 @@ void translator::trans_call(const CallInst &CI) {
 			const auto &ICI = cast<IntrinsicInst>(CI);
 			trans_call_llvm_intrinsic(ICI);
 		}
-		else if (is_intrinsic_function(called_func->getName().str())) {
-			add_intrinsic_support(called_func->getName().str());///General Intrinsic functions, like fpclassify, fesetround, etc
-			make_func_call(CI);
-		}
 		else if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is instrinsic assert of llvm which is equivalent to assert(fail && "Message").
 			auto assert_instr = goto_program.add_instruction();
 			auto asrt_comment =
@@ -1289,30 +1300,6 @@ void translator::trans_call(const CallInst &CI) {
 			assert_instr->make_assertion(false_exprt());
 			assert_instr->source_location = location;
 			assert_instr->source_location.set_comment(comment.str());
-			goto_program.update();
-		}
-		else if (is_assert_function(called_func->getName().str())) {
-			auto assert_inst = goto_program.add_instruction();
-			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
-					bool_typet());
-			assert_inst->make_assertion(guard_expr);
-			assert_inst->source_location = location;
-			assert_inst->source_location.set_comment("assertion "
-					+ from_expr(guard_expr));
-			goto_program.update();
-		}
-		else if (is_assert_fail_function(called_func->getName().str())) {
-			auto assert_inst = goto_program.add_instruction();
-			assert_inst->make_assertion(false_exprt());
-			assert_inst->source_location = location;
-			goto_program.update();
-		}
-		else if (is_assume_function(called_func->getName().str())) {
-			auto assume_inst = goto_program.add_instruction();
-			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
-					bool_typet());
-			assume_inst->make_assumption(guard_expr);
-			assume_inst->source_location = location;
 			goto_program.update();
 		}
 		else if (called_func->isDeclaration())
@@ -1501,175 +1488,20 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		break;
 	}
 	case Intrinsic::ceil: {
-		auto called_func = ICI.getCalledFunction();
-		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
-		if (ICI.hasName()) {
-			ret_symbol.base_name = ICI.getName().str();
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.base_name.c_str();
-		}
-		else
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.name.c_str();
-		ret_symbol.location = location;
-		symbol_table.add(ret_symbol);
-		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->make_decl();
-		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-		dclr_instr->source_location = location;
-		goto_program.update();
-		exprt rounding = from_integer(ieee_floatt::ROUND_TO_PLUS_INF,
-				signed_int_type());
-		auto arg = get_expr(*ICI.getOperand(0));
-		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
-		magic_const.from_double(4.503600e+15);
-		auto mgc_cnst_expr = magic_const.to_expr();
-		auto floor_expr = ternary_exprt(ID_if,
-				binary_relation_exprt(abs_exprt(arg), ID_ge, mgc_cnst_expr),
-				arg,
-				ternary_exprt(ID_if,
-						ieee_float_equal_exprt(arg, from_integer(0, arg.type())),
-						arg,
-						ternary_exprt(ID_if,
-								extractbit_exprt(arg,
-										to_bitvector_type(arg.type()).get_width() - 1),
-								ieee_float_op_exprt(ieee_float_op_exprt(arg,
-										ID_floatbv_minus,
-										mgc_cnst_expr,
-										rounding),
-										ID_floatbv_plus,
-										mgc_cnst_expr,
-										rounding),
-								ieee_float_op_exprt(ieee_float_op_exprt(arg,
-										ID_floatbv_plus,
-										mgc_cnst_expr,
-										rounding),
-										ID_floatbv_minus,
-										mgc_cnst_expr,
-										rounding),
-								arg.type()),
-						arg.type()),
-				arg.type());
-		auto assgn_instr = goto_program.add_instruction();
-		assgn_instr->make_assignment();
-		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), floor_expr);
-		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		add_intrinsic_support("llvm.ceil.f64");
+		make_func_call(ICI);
+		break;
 		break;
 	}
 	case Intrinsic::floor: {
-		auto called_func = ICI.getCalledFunction();
-		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
-		if (ICI.hasName()) {
-			ret_symbol.base_name = ICI.getName().str();
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.base_name.c_str();
-		}
-		else
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.name.c_str();
-		ret_symbol.location = location;
-		symbol_table.add(ret_symbol);
-		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->make_decl();
-		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-		dclr_instr->source_location = location;
-		goto_program.update();
-		exprt rounding = from_integer(ieee_floatt::ROUND_TO_MINUS_INF,
-				signed_int_type());
-		auto arg = get_expr(*ICI.getOperand(0));
-		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
-		magic_const.from_double(4.503600e+15);
-		auto mgc_cnst_expr = magic_const.to_expr();
-		auto floor_expr = ternary_exprt(ID_if,
-				binary_relation_exprt(abs_exprt(arg), ID_ge, mgc_cnst_expr),
-				arg,
-				ternary_exprt(ID_if,
-						ieee_float_equal_exprt(arg, from_integer(0, arg.type())),
-						arg,
-						ternary_exprt(ID_if,
-								extractbit_exprt(arg,
-										to_bitvector_type(arg.type()).get_width() - 1),
-								ieee_float_op_exprt(ieee_float_op_exprt(arg,
-										ID_floatbv_minus,
-										mgc_cnst_expr,
-										rounding),
-										ID_floatbv_plus,
-										mgc_cnst_expr,
-										rounding),
-								ieee_float_op_exprt(ieee_float_op_exprt(arg,
-										ID_floatbv_plus,
-										mgc_cnst_expr,
-										rounding),
-										ID_floatbv_minus,
-										mgc_cnst_expr,
-										rounding),
-								arg.type()),
-						arg.type()),
-				arg.type());
-		auto assgn_instr = goto_program.add_instruction();
-		assgn_instr->make_assignment();
-		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), floor_expr);
-		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		add_intrinsic_support("llvm.floor.f64");
+		make_func_call(ICI);
 		break;
 	}
 	case Intrinsic::nearbyint:
 	case Intrinsic::rint: {
-		auto called_func = ICI.getCalledFunction();
-		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
-		if (ICI.hasName()) {
-			ret_symbol.base_name = ICI.getName().str();
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.base_name.c_str();
-		}
-		else
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.name.c_str();
-		ret_symbol.location = location;
-		symbol_table.add(ret_symbol);
-		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->make_decl();
-		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-		dclr_instr->source_location = location;
-		goto_program.update();
-		auto rounding =
-				symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
-		auto arg = get_expr(*ICI.getOperand(0));
-		ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
-		magic_const.from_double(4.503600e+15);
-		auto mgc_cnst_expr = magic_const.to_expr();
-		auto rint_expr = ternary_exprt(ID_if,
-				binary_relation_exprt(abs_exprt(arg), ID_ge, mgc_cnst_expr),
-				arg,
-				ternary_exprt(ID_if,
-						ieee_float_equal_exprt(arg, from_integer(0, arg.type())),
-						arg,
-						ternary_exprt(ID_if,
-								extractbit_exprt(arg,
-										to_bitvector_type(arg.type()).get_width() - 1),
-								ieee_float_op_exprt(ieee_float_op_exprt(arg,
-										ID_floatbv_minus,
-										mgc_cnst_expr,
-										rounding),
-										ID_floatbv_plus,
-										mgc_cnst_expr,
-										rounding),
-								ieee_float_op_exprt(ieee_float_op_exprt(arg,
-										ID_floatbv_plus,
-										mgc_cnst_expr,
-										rounding),
-										ID_floatbv_minus,
-										mgc_cnst_expr,
-										rounding),
-								arg.type()),
-						arg.type()),
-				arg.type());
-		auto assgn_instr = goto_program.add_instruction();
-		assgn_instr->make_assignment();
-		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), rint_expr);
-		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		add_intrinsic_support("lrint");
+		make_func_call(ICI);
 		break;
 	}
 	case Intrinsic::fabs: {
@@ -1700,9 +1532,21 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		goto_program.update();
 		break;
 	}
+	case Intrinsic::stacksave: {
+		auto called_func = ICI.getCalledFunction();
+		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		symbol_table.insert(ret_symbol);
+		auto instr = goto_program.add_instruction();
+		instr->make_assignment(code_assignt(ret_symbol.symbol_expr(),
+				side_effect_expr_nondett(ret_symbol.type)));
+		goto_program.update();
+		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
+		break;
+	}
 	case Intrinsic::dbg_declare:
 	case Intrinsic::dbg_value:
 	case Intrinsic::dbg_label:
+	case Intrinsic::stackrestore:
 		break;
 	default:
 		error_state = "Unknown llvmIntrinsic type";
