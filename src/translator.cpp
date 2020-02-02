@@ -821,6 +821,21 @@ exprt translator::get_expr_fptrunc(const FPTruncInst &FPTI) {
 	return expr;
 }
 
+/// Translates FNegInst. By doing
+///	a bitwise xor with 1<<bit_width.
+exprt translator::get_expr_fneg(const Instruction &I) {
+	exprt expr;
+	const auto &ll_op1 = I.getOperand(0);
+	expr = get_expr(*ll_op1);
+	auto bit_width = to_bitvector_type(expr.type()).get_width();
+	if (bit_width > 64) error_state =
+			"Floating Point width >64 not supported in FNegInst";
+	auto flip_sign = from_integer(1llu << (bit_width - 1),
+			signedbv_typet(bit_width));
+	expr = bitxor_exprt(expr, flip_sign);
+	return expr;
+}
+
 /// Translates PtrToIntInst. By simply,
 ///	typecasting it.
 exprt translator::get_expr_ptrtoint(const PtrToIntInst &P2I) {
@@ -1003,7 +1018,8 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::Alloca: {
 			auto symbol = symbol_table.lookup(var_name_map[&I]);
 			expr = symbol->symbol_expr();
-			expr = address_of_exprt(expr);
+			if (!cast<AllocaInst>(&I)->isArrayAllocation())
+				expr = address_of_exprt(expr);
 			break;
 		}
 		case Instruction::Load: {
@@ -1065,6 +1081,11 @@ exprt translator::get_expr(const Value &V) {
 		case Instruction::FPTrunc: {
 			const auto &FPTI = cast<FPTruncInst>(&I);
 			expr = get_expr_fptrunc(*FPTI);
+			break;
+		}
+		case Instruction::FNeg: {
+//			const auto &FPTI = cast<FNegInst>(&I);
+			expr = get_expr_fneg(I);
 			break;
 		}
 		case Instruction::PtrToInt: {
@@ -1236,15 +1257,17 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	dclr_instr->make_decl();
 	dclr_instr->code = code_declt(symbol.symbol_expr());
 	dclr_instr->source_location = location;
-//	if (AI.isArrayAllocation()) {
-//		auto aux_symbol = symbol_util::create_symbol(AI.getAllocatedType());
-//		symbol_table.insert(aux_symbol);
-//		auto instr = goto_program.add_instruction();
-//		instr->make_assignment(code_assignt(aux_symbol.symbol_expr(),
-//				typecast_exprt(address_of_exprt(symbol.symbol_expr()),
-//						aux_symbol.type)));
-//		var_name_map[&I] = aux_symbol.name.c_str();
-//	}
+	if (AI.isArrayAllocation()) {
+		auto aux_symbol = symbol_util::create_symbol(AI.getType());
+		aux_symbol.name = aux_symbol.base_name = aux_symbol.pretty_name =
+				string(symbol.base_name.c_str()) + "__alias";
+		symbol_table.insert(aux_symbol);
+		auto instr = goto_program.add_instruction();
+		instr->make_assignment(code_assignt(aux_symbol.symbol_expr(),
+				typecast_exprt(address_of_exprt(symbol.symbol_expr()),
+						aux_symbol.type)));
+		var_name_map[&I] = aux_symbol.name.c_str();
+	}
 	goto_program.update();
 }
 
@@ -1500,7 +1523,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	}
 	case Intrinsic::nearbyint:
 	case Intrinsic::rint: {
-		add_intrinsic_support("lrint");
+		add_intrinsic_support("llvm.rint.f64");
 		make_func_call(ICI);
 		break;
 	}
@@ -1704,6 +1727,7 @@ bool translator::trans_instruction(const Instruction &I) {
 	case Instruction::UIToFP:
 	case Instruction::ExtractValue:
 	case Instruction::FPTrunc:
+	case Instruction::FNeg:
 		break;
 	default:
 		error_state = "Unknown llvmInstruction";
@@ -1912,6 +1936,7 @@ bool translator::trans_function(Function &F) {
 /// Translates and entire module and writes it
 ///	to the goto_functions.
 bool translator::trans_module() {
+	if (check_state()) return true;
 	for (auto F = llvm_module->getFunctionList().begin();
 			F != llvm_module->getFunctionList().end() && !check_state(); F++) {
 		if (F->isDeclaration()) {
@@ -1941,6 +1966,7 @@ bool translator::trans_module() {
 ///	mapping alloca instructions to their DbgDeclare
 ///	happen here.
 void translator::analyse_ir() {
+	if (check_state()) return;
 	legacy::PassManager PM;
 	PM.add(createIPSCCPPass());
 	PM.run(*llvm_module);
@@ -1983,6 +2009,7 @@ void translator::add_function_symbols() {
 		}
 		for (auto &arg : F.args()) {
 			symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
+			if (check_state()) return;
 			arg_symbol.name = F.getName().str() + "::" + arg_symbol.name.c_str();
 			arg_symbol.is_parameter = true;
 			arg_symbol.is_state_var = true;
@@ -2003,6 +2030,7 @@ void translator::add_global_symbols() {
 	symbol_util::reset_var_counter();
 	for (auto &G : llvm_module->globals()) {
 		symbol = symbol_util::create_symbol(G.getValueType());
+		if (check_state()) return;
 		if (G.hasName()) {
 			symbol.base_name = G.getName().str();
 			symbol.name = symbol.base_name.c_str();

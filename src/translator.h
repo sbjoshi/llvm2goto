@@ -89,6 +89,7 @@ private:
 	exprt get_expr_fptoui(const llvm::FPToUIInst&);
 	exprt get_expr_uitofp(const llvm::UIToFPInst&);
 	exprt get_expr_fptrunc(const llvm::FPTruncInst&);
+	exprt get_expr_fneg(const llvm::Instruction&);
 	exprt get_expr_ptrtoint(const llvm::PtrToIntInst&);
 	exprt get_expr_inttoptr(const llvm::IntToPtrInst&);
 	exprt get_expr_const(const llvm::Constant&);
@@ -107,6 +108,7 @@ private:
 		remainder,
 		llvm_floor_f64,
 		llvm_ceil_f64,
+		llvm_rint_f64,
 		sin,
 		cos,
 		modff,
@@ -140,6 +142,7 @@ private:
 	void add_round_to_integral_support();
 	void add_round_to_integralf_support();
 	void add_lrint_support();
+	void add_llvm_rint_support();
 	void add_fmod_support();
 	void add_fmodf_support();
 	void add_remainder_support();
