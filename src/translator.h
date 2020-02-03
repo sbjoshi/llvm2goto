@@ -106,9 +106,14 @@ private:
 		fmod,
 		fmodf,
 		remainder,
+		lround,
+		llvm_trunc_f64,
+		llvm_fabs_f64,
 		llvm_floor_f64,
 		llvm_ceil_f64,
 		llvm_rint_f64,
+		llvm_round_f64,
+		llvm_copysign_f64,
 		sin,
 		cos,
 		modff,
@@ -123,8 +128,9 @@ private:
 		__signbit,
 		__signbitf,
 		abort,
-		round_to_integralf,
-		round_to_integral,
+		cprover_round_to_integralf,
+		cprover_round_to_integral,
+		cprover_remainder,
 		ll2gb_default
 	};
 	bool is_intrinsic_function(const std::string&);
@@ -139,6 +145,7 @@ private:
 	void add_fpclassifyl_support();
 	void add_fdim_support();
 	void add_modff_support();
+	void add_cprover_remainder_support();
 	void add_round_to_integral_support();
 	void add_round_to_integralf_support();
 	void add_lrint_support();
@@ -146,8 +153,13 @@ private:
 	void add_fmod_support();
 	void add_fmodf_support();
 	void add_remainder_support();
+	void add_trunc_support();
+	void add_fabs_support();
 	void add_floor_support();
 	void add_ceil_support();
+	void add_round_support();
+	void add_lround_support();
+	void add_copysign_support();
 	void add_sin_support();
 	void add_cos_support();
 	void add_isnan_support();

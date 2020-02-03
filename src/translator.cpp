@@ -1514,10 +1514,14 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		add_intrinsic_support("llvm.ceil.f64");
 		make_func_call(ICI);
 		break;
-		break;
 	}
 	case Intrinsic::floor: {
 		add_intrinsic_support("llvm.floor.f64");
+		make_func_call(ICI);
+		break;
+	}
+	case Intrinsic::round: {
+		add_intrinsic_support("llvm.round.f64");
 		make_func_call(ICI);
 		break;
 	}
@@ -1528,31 +1532,18 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		break;
 	}
 	case Intrinsic::fabs: {
-		auto called_func = ICI.getCalledFunction();
-		auto expr = abs_exprt(get_expr(*ICI.getOperand(0)));
-		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
-		if (ICI.hasName()) {
-			ret_symbol.base_name = ICI.getName().str();
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.base_name.c_str();
-		}
-		else
-			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
-					+ ret_symbol.name.c_str();
-		ret_symbol.location = location;
-		symbol_table.add(ret_symbol);
-		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
-
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->make_decl();
-		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-		dclr_instr->source_location = location;
-		goto_program.update();
-		auto assgn_instr = goto_program.add_instruction();
-		assgn_instr->make_assignment();
-		assgn_instr->code = code_assignt(ret_symbol.symbol_expr(), expr);
-		assgn_instr->source_location = location;
-		goto_program.update();
+		add_intrinsic_support("llvm.fabs.f64");
+		make_func_call(ICI);
+		break;
+	}
+	case Intrinsic::copysign: {
+		add_intrinsic_support("llvm.copysign.f64");
+		make_func_call(ICI);
+		break;
+	}
+	case Intrinsic::trunc: {
+		add_intrinsic_support("llvm.trunc.f64");
+		make_func_call(ICI);
 		break;
 	}
 	case Intrinsic::stacksave: {
