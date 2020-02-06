@@ -1958,15 +1958,6 @@ bool translator::trans_module() {
 ///	happen here.
 void translator::analyse_ir() {
 	if (check_state()) return;
-	legacy::PassManager PM;
-	PM.add(createIPSCCPPass());
-	PM.run(*llvm_module);
-
-	legacy::FunctionPassManager FPM(&*llvm_module);
-	FPM.add(createDeadCodeEliminationPass());
-	for (auto &F : *llvm_module)
-		FPM.run(F);
-
 	for (auto &F : *llvm_module)
 		for (auto &BB : F)
 			for (auto &I : BB)

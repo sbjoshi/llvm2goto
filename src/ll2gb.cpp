@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 		auto out_gbfile = a.second;
 		LLVMContext context;
 		auto ir_module = get_llvm_ir(in_irfile, context);
+		run_llvm_passes(*ir_module);
 
 		translator T(ir_module);
 		if (T.generate_goto()) {

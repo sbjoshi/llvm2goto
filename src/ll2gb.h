@@ -23,7 +23,8 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Intrinsics.h>
-#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/IPO.h"
 
@@ -50,6 +51,7 @@ class translator;
 
 std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile,
 		llvm::LLVMContext &context);
+bool run_llvm_passes(llvm::Module&);
 
 void set_function_symbol_value(goto_functionst::function_mapt&, symbol_tablet&);
 void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);

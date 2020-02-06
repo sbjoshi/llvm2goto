@@ -5,6 +5,7 @@
  *      Author: Akash Banerjee
  */
 #include "ll2gb.h"
+#include "translator.h"
 
 using namespace std;
 using namespace llvm;
@@ -45,4 +46,50 @@ unique_ptr<Module> ll2gb::get_llvm_ir(string in_irfile, LLVMContext &context) {
 		outs() << "]\n";
 	}
 	return M;
+}
+
+bool ll2gb::run_llvm_passes(Module &llvm_module) {
+	//	legacy::PassManager PM;
+	//	PM.add(createIPSCCPPass());
+	//	PM.run(*llvm_module);
+	//
+	//	legacy::FunctionPassManager FPM(&*llvm_module);
+	//	FPM.add(createDeadCodeEliminationPass());
+	//	for (auto &F : *llvm_module)
+	//		FPM.run(F);
+	static cl::opt<bool> DebugPM("debug-pass-manager",
+			cl::Hidden,
+			cl::desc("Print pass management debugging information"));
+	static cl::opt<std::string> AAPipeline("aa-pipeline",
+			cl::desc("A textual description of the alias analysis "
+					"pipeline for handling managed aliasing queries"),
+			cl::Hidden);
+	PassBuilder PB;
+	StringRef Arg0;
+	AAManager AA;
+	if (auto Err = PB.parseAAPipeline(AA, AAPipeline)) {
+		translator::error_state = Arg0.str() + ": " + toString(move(Err));
+		return true;
+	}
+
+	LoopAnalysisManager LAM(DebugPM);
+	FunctionAnalysisManager FAM(DebugPM);
+	CGSCCAnalysisManager CGAM(DebugPM);
+	ModuleAnalysisManager MAM(DebugPM);
+
+	FAM.registerPass([&] {return std::move(AA);});
+
+	PB.registerModuleAnalyses(MAM);
+	PB.registerCGSCCAnalyses(CGAM);
+	PB.registerFunctionAnalyses(FAM);
+	PB.registerLoopAnalyses(LAM);
+	PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+	StringRef PassPipeline("ipsccp,globaldce");
+	ModulePassManager MPM(DebugPM);
+	if (auto Err = PB.parsePassPipeline(MPM, PassPipeline, false, DebugPM)) {
+		translator::error_state = Arg0.str() + ": " + toString(std::move(Err));
+		return true;
+	}
+	MPM.run(llvm_module, MAM);
+	return false;
 }
