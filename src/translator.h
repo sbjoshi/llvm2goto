@@ -192,7 +192,7 @@ public:
 	bool generate_goto();
 	void write_goto(const std::string&);
 
-/// If the 'error_state' is not empty, then error has been encountered.
+/// Returns true if there is any error, signified by non-empty error_state.
 	static bool check_state() {
 		return !error_state.empty();
 	}

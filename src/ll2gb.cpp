@@ -25,9 +25,8 @@ int main(int argc, char **argv) {
 		run_llvm_passes(*ir_module);
 
 		translator T(ir_module);
-		if (T.generate_goto()) {
+		if (T.generate_goto())
 			print_error();
-		}
 		else
 			T.write_goto(out_gbfile);
 	}

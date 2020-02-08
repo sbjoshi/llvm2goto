@@ -80,8 +80,11 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	case Type::StructTyID: {
 		string strct_name;
 		if (current_struct_eval.find(ll_type) != current_struct_eval.end()) {
-			error_state = "Recursive structs not supported";
-			return type;
+			if (cast<StructType>(ll_type)->isLiteral())
+				error_state = "Struct name not available for struct ptr component.";
+			else
+				type = struct_tag_typet(ll_type->getStructName().str());
+			break;
 		}
 		current_struct_eval.insert(ll_type);
 		if (cast<StructType>(ll_type)->isLiteral()) {
@@ -108,30 +111,21 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
-			symbolt symbol;
 			struct_type.set_tag(strct_name);
+			symbolt symbol;
 			symbol.type = struct_type;
 			symbol.mode = ID_C;
 			symbol.name = strct_name;
 			symbol.base_name = strct_name;
-			symbol.type.set(ID_name, symbol.name);
 			if (symbol.type.id() == ID_struct)
 				symbol.pretty_name = string("struct ") + string(symbol.name.c_str());
-			else if (symbol.type.id() == ID_union)
-				symbol.pretty_name = string("union ") + string(symbol.name.c_str());
 			else
 				symbol.pretty_name = symbol.name;
 			symbol.is_type = true;
 			symbol_table.insert(symbol);
 			typedef_tag_set.insert(strct_name);
 		}
-		auto *tag_symbol = symbol_table.lookup(strct_name);
-//		if (tag_symbol->type.id() == ID_struct
-//				|| tag_symbol->type.id() == ID_incomplete_struct)
-//			type = struct_tag_typet(strct_name);
-//		else
-//			assert(false);
-		type = tag_symbol->type;
+		type = struct_tag_typet(strct_name);
 		current_struct_eval.erase(ll_type);
 		break;
 	}

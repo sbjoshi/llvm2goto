@@ -213,6 +213,11 @@ void ll2gb::print_error() {
 void ll2gb::panic(int sig) {
 	errs().changeColor(errs().MAGENTA, true);
 	errs() << "\nI Panicked :(\n\n";
+	if (translator::check_state()) {
+		errs().resetColor();
+		errs().changeColor(errs().SAVEDCOLOR, true);
+		errs() << translator::error_state << "\n\n";
+	}
 	errs().resetColor();
 	exit(3);
 }

@@ -76,6 +76,7 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 	FunctionAnalysisManager FAM(DebugPM);
 	CGSCCAnalysisManager CGAM(DebugPM);
 	ModuleAnalysisManager MAM(DebugPM);
+	ModulePassManager MPM(DebugPM);
 
 	FAM.registerPass([&] {return std::move(AA);});
 
@@ -84,12 +85,16 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 	PB.registerFunctionAnalyses(FAM);
 	PB.registerLoopAnalyses(LAM);
 	PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
-	StringRef PassPipeline("ipsccp,globaldce");
-	ModulePassManager MPM(DebugPM);
-	if (auto Err = PB.parsePassPipeline(MPM, PassPipeline, false, DebugPM)) {
+
+	StringRef ModulePassPipeline("ipsccp,globaldce");
+	if (auto Err = PB.parsePassPipeline(MPM,		//Run all the Module level passes.
+			ModulePassPipeline,
+			false,
+			DebugPM)) {
 		translator::error_state = Arg0.str() + ": " + toString(std::move(Err));
 		return true;
 	}
 	MPM.run(llvm_module, MAM);
+
 	return false;
 }

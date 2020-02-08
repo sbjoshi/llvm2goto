@@ -46,9 +46,14 @@ exprt translator::get_expr_const(const Constant &C) {
 			if (C.getType()->isArrayTy())
 				list_expr =
 						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
-			else
-				list_expr =
-						struct_exprt(to_struct_type(symbol_util::get_goto_type(C.getType())));
+			else {
+				auto type = symbol_util::get_goto_type(C.getType());
+				if (type.id() == ID_struct_tag)
+					type =
+							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
+
+				list_expr = struct_exprt(to_struct_type(type));
+			}
 			for (unsigned i = 0; i < CA.getNumOperands(); i++) {
 				const auto &V = CA.getAggregateElement(i);
 				list_expr.add_to_operands(get_expr(*V));
@@ -61,9 +66,13 @@ exprt translator::get_expr_const(const Constant &C) {
 			if (C.getType()->isArrayTy())
 				list_expr =
 						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
-			else
-				list_expr =
-						struct_exprt(to_struct_type(symbol_util::get_goto_type(C.getType())));
+			else {
+				auto type = symbol_util::get_goto_type(C.getType());
+				if (type.id() == ID_struct_tag)
+					type =
+							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
+				list_expr = struct_exprt(to_struct_type(type));
+			}
 			for (unsigned i = 0; i < CS.getNumOperands(); i++) {
 				const auto &V = CS.getAggregateElement(i);
 				list_expr.add_to_operands(get_expr(*V));
@@ -81,9 +90,13 @@ exprt translator::get_expr_const(const Constant &C) {
 			if (C.getType()->isArrayTy())
 				list_expr =
 						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
-			else
-				list_expr =
-						struct_exprt(to_struct_type(symbol_util::get_goto_type(C.getType())));
+			else {
+				auto type = symbol_util::get_goto_type(C.getType());
+				if (type.id() == ID_struct_tag)
+					type =
+							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
+				list_expr = struct_exprt(to_struct_type(type));
+			}
 			for (unsigned i = 0; i < CAZ.getNumElements(); i++) {
 				const auto &V = CAZ.getAggregateElement(i);
 				list_expr.add_to_operands(get_expr(*V));
@@ -967,7 +980,12 @@ exprt translator::get_expr_gep(const GetElementPtrInst &GEPI) {
 				|| expr.type().id() == ID_struct_tag) {
 			auto index_operand = GEPI.getOperand(i);
 			auto index = cast<ConstantInt>(index_operand)->getSExtValue();
-			const auto struct_t = to_struct_type(expr.type());
+			struct_typet struct_t;
+			if (expr.type().id() == ID_struct_tag)
+				struct_t =
+						to_struct_type(symbol_table.lookup(to_struct_tag_type(expr.type()).get_identifier().c_str())->type);
+			else
+				struct_t = to_struct_type(expr.type());
 			auto component = struct_t.components().at(index);
 			expr = member_exprt(expr, component);
 		}
@@ -1339,7 +1357,7 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->make_assertion(guard_expr);
 			assert_inst->source_location = location;
 			assert_inst->source_location.set_comment("assertion "
-					+ from_expr(guard_expr));
+					+ from_expr(namespacet(symbol_table), "", guard_expr));
 			goto_program.update();
 		}
 		else if (is_assert_fail_function(called_val->getName().str())) {
