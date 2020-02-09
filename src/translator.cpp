@@ -437,34 +437,34 @@ exprt translator::get_expr_icmp(const ICmpInst &ICI) {
 		break;
 	}
 	case CmpInst::Predicate::ICMP_UGE: { //TODO:Check if its correct to cast to unsigned like this
-		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_ge, expr_op2);
 		break;
 	}
 	case CmpInst::Predicate::ICMP_UGT: {
-		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_gt, expr_op2);
 		break;
 	}
 	case CmpInst::Predicate::ICMP_ULE: {
-		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_le, expr_op2);
 		break;
 	}
 	case CmpInst::Predicate::ICMP_ULT: {
-		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_lt, expr_op2);
 		break;
 	}
@@ -2034,10 +2034,11 @@ void translator::add_global_symbols() {
 		if (G.hasName()) {
 			symbol.base_name = G.getName().str();
 			symbol.name = symbol.base_name.c_str();
+			symbol_table.insert(symbol);
 			symbol.value = get_expr(*G.getOperand(0));
 			symbol.is_static_lifetime = true;
 		}
-		symbol_table.add(symbol);
+		symbol_table.insert(symbol);
 	}
 }
 
