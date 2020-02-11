@@ -212,7 +212,7 @@ exprt translator::get_expr_const(const Constant &C) {
 		I->deleteValue();
 	}
 	else if (isa<GlobalValue>(C)) {
-		const auto &symbol = symbol_table.lookup(C.getName().str());
+		const auto symbol = symbol_table.lookup(C.getName().str());
 		expr = address_of_exprt(symbol->symbol_expr());
 	}
 	return expr;
@@ -437,34 +437,50 @@ exprt translator::get_expr_icmp(const ICmpInst &ICI) {
 		break;
 	}
 	case CmpInst::Predicate::ICMP_UGE: { //TODO:Check if its correct to cast to unsigned like this
-//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+				unsignedbv_typet(
+						ll_op1->getType()->isPointerTy() ?
+								64 : ll_op1->getType()->getIntegerBitWidth()));
+		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+				unsignedbv_typet(
+						ll_op2->getType()->isPointerTy() ?
+								64 : ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_ge, expr_op2);
 		break;
 	}
 	case CmpInst::Predicate::ICMP_UGT: {
-//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+				unsignedbv_typet(
+						ll_op1->getType()->isPointerTy() ?
+								64 : ll_op1->getType()->getIntegerBitWidth()));
+		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+				unsignedbv_typet(
+						ll_op2->getType()->isPointerTy() ?
+								64 : ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_gt, expr_op2);
 		break;
 	}
 	case CmpInst::Predicate::ICMP_ULE: {
-//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+				unsignedbv_typet(
+						ll_op1->getType()->isPointerTy() ?
+								64 : ll_op1->getType()->getIntegerBitWidth()));
+		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+				unsignedbv_typet(
+						ll_op2->getType()->isPointerTy() ?
+								64 : ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_le, expr_op2);
 		break;
 	}
 	case CmpInst::Predicate::ICMP_ULT: {
-//		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-//				unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
-//		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-//				unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+		expr_op1 = typecast_exprt::conditional_cast(expr_op1,
+				unsignedbv_typet(
+						ll_op1->getType()->isPointerTy() ?
+								64 : ll_op1->getType()->getIntegerBitWidth()));
+		expr_op2 = typecast_exprt::conditional_cast(expr_op2,
+				unsignedbv_typet(
+						ll_op2->getType()->isPointerTy() ?
+								64 : ll_op2->getType()->getIntegerBitWidth()));
 		expr = binary_relation_exprt(expr_op1, ID_lt, expr_op2);
 		break;
 	}
@@ -611,9 +627,13 @@ exprt translator::get_expr_udiv(const Instruction &UDI) {
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
 	expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-			unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+			unsignedbv_typet(
+					ll_op1->getType()->isPointerTy() ?
+							64 : ll_op1->getType()->getIntegerBitWidth()));
 	expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-			unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+			unsignedbv_typet(
+					ll_op2->getType()->isPointerTy() ?
+							64 : ll_op2->getType()->getIntegerBitWidth()));
 	expr = div_exprt(expr_op1, expr_op2);
 	expr = typecast_exprt::conditional_cast(expr,
 			signedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
@@ -631,9 +651,13 @@ exprt translator::get_expr_urem(const Instruction &URI) {
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
 	expr_op1 = typecast_exprt::conditional_cast(expr_op1,
-			unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
+			unsignedbv_typet(
+					ll_op1->getType()->isPointerTy() ?
+							64 : ll_op1->getType()->getIntegerBitWidth()));
 	expr_op2 = typecast_exprt::conditional_cast(expr_op2,
-			unsignedbv_typet(ll_op2->getType()->getIntegerBitWidth()));
+			unsignedbv_typet(
+					ll_op2->getType()->isPointerTy() ?
+							64 : ll_op2->getType()->getIntegerBitWidth()));
 	expr = mod_exprt(expr_op1, expr_op2);
 	expr = typecast_exprt::conditional_cast(expr,
 			signedbv_typet(ll_op1->getType()->getIntegerBitWidth()));
@@ -1627,7 +1651,11 @@ void translator::trans_ret(const ReturnInst &RI) {
 		ret_inst->make_return();
 		ret_inst->code = cret;
 		ret_inst->source_location = get_location(RI);
-		goto_program.update();
+		auto goto_instr = goto_program.add_instruction();
+		/// Change these to GOTO END FUNCTION later, we don't use
+		/// incomplete_goto instr anywhere else, hence we can convert,
+		/// every incomplete_goto to goto END FUNCTION.
+		goto_instr->make_incomplete_goto(code_gotot());
 	}
 }
 
@@ -1799,6 +1827,13 @@ void translator::set_switches() {
 	switch_instr_target_map.clear();
 }
 
+/// Once END FUNCTION has been realised,
+/// add GOTO END FUNCTION after each return.
+void translator::set_returns(goto_programt::targett &end_func) {
+	for (auto &inst : goto_program.instructions)
+		if (inst.is_incomplete_goto()) inst.make_goto(end_func, true_exprt());
+}
+
 /// Moves new symbol to symbol.
 void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
 	symbol.mode = ID_C;
@@ -1916,9 +1951,10 @@ bool translator::trans_function(Function &F) {
 		if (check_state()) return true;
 	}
 	if (check_state()) return true;
-	goto_program.add_instruction(END_FUNCTION);
+	auto end_func = goto_program.add_instruction(END_FUNCTION);
 	set_branches();
 	set_switches();
+	set_returns(end_func);
 	goto_program.update();
 	remove_skip(goto_program);
 
@@ -2026,19 +2062,20 @@ void translator::add_function_symbols() {
 /// This adds all the global symbols to
 /// the symbol table.
 void translator::add_global_symbols() {
-	symbolt symbol;
+	symbolt *symbol = nullptr;
 	symbol_util::reset_var_counter();
 	for (auto &G : llvm_module->globals()) {
-		symbol = symbol_util::create_symbol(G.getValueType());
+		auto tmp = symbol_util::create_symbol(G.getValueType());
+		symbol_table.move(tmp, symbol);
 		if (check_state()) return;
 		if (G.hasName()) {
-			symbol.base_name = G.getName().str();
-			symbol.name = symbol.base_name.c_str();
-			symbol_table.insert(symbol);
-			symbol.value = get_expr(*G.getOperand(0));
-			symbol.is_static_lifetime = true;
+			symbol->base_name = G.getName().str();
+			symbol->name = symbol->base_name.c_str();
+			symbol_table.move(*symbol, symbol);
+			symbol->value = get_expr(*G.getOperand(0));
+			symbol->is_static_lifetime = true;
 		}
-		symbol_table.insert(symbol);
+		symbol_table.move(*symbol, symbol);
 	}
 }
 

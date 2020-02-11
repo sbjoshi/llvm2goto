@@ -32,6 +32,7 @@ private:
 	bool trans_block(const llvm::BasicBlock&);
 	void set_branches();
 	void set_switches();
+	void set_returns(goto_programt::targett&);
 	bool trans_function(llvm::Function&);
 	bool trans_module();
 	void analyse_ir();
