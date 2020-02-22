@@ -23,10 +23,11 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Intrinsics.h>
-#include "llvm/IR/PassManager.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/IPO.h"
+#include <llvm/IR/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/IPO.h>
 
 #include <goto-programs/goto_model.h>
 #include <goto-programs/write_goto_binary.h>

@@ -98,6 +98,7 @@ private:
 
 	enum class intrinsics {
 		malloc,
+		free,
 		__fpclassify,
 		__fpclassifyf,
 		__fpclassifyl,
@@ -108,6 +109,8 @@ private:
 		fmodf,
 		remainder,
 		lround,
+		llvm_memcpy_p0i8_p0i8_i64,
+		llvm_memset_p0i8_i64,
 		llvm_trunc_f64,
 		llvm_fabs_f64,
 		llvm_floor_f64,
@@ -139,6 +142,7 @@ private:
 	void add_intrinsic_support(const std::string&, bool reset_status = false);
 	intrinsics get_intrinsic_id(const std::string&);
 	void add_malloc_support();
+	void add_free_support();
 	void add_fesetround_support();
 	void add_fegetround_support();
 	void add_fpclassify_support();
@@ -154,6 +158,8 @@ private:
 	void add_fmod_support();
 	void add_fmodf_support();
 	void add_remainder_support();
+	void add_llvm_memcpy_support();
+	void add_llvm_memset_support();
 	void add_trunc_support();
 	void add_fabs_support();
 	void add_floor_support();

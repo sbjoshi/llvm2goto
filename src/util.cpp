@@ -448,6 +448,72 @@ void translator::add_malloc_support() {
 	goto_functions.function_map["malloc"].type = to_code_type(fn->type);
 }
 
+void translator::add_free_support() {
+	add_intrinsic_support("malloc");
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(pointer_type(signedbv_typet(8)),
+			"free::ptr");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto ptr = sym1.symbol_expr();
+
+	auto br_inst = temp_gp.add_instruction();
+
+	auto br_inst2 = temp_gp.add_instruction();
+
+	tgt = temp_gp.add_instruction();
+	auto cp_de_alloc_expr =
+			symbol_table.lookup("__CPROVER_deallocated")->symbol_expr();
+	tgt->make_assignment(code_assignt(cp_de_alloc_expr, ptr));
+
+	auto br_inst3 = temp_gp.add_instruction();
+	br_inst2->make_goto(br_inst3,
+			not_exprt(side_effect_expr_nondett(bool_typet())));
+
+	tgt = temp_gp.add_instruction();
+	auto cp_mem_leak_expr =
+			symbol_table.lookup("__CPROVER_memory_leak")->symbol_expr();
+	tgt->make_assignment(code_assignt(cp_mem_leak_expr,
+			null_pointer_exprt(to_pointer_type(cp_mem_leak_expr.type()))));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	br_inst->make_goto(tgt,
+			not_exprt(notequal_exprt(ptr,
+					null_pointer_exprt(to_pointer_type(ptr.type())))));
+	br_inst3->make_goto(tgt,
+			not_exprt(notequal_exprt(cp_mem_leak_expr,
+					null_pointer_exprt(to_pointer_type(cp_mem_leak_expr.type())))));
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = void_type();
+	sym.name = sym.base_name = sym.pretty_name = "free";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("free");
+	goto_functions.function_map["free"].body.swap(temp_gp);
+	goto_functions.function_map["free"].type = to_code_type(fn->type);
+
+}
+
 void translator::add_fegetround_support() {
 	goto_programt temp_gp;
 	goto_programt::targett tgt;
@@ -1168,6 +1234,199 @@ void translator::add_remainder_support() {
 	const auto *fn = symbol_table.lookup("remainder");
 	goto_functions.function_map["remainder"].body.swap(temp_gp);
 	goto_functions.function_map["remainder"].type = to_code_type(fn->type);
+}
+
+void translator::add_llvm_memcpy_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(pointer_type(signedbv_typet(8)),
+			"llvm.memcpy.p0i8.p0i8.i64::dest");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto dest = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(pointer_type(signedbv_typet(8)),
+			"llvm.memcpy.p0i8.p0i8.i64::src");
+	sym2.is_parameter = true;
+	symbol_table.insert(sym2);
+	auto src = sym2.symbol_expr();
+
+	auto sym3 = symbol_util::create_symbol(signedbv_typet(64),
+			"llvm.memcpy.p0i8.p0i8.i64::len");
+	sym3.is_parameter = true;
+	symbol_table.insert(sym3);
+	auto len = sym3.symbol_expr();
+
+	auto sym4 = symbol_util::create_symbol(bool_typet(),
+			"llvm.memcpy.p0i8.p0i8.i64::is_volatile");
+	sym4.is_parameter = true;
+	symbol_table.insert(sym4);
+	auto is_volatile = sym4.symbol_expr();
+
+	auto br_inst = temp_gp.add_instruction();
+
+	auto sym5 = symbol_util::create_symbol(array_typet(signedbv_typet(8), len),
+			"llvm.memcpy.p0i8.p0i8.i64::new_arr");
+	symbol_table.insert(sym5);
+	auto new_arr = sym5.symbol_expr();
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl(code_declt(new_arr));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_other(codet(ID_array_copy));
+	tgt->code.operands().push_back(typecast_exprt(address_of_exprt(new_arr),
+			pointer_type(signedbv_typet(8))));
+	tgt->code.operands().push_back(src);
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_other(codet(ID_array_replace));
+	tgt->code.operands().push_back(dest);
+	tgt->code.operands().push_back(typecast_exprt(address_of_exprt(new_arr),
+			pointer_type(signedbv_typet(8))));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	br_inst->make_goto(tgt,
+			not_exprt(binary_relation_exprt(len,
+					ID_gt,
+					from_integer(0, len.type()))));
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	code_typet::parametert para2(sym2.type);
+	para2.set_identifier(sym2.name);
+	para2.set_base_name(sym2.base_name);
+	parameters.push_back(para2);
+	code_typet::parametert para3(sym3.type);
+	para3.set_identifier(sym3.name);
+	para3.set_base_name(sym3.base_name);
+	parameters.push_back(para3);
+	code_typet::parametert para4(sym4.type);
+	para4.set_identifier(sym4.name);
+	para4.set_base_name(sym4.base_name);
+	parameters.push_back(para4);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = void_type();
+	sym.name = sym.base_name = sym.pretty_name = "llvm.memcpy.p0i8.p0i8.i64";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.memcpy.p0i8.p0i8.i64");
+	goto_functions.function_map["llvm.memcpy.p0i8.p0i8.i64"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.memcpy.p0i8.p0i8.i64"].type =
+			to_code_type(fn->type);
+}
+
+void translator::add_llvm_memset_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(pointer_type(signedbv_typet(8)),
+			"llvm.memset.p0i8.i64::dest");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto dest = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(signedbv_typet(8),
+			"llvm.memset.p0i8.i64::val");
+	sym2.is_parameter = true;
+	symbol_table.insert(sym2);
+	auto val = sym2.symbol_expr();
+
+	auto sym3 = symbol_util::create_symbol(signedbv_typet(64),
+			"llvm.memset.p0i8.i64::len");
+	sym3.is_parameter = true;
+	symbol_table.insert(sym3);
+	auto len = sym3.symbol_expr();
+
+	auto sym4 = symbol_util::create_symbol(bool_typet(),
+			"llvm.memset.p0i8.i64::is_volatile");
+	sym4.is_parameter = true;
+	symbol_table.insert(sym4);
+	auto is_volatile = sym4.symbol_expr();
+
+	auto br_inst = temp_gp.add_instruction();
+
+	auto new_arr = symbol_util::create_symbol(array_typet(signedbv_typet(8),
+			typecast_exprt(len, size_type())),
+			"llvm.memset.p0i8.i64::new_arr");
+	symbol_table.insert(new_arr);
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl(code_declt(new_arr.symbol_expr()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_other(codet(ID_array_set));
+	tgt->code.operands().push_back(typecast_exprt(new_arr.symbol_expr(),
+			pointer_type(void_type())));
+	tgt->code.operands().push_back(typecast_exprt(val, unsigned_char_type()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_other(codet(ID_array_replace));
+	tgt->code.operands().push_back(typecast_exprt(dest,
+			pointer_type(void_type())));
+	tgt->code.operands().push_back(typecast_exprt(new_arr.symbol_expr(),
+			pointer_type(void_type())));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	br_inst->make_goto(tgt,
+			not_exprt(binary_relation_exprt(len,
+					ID_gt,
+					from_integer(0, len.type()))));
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	code_typet::parametert para2(sym2.type);
+	para2.set_identifier(sym2.name);
+	para2.set_base_name(sym2.base_name);
+	parameters.push_back(para2);
+	code_typet::parametert para3(sym3.type);
+	para3.set_identifier(sym3.name);
+	para3.set_base_name(sym3.base_name);
+	parameters.push_back(para3);
+	code_typet::parametert para4(sym4.type);
+	para4.set_identifier(sym4.name);
+	para4.set_base_name(sym4.base_name);
+	parameters.push_back(para4);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = void_type();
+	sym.name = sym.base_name = sym.pretty_name = "llvm.memset.p0i8.i64";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.memset.p0i8.i64");
+	goto_functions.function_map["llvm.memset.p0i8.i64"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.memset.p0i8.i64"].type =
+			to_code_type(fn->type);
 }
 
 void translator::add_trunc_support() {
@@ -2571,6 +2830,10 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 	if (!intrinsic_name.compare("fmod")) return intrinsics::fmod;
 	if (!intrinsic_name.compare("remainder")) return intrinsics::remainder;
 	if (!intrinsic_name.compare("lround")) return intrinsics::lround;
+	if (!intrinsic_name.compare("llvm.memcpy.p0i8.p0i8.i64"))
+		return intrinsics::llvm_memcpy_p0i8_p0i8_i64;
+	if (!intrinsic_name.compare("llvm.memset.p0i8.i64"))
+		return intrinsics::llvm_memset_p0i8_i64;
 	if (!intrinsic_name.compare("llvm.trunc.f64"))
 		return intrinsics::llvm_trunc_f64;
 	if (!intrinsic_name.compare("llvm.fabs.f64"))
@@ -2599,6 +2862,7 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 	if (!intrinsic_name.compare("__signbitf")) return intrinsics::__signbitf;
 	if (!intrinsic_name.compare("abort")) return intrinsics::abort;
 	if (!intrinsic_name.compare("malloc")) return intrinsics::malloc;
+	if (!intrinsic_name.compare("free")) return intrinsics::free;
 	if (!intrinsic_name.compare("CPROVER__round_to_integral"))
 		return intrinsics::cprover_round_to_integral;
 	if (!intrinsic_name.compare("CPROVER__round_to_integralf"))
@@ -2690,6 +2954,9 @@ void translator::add_intrinsic_support(const string &func_name,
 	case intrinsics::malloc:
 		add_malloc_support();
 		break;
+	case intrinsics::free:
+		add_free_support();
+		break;
 	case intrinsics::modff:
 		add_modff_support();
 		break;
@@ -2698,6 +2965,12 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::remainder:
 		add_remainder_support();
+		break;
+	case intrinsics::llvm_memset_p0i8_i64:
+		add_llvm_memset_support();
+		break;
+	case intrinsics::llvm_memcpy_p0i8_p0i8_i64:
+		add_llvm_memcpy_support();
 		break;
 	case intrinsics::llvm_trunc_f64:
 		add_trunc_support();

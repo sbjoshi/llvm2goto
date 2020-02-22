@@ -1540,16 +1540,72 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	auto location = get_location(ICI);
 	switch (ICI.getIntrinsicID()) {
 	case Intrinsic::memcpy: {
-		const auto &x = cast<MemCpyInst>(ICI);
-		const auto &ll_target = x.getDest();
-		const auto &ll_source = (x.getSource());
-		auto target_expr = dereference_exprt(get_expr(*ll_target));
-		auto source_expr = dereference_exprt(get_expr(*ll_source));
-		auto assgn_instr = goto_program.add_instruction();
-		assgn_instr->make_assignment();
-		assgn_instr->code = code_assignt(target_expr, source_expr);
-		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		assgn_instr->source_location = location;
+//		add_intrinsic_support("llvm.memcpy.p0i8.p0i8.i64");
+//		make_func_call(ICI);
+//		break;
+
+//		const auto &MCI = cast<MemCpyInst>(ICI);
+//		const auto &ll_target = MCI.getDest();
+//		const auto &ll_source = MCI.getSource();
+//		auto target_expr = dereference_exprt(get_expr(*ll_target));
+//		auto source_expr = dereference_exprt(get_expr(*ll_source));
+//		auto assgn_instr = goto_program.add_instruction();
+//		assgn_instr->make_assignment();
+//		assgn_instr->code = code_assignt(target_expr, source_expr);
+//		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		assgn_instr->source_location = location;
+
+//		const auto &MCI = cast<MemCpyInst>(ICI);
+//		const auto &ll_target = MCI.getDest();
+//		const auto &ll_source = MCI.getSource();
+//		auto target_expr = dereference_exprt(get_expr(*ll_target));
+//		auto source_expr = dereference_exprt(get_expr(*ll_source));
+//		auto arr_cpy_instr = goto_program.add_instruction();
+//		arr_cpy_instr->make_other(codet(ID_array_copy));
+//		arr_cpy_instr->code.operands().push_back(typecast_exprt(target_expr,
+//				pointer_type(signedbv_typet(8))));
+//		arr_cpy_instr->code.operands().push_back(typecast_exprt(source_expr,
+//				pointer_type(signedbv_typet(8))));
+//		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		arr_cpy_instr->source_location = location;
+
+		const auto &MCI = cast<MemCpyInst>(ICI);
+		const auto &ll_target = MCI.getOperand(0);
+		const auto &ll_source = MCI.getOperand(1);
+		const auto &ll_len = MCI.getOperand(2);
+		auto target_expr = (get_expr(*ll_target));
+		auto source_expr = (get_expr(*ll_source));
+		auto len_expr = (get_expr(*ll_len));
+
+		auto sym = symbol_util::create_symbol(array_typet(signedbv_typet(8),
+				len_expr));
+		symbol_table.insert(sym);
+		auto new_arr = typecast_exprt(address_of_exprt(sym.symbol_expr()),
+				pointer_type(signedbv_typet(8)));
+
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->source_location = location;
+		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		dclr_instr->make_decl(code_declt(sym.symbol_expr()));
+
+		auto arr_cpy_instr = goto_program.add_instruction();
+		arr_cpy_instr->make_other(codet(ID_array_copy));
+		arr_cpy_instr->code.operands().push_back(new_arr);
+		arr_cpy_instr->code.operands().push_back(source_expr);
+		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		arr_cpy_instr->source_location = location;
+
+		auto arr_rplc_instr = goto_program.add_instruction();
+		arr_rplc_instr->make_other(codet(ID_array_replace));
+		arr_rplc_instr->code.operands().push_back(target_expr);
+		arr_rplc_instr->code.operands().push_back(new_arr);
+		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		arr_rplc_instr->source_location = location;
+		break;
+	}
+	case Intrinsic::memset: {
+		add_intrinsic_support("llvm.memset.p0i8.i64");
+		make_func_call(ICI);
 		break;
 	}
 	case Intrinsic::ceil: {
@@ -2071,9 +2127,9 @@ void translator::add_global_symbols() {
 		if (G.hasName()) {
 			symbol->base_name = G.getName().str();
 			symbol->name = symbol->base_name.c_str();
-			symbol_table.move(*symbol, symbol);
-			symbol->value = get_expr(*G.getOperand(0));
 			symbol->is_static_lifetime = true;
+			symbol_table.move(*symbol, symbol);
+			if (G.getNumOperands() > 0) symbol->value = get_expr(*G.getOperand(0));
 		}
 		symbol_table.move(*symbol, symbol);
 	}

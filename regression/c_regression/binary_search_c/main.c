@@ -3,7 +3,7 @@ int main()
    int first, last, middle ;
    int n = 5 ;
    int search ;
-   int array[10];
+   int array[5];
 
    int found = 0;
 
