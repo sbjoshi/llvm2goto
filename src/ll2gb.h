@@ -13,6 +13,7 @@
 #include <llvm-c/Core.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/SourceMgr.h>
+#include <llvm/Support/CommandLine.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
@@ -28,6 +29,10 @@
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/Scalar/IndVarSimplify.h>
+#include <llvm/Transforms/Scalar/LoopStrengthReduce.h>
+#include <llvm/Transforms/Utils.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
 
 #include <goto-programs/goto_model.h>
 #include <goto-programs/write_goto_binary.h>
@@ -47,24 +52,22 @@
 
 namespace ll2gb {
 
-extern unsigned verbose;
+extern llvm::cl::opt<unsigned> verbose;
+extern llvm::cl::opt<bool> optimizeEnabled;
+extern llvm::cl::opt<std::string> outputFilename;
+extern llvm::cl::opt<std::string> InputFilename;
+
 class translator;
 
-std::unique_ptr<llvm::Module> get_llvm_ir(std::string in_irfile,
-		llvm::LLVMContext &context);
+std::unique_ptr<llvm::Module> get_llvm_ir(llvm::LLVMContext &context);
 bool run_llvm_passes(llvm::Module&);
 
-void set_function_symbol_value(goto_functionst::function_mapt&, symbol_tablet&);
-void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
-void set_entry_point(goto_functionst&, symbol_tablet&);
 bool is_assume_function(const std::string&);
 bool is_assert_function(const std::string&);
 bool is_assert_fail_function(const std::string&);
 
-void print_help();
-void parse_input(int argc,
-		char **argv,
-		std::vector<std::pair<std::string, std::string>>&);
+void print_version(llvm::raw_ostream&);
+void parse_input(int argc, char **argv);
 void print_error();
 void panic(int);
 void secret();

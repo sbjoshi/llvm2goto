@@ -197,7 +197,15 @@ exprt translator::get_expr_const(const Constant &C) {
 		}
 		else if (isa<UndefValue>(C)) {
 			auto symbol = symbol_util::create_symbol(C.getType());
-			symbol_table.add(symbol);
+			if (C.hasName()) {
+				symbol.base_name = C.getName().str();
+				symbol.name = string("ll2gb_undef_") + symbol.base_name.c_str();
+			}
+			else
+				symbol.name = string("ll2gb_undef_") + symbol.name.c_str();
+			if (symbol_table.add(symbol)) {
+				error_state = "duplicate symbol names encountered!";
+			}
 			auto dclr_instr = goto_program.add_instruction();
 			dclr_instr->make_decl();
 			dclr_instr->code = code_declt(symbol.symbol_expr());
@@ -1294,7 +1302,9 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	}
 	auto &I = cast<Instruction>(AI);
 	var_name_map[&I] = symbol.name.c_str();
-	symbol_table.add(symbol);
+	if (symbol_table.add(symbol)) {
+		error_state = "duplicate symbol names encountered!";
+	}
 	auto dclr_instr = goto_program.add_instruction();
 	dclr_instr->make_decl();
 	dclr_instr->code = code_declt(symbol.symbol_expr());
@@ -1303,7 +1313,9 @@ void translator::trans_alloca(const AllocaInst &AI) {
 		auto aux_symbol = symbol_util::create_symbol(AI.getType());
 		aux_symbol.name = aux_symbol.base_name = aux_symbol.pretty_name =
 				string(symbol.base_name.c_str()) + "__alias";
-		symbol_table.insert(aux_symbol);
+		if (symbol_table.add(aux_symbol)) {
+			error_state = "duplicate symbol names encountered!";
+		}
 		auto instr = goto_program.add_instruction();
 		instr->make_assignment(code_assignt(aux_symbol.symbol_expr(),
 				typecast_exprt(address_of_exprt(symbol.symbol_expr()),
@@ -1428,7 +1440,9 @@ void translator::trans_call(const CallInst &CI) {
 					ret_symbol.name = CI.getFunction()->getName().str() + "::"
 							+ ret_symbol.name.c_str();
 				ret_symbol.location = location;
-				symbol_table.add(ret_symbol);
+				if (symbol_table.add(ret_symbol)) {
+					error_state = "duplicate symbol names encountered!";
+				}
 				call_expr.lhs() = ret_symbol.symbol_expr();
 				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
 				auto dclr_instr = goto_program.add_instruction();
@@ -1519,7 +1533,9 @@ void translator::make_func_call(const CallInst &CI) {
 			ret_symbol.name = CI.getFunction()->getName().str() + "::"
 					+ ret_symbol.name.c_str();
 		ret_symbol.location = location;
-		symbol_table.add(ret_symbol);
+		if (symbol_table.add(ret_symbol)) {
+			error_state = "duplicate symbol names encountered!";
+		}
 		call_expr.lhs() = ret_symbol.symbol_expr();
 		call_ret_sym_map[&CI] = ret_symbol.name.c_str();
 		auto dclr_instr = goto_program.add_instruction();
@@ -1543,32 +1559,6 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 //		add_intrinsic_support("llvm.memcpy.p0i8.p0i8.i64");
 //		make_func_call(ICI);
 //		break;
-
-//		const auto &MCI = cast<MemCpyInst>(ICI);
-//		const auto &ll_target = MCI.getDest();
-//		const auto &ll_source = MCI.getSource();
-//		auto target_expr = dereference_exprt(get_expr(*ll_target));
-//		auto source_expr = dereference_exprt(get_expr(*ll_source));
-//		auto assgn_instr = goto_program.add_instruction();
-//		assgn_instr->make_assignment();
-//		assgn_instr->code = code_assignt(target_expr, source_expr);
-//		assgn_instr->function = irep_idt(ICI.getFunction()->getName().str());
-//		assgn_instr->source_location = location;
-
-//		const auto &MCI = cast<MemCpyInst>(ICI);
-//		const auto &ll_target = MCI.getDest();
-//		const auto &ll_source = MCI.getSource();
-//		auto target_expr = dereference_exprt(get_expr(*ll_target));
-//		auto source_expr = dereference_exprt(get_expr(*ll_source));
-//		auto arr_cpy_instr = goto_program.add_instruction();
-//		arr_cpy_instr->make_other(codet(ID_array_copy));
-//		arr_cpy_instr->code.operands().push_back(typecast_exprt(target_expr,
-//				pointer_type(signedbv_typet(8))));
-//		arr_cpy_instr->code.operands().push_back(typecast_exprt(source_expr,
-//				pointer_type(signedbv_typet(8))));
-//		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
-//		arr_cpy_instr->source_location = location;
-
 		const auto &MCI = cast<MemCpyInst>(ICI);
 		const auto &ll_target = MCI.getOperand(0);
 		const auto &ll_source = MCI.getOperand(1);
@@ -1577,16 +1567,26 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		auto source_expr = (get_expr(*ll_source));
 		auto len_expr = (get_expr(*ll_len));
 
-		auto sym = symbol_util::create_symbol(array_typet(signedbv_typet(8),
+		auto symbol = symbol_util::create_symbol(array_typet(signedbv_typet(8),
 				len_expr));
-		symbol_table.insert(sym);
-		auto new_arr = typecast_exprt(address_of_exprt(sym.symbol_expr()),
+		if (ICI.hasName()) {
+			symbol.base_name = ICI.getName().str();
+			symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ symbol.base_name.c_str();
+		}
+		else
+			symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ symbol.name.c_str();
+		if (symbol_table.add(symbol)) {
+			error_state = "duplicate symbol names encountered!";
+		}
+		auto new_arr = typecast_exprt(address_of_exprt(symbol.symbol_expr()),
 				pointer_type(signedbv_typet(8)));
 
 		auto dclr_instr = goto_program.add_instruction();
 		dclr_instr->source_location = location;
 		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		dclr_instr->make_decl(code_declt(sym.symbol_expr()));
+		dclr_instr->make_decl(code_declt(symbol.symbol_expr()));
 
 		auto arr_cpy_instr = goto_program.add_instruction();
 		arr_cpy_instr->make_other(codet(ID_array_copy));
@@ -1647,7 +1647,17 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	case Intrinsic::stacksave: {
 		auto called_func = ICI.getCalledFunction();
 		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
-		symbol_table.insert(ret_symbol);
+		if (ICI.hasName()) {
+			ret_symbol.base_name = ICI.getName().str();
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.base_name.c_str();
+		}
+		else
+			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ ret_symbol.name.c_str();
+		if (symbol_table.add(ret_symbol)) {
+			error_state = "duplicate symbol names encountered!";
+		}
 		auto instr = goto_program.add_instruction();
 		instr->make_assignment(code_assignt(ret_symbol.symbol_expr(),
 				side_effect_expr_nondett(ret_symbol.type)));
@@ -2034,6 +2044,90 @@ bool translator::trans_function(Function &F) {
 	return check_state();
 }
 
+void translator::set_function_symbol_value(goto_functionst::function_mapt &function_map,
+		symbol_tablet &symbol_table) {
+	for (auto &func : function_map) {
+		code_blockt cb;
+		for (auto ins : func.second.body.instructions)
+			cb.add(ins.code);
+		auto &symbol = symbol_table.get_writeable_ref(func.first);
+		symbol.value.swap(cb);
+	}
+}
+
+void translator::set_entry_point(goto_functionst &goto_functions,
+		symbol_tablet &symbol_table) {
+	set_function_symbol_value(goto_functions.function_map, symbol_table);
+	int argc = 0;
+	const char **argv = nullptr;
+	cbmc_parse_optionst parse_options(argc, argv);
+	c_object_factory_parameterst object_factory_params;
+	optionst options;
+	parse_options.set_default_options(options);
+	object_factory_params.set(options);
+	parse_options.get_message_handler();
+	ansi_c_entry_point(symbol_table,
+			parse_options.get_message_handler(),
+			object_factory_params);
+	goto_functions.function_map.insert(pair<const dstringt,
+			goto_functionst::goto_functiont>("__CPROVER__start",
+			goto_functionst::goto_functiont()));
+	add_function_definitions("__CPROVER__start", goto_functions, symbol_table);
+	goto_functions.function_map.insert(pair<const dstringt,
+			goto_functionst::goto_functiont>(
+	INITIALIZE_FUNCTION, goto_functionst::goto_functiont()));
+	add_function_definitions(INITIALIZE_FUNCTION, goto_functions, symbol_table);
+}
+
+void translator::add_function_definitions(string name,
+		goto_functionst &goto_functions,
+		symbol_tablet &symbol_table) {
+	goto_programt gp;
+	code_blockt cb = to_code_block(to_code(symbol_table.lookup(name)->value));
+	for (unsigned int b = 0; b < cb.operands().size(); b++) {
+		goto_programt::targett ins = gp.add_instruction();
+		codet c = to_code(cb.operands()[b]);
+		if (ID_assign == c.get_statement()) {
+			ins->make_assignment();
+			ins->code = code_assignt(c.operands()[0], c.operands()[1]);
+		}
+		else if (ID_output == c.get_statement()) {
+			c.operands().resize(2);
+
+			const symbolt &return_symbol = *symbol_table.lookup("return'");
+
+			c.op0() =
+					address_of_exprt(index_exprt(string_constantt(return_symbol.base_name),
+							from_integer(0, index_type())));
+
+			c.op1() = return_symbol.symbol_expr();
+			ins->make_other(c);
+		}
+		else if (ID_label == c.get_statement()) {
+			ins->make_skip();
+		}
+		else if (ID_function_call == c.get_statement()) {
+			ins->make_function_call(c);
+		}
+		else if (ID_input == c.get_statement()) {
+			c.operands().resize(2);
+			c.op0() = address_of_exprt(index_exprt(string_constantt("argc"),
+					from_integer(0, index_type())));
+			c.op1() = symbol_table.lookup("argc'")->symbol_expr();
+			ins->make_other(c);
+		}
+		else if (ID_assume == c.get_statement()) {
+			ins->make_assumption(c.op0());
+		}
+		else {
+			ins->code = c;
+		}
+	}
+	gp.add_instruction(END_FUNCTION);
+	gp.update();
+	(*goto_functions.function_map.find(name)).second.body.swap(gp);
+}
+
 /// Translates and entire module and writes it
 ///	to the goto_functions.
 bool translator::trans_module() {
@@ -2106,10 +2200,14 @@ void translator::add_function_symbols() {
 			arg_symbol.is_parameter = true;
 			arg_symbol.is_state_var = true;
 			func_arg_name_map[&arg] = arg_symbol.name.c_str();
-			symbol_table.add(arg_symbol);
+			if (symbol_table.add(arg_symbol)) {
+				error_state = "duplicate symbol names encountered!";
+			}
 		}
 		symbolt func_symbol = symbol_util::create_goto_func_symbol(F);
-		symbol_table.add(func_symbol);
+		if (symbol_table.add(func_symbol)) {
+			error_state = "duplicate symbol names encountered!";
+		}
 		goto_functions.function_map[func_symbol.name] =
 				goto_functionst::goto_functiont();
 	}

@@ -122,7 +122,9 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			else
 				symbol.pretty_name = symbol.name;
 			symbol.is_type = true;
-			symbol_table.insert(symbol);
+			if (symbol_table.add(symbol)) {
+				error_state = "duplicate symbol names encountered!";
+			}
 			typedef_tag_set.insert(strct_name);
 		}
 		type = struct_tag_typet(strct_name);

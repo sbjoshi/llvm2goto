@@ -37,6 +37,10 @@ private:
 	bool trans_module();
 	void analyse_ir();
 	void add_function_symbols();
+	void set_function_symbol_value(goto_functionst::function_mapt&,
+			symbol_tablet&);
+	void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
+	void set_entry_point(goto_functionst&, symbol_tablet&);
 	void add_global_symbols();
 	void add_initial_symbols();
 	void set_config();
