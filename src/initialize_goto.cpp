@@ -87,8 +87,9 @@ void translator::add_initial_symbols() {
 }
 
 void translator::set_config() {
+	config.ansi_c.mode = configt::ansi_ct::flavourt::CLANG;
 	config.ansi_c.set_64();
-	config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_EVEN;
+	config.ansi_c.set_arch_spec_x86_64();
 	config.ansi_c.set_c11();
-	config.ansi_c.single_precision_constant = true;
+	config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_EVEN;
 }
