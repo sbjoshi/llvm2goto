@@ -33,6 +33,8 @@
 #include <llvm/Transforms/Scalar/LoopStrengthReduce.h>
 #include <llvm/Transforms/Utils.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Transforms/IPO/AlwaysInliner.h>
 
 #include <goto-programs/goto_model.h>
 #include <goto-programs/write_goto_binary.h>
@@ -59,7 +61,7 @@ extern llvm::cl::opt<std::string> InputFilename;
 
 class translator;
 
-std::unique_ptr<llvm::Module> get_llvm_ir(llvm::LLVMContext &context);
+std::unique_ptr<llvm::Module> get_llvm_ir();
 bool run_llvm_passes(llvm::Module&);
 
 bool is_assume_function(const std::string&);

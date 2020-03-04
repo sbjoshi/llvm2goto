@@ -42,7 +42,7 @@ void ll2gb::print_version(raw_ostream &ostream) {
 }
 
 void ll2gb::parse_input(int argc, char **argv) {
-	cl::SetVersionPrinter(print_version);
+	cl::AddExtraVersionPrinter(print_version);
 	cl::HideUnrelatedOptions(ll2gb_cat);
 	cl::ParseCommandLineOptions(argc, argv);
 
@@ -1248,26 +1248,25 @@ void translator::add_llvm_memset_support() {
 
 	auto br_inst = temp_gp.add_instruction();
 
-	auto new_arr = symbol_util::create_symbol(array_typet(signedbv_typet(8),
-			typecast_exprt(len, size_type())),
+	auto new_arr_sym = symbol_util::create_symbol(array_typet(signedbv_typet(8),
+			len),
 			"llvm.memset.p0i8.i64::new_arr");
-	symbol_table.insert(new_arr);
+	symbol_table.insert(new_arr_sym);
+	auto new_arr = typecast_exprt(address_of_exprt(new_arr_sym.symbol_expr()),
+			pointer_type(signedbv_typet(8)));
 
 	tgt = temp_gp.add_instruction();
-	tgt->make_decl(code_declt(new_arr.symbol_expr()));
+	tgt->make_decl(code_declt(new_arr_sym.symbol_expr()));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_other(codet(ID_array_set));
-	tgt->code.operands().push_back(typecast_exprt(new_arr.symbol_expr(),
-			pointer_type(void_type())));
-	tgt->code.operands().push_back(typecast_exprt(val, unsigned_char_type()));
+	tgt->code.operands().push_back(new_arr);
+	tgt->code.operands().push_back(val);
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_other(codet(ID_array_replace));
-	tgt->code.operands().push_back(typecast_exprt(dest,
-			pointer_type(void_type())));
-	tgt->code.operands().push_back(typecast_exprt(new_arr.symbol_expr(),
-			pointer_type(void_type())));
+	tgt->code.operands().push_back(dest);
+	tgt->code.operands().push_back(new_arr);
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_end_function();

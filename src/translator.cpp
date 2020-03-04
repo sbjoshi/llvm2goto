@@ -680,7 +680,11 @@ exprt translator::get_expr_and(const Instruction &AI) {
 	const auto &ll_op2 = AI.getOperand(1);
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
-	expr = bitand_exprt(expr_op1, expr_op2);
+	///CBMC ignores bitand of two bools so we use or instead.
+	if (expr_op1.type().id() == ID_bool && expr_op2.type().id() == ID_bool)
+		expr = and_exprt(expr_op1, expr_op2);
+	else
+		expr = bitand_exprt(expr_op1, expr_op2);
 	return expr;
 }
 
@@ -692,7 +696,11 @@ exprt translator::get_expr_or(const Instruction &OI) {
 	const auto &ll_op2 = OI.getOperand(1);
 	auto expr_op1 = get_expr(*ll_op1);
 	auto expr_op2 = get_expr(*ll_op2);
-	expr = bitor_exprt(expr_op1, expr_op2);
+	///CBMC ignores bitor of two bools so we use or instead.
+	if (expr_op1.type().id() == ID_bool && expr_op2.type().id() == ID_bool)
+		expr = or_exprt(expr_op1, expr_op2);
+	else
+		expr = bitor_exprt(expr_op1, expr_op2);
 	return expr;
 }
 
@@ -760,6 +768,7 @@ exprt translator::get_expr_bitcast(const BitCastInst &BI) {
 	if (expr.type().id() == ID_pointer)
 		expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
 	else {
+		expr = get_expr(*ll_op1, true);
 		expr = address_of_exprt(expr);
 		expr = typecast_exprt(expr,
 				pointer_type(symbol_util::get_goto_type(ll_op2)));
@@ -1060,7 +1069,7 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 
 /// Translates and returns the equivalent expr
 /// to represent an llvm Value.
-exprt translator::get_expr(const Value &V) {
+exprt translator::get_expr(const Value &V, bool new_state_required) {
 	exprt expr;
 	if (isa<Instruction>(V)) {
 		const auto &I = cast<Instruction>(V);
@@ -1264,6 +1273,21 @@ exprt translator::get_expr(const Value &V) {
 		auto symbol = symbol_table.lookup(func_arg_name_map[&A]);
 		expr = symbol->symbol_expr();
 	}
+
+///Sometimes we would like to use address_of(&) on rvalues,
+///this allows us to do that by assigning it to a new temp variable.
+	if (new_state_required) {
+		auto sym = symbol_util::create_symbol(expr.type());
+		sym.name = string("ll2gb_state_sym_") + sym.name.c_str();
+		sym.base_name = string("temp_") + sym.base_name.c_str();
+		if (symbol_table.add(sym)) {
+			error_state = "duplicate symbol names encountered!";
+		}
+		auto asgn_inst = goto_program.add_instruction();
+		asgn_inst->make_assignment(code_assignt(sym.symbol_expr(), expr));
+		goto_program.update();
+		return sym.symbol_expr();
+	}
 	return expr;
 }
 
@@ -1332,10 +1356,13 @@ void translator::trans_alloca(const AllocaInst &AI) {
 void translator::trans_br(const BranchInst &BI) {
 	auto location = get_location(BI);
 	if (BI.isConditional()) {
+		auto guard_expr = not_exprt(get_expr(*BI.getCondition()));
 		auto cond_true = goto_program.add_instruction();
 		auto cond_false = goto_program.add_instruction();
 		br_instr_target_map[&BI] = pair<goto_programt::targett,
 				goto_programt::targett>(cond_true, cond_false);
+		cond_true->make_goto(cond_false, guard_expr);
+		cond_false->make_goto(cond_true, true_exprt());
 		cond_true->source_location = location;
 		cond_false->source_location = location;
 	}
@@ -1344,6 +1371,7 @@ void translator::trans_br(const BranchInst &BI) {
 		br_instr_target_map[&BI] = pair<goto_programt::targett,
 				goto_programt::targett>(br_ins, br_ins);
 		br_ins->source_location = location;
+		br_ins->make_goto(br_ins, true_exprt());
 	}
 	goto_program.update();
 }
@@ -1604,8 +1632,51 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		break;
 	}
 	case Intrinsic::memset: {
-		add_intrinsic_support("llvm.memset.p0i8.i64");
-		make_func_call(ICI);
+//		add_intrinsic_support("llvm.memset.p0i8.i64");
+//		make_func_call(ICI);
+//		break;
+		const auto &MSI = cast<MemSetInst>(ICI);
+		const auto &ll_target = MSI.getOperand(0);
+		const auto &ll_val = MSI.getOperand(1);
+		const auto &ll_len = MSI.getOperand(2);
+		auto target_expr = (get_expr(*ll_target));
+		auto val_expr = (get_expr(*ll_val));
+		auto len_expr = (get_expr(*ll_len));
+
+		auto symbol = symbol_util::create_symbol(array_typet(signedbv_typet(8),
+				len_expr));
+		if (ICI.hasName()) {
+			symbol.base_name = ICI.getName().str();
+			symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ symbol.base_name.c_str();
+		}
+		else
+			symbol.name = ICI.getFunction()->getName().str() + "::"
+					+ symbol.name.c_str();
+		if (symbol_table.add(symbol)) {
+			error_state = "duplicate symbol names encountered!";
+		}
+		auto new_arr = typecast_exprt(address_of_exprt(symbol.symbol_expr()),
+				pointer_type(signedbv_typet(8)));
+
+		auto dclr_instr = goto_program.add_instruction();
+		dclr_instr->source_location = location;
+		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		dclr_instr->make_decl(code_declt(symbol.symbol_expr()));
+
+		auto arr_cpy_instr = goto_program.add_instruction();
+		arr_cpy_instr->make_other(codet(ID_array_set));
+		arr_cpy_instr->code.operands().push_back(new_arr);
+		arr_cpy_instr->code.operands().push_back(val_expr);
+		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		arr_cpy_instr->source_location = location;
+
+		auto arr_rplc_instr = goto_program.add_instruction();
+		arr_rplc_instr->make_other(codet(ID_array_replace));
+		arr_rplc_instr->code.operands().push_back(target_expr);
+		arr_rplc_instr->code.operands().push_back(new_arr);
+		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
+		arr_rplc_instr->source_location = location;
 		break;
 	}
 	case Intrinsic::ceil: {
@@ -1856,17 +1927,16 @@ void translator::set_branches() {
 			br_instr_target_map.end(); br_inst_iter != ie; br_inst_iter++) {
 		const auto &BI = br_inst_iter->first;
 		if (BI->isConditional()) {
-			const auto &cond = BI->getCondition();
-			auto guard_expr = not_exprt(get_expr(*cond));
 			auto true_target = block_target_map[BI->getSuccessor(0)];
 			auto false_taget = block_target_map[BI->getSuccessor(1)];
-			br_inst_iter->second.first->make_goto(false_taget, guard_expr);
-			br_inst_iter->second.second->make_goto(true_target, true_exprt());
+//			br_inst_iter->second.first->make_goto(false_taget, guard_expr);
+			br_inst_iter->second.first->set_target(false_taget);
+			br_inst_iter->second.second->set_target(true_target);
 		}
 		else {
-			goto_programt::targett then_part;
-			then_part = block_target_map[BI->getSuccessor(0)];
-			br_inst_iter->second.first->make_goto(then_part, true_exprt());
+			goto_programt::targett target;
+			target = block_target_map[BI->getSuccessor(0)];
+			br_inst_iter->second.first->set_target(target);
 		}
 	}
 	br_instr_target_map.clear();
@@ -2034,7 +2104,7 @@ bool translator::trans_function(Function &F) {
 		outs() << "------------------------------------------------------\n";
 		outs().resetColor();
 		stringstream ss;
-		goto_program.output(ss);
+		goto_program.output(namespacet(symbol_table), "", ss);
 		outs() << ss.str();
 		outs().changeColor(outs().YELLOW, true);
 		outs() << "------------------------------------------------------\n";

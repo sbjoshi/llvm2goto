@@ -17,8 +17,9 @@ int main(int argc, char **argv) {
 	secret();
 
 	parse_input(argc, argv);
-	LLVMContext context;
-	auto ir_module = get_llvm_ir(context);
+
+	auto ir_module = get_llvm_ir();
+
 	run_llvm_passes(*ir_module);
 
 	translator T(ir_module);

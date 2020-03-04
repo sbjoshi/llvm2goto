@@ -59,7 +59,7 @@ private:
 	void trans_store(const llvm::StoreInst&);
 	void trans_switch(const llvm::SwitchInst&);
 
-	exprt get_expr(const llvm::Value&);
+	exprt get_expr(const llvm::Value&, bool new_state_required = false);
 
 	exprt get_expr_phi(const llvm::PHINode&);
 	exprt get_expr_extractvalue(const llvm::ExtractValueInst&);
