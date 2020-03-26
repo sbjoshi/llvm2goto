@@ -27,14 +27,14 @@ public:
 
 /// Set the var_counter to input value.
 	static void set_var_counter(unsigned a) {
-		var_counter = a;
+//		var_counter = a;
 	}
 
 /// Reset the var_counter.
 /// Recommended to be called before
 /// translating each function.
 	static void reset_var_counter() {
-		var_counter = 1;
+//		var_counter = 1;
 	}
 
 ///Resets the symbol_util.

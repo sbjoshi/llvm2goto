@@ -620,7 +620,10 @@ exprt translator::get_expr_fdiv(const Instruction &FDI) {
 	auto expr_op2 = get_expr(*ll_op2);
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
-	expr = ieee_float_op_exprt(expr_op1, ID_floatbv_div, expr_op2, rounding_mode);
+	expr = ieee_float_op_exprt(expr_op1,
+			ID_floatbv_div,
+			expr_op2,
+			rounding_mode);
 	return expr;
 }
 
@@ -816,6 +819,8 @@ exprt translator::get_expr_sitofp(const SIToFPInst &SITFP) {
 	expr = get_expr(*ll_op1);
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	if (expr.type().id() == ID_bool)
+		expr = typecast_exprt(expr, signedbv_typet(32));
 	expr = floatbv_typecast_exprt(expr,
 			rounding_mode,
 			symbol_util::get_goto_type(ll_op2));
@@ -854,6 +859,8 @@ exprt translator::get_expr_uitofp(const UIToFPInst &UITFP) {
 	expr = get_expr(*ll_op1);
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	if (expr.type().id() == ID_bool)
+		expr = typecast_exprt(expr, unsignedbv_typet(32));
 	expr = floatbv_typecast_exprt(expr,
 			rounding_mode,
 			symbol_util::get_goto_type(ll_op2));
@@ -1014,7 +1021,8 @@ exprt translator::get_expr_gep(const GetElementPtrInst &GEPI) {
 	expr = get_expr(*ll_op1);
 	for (auto i = 1u, n = GEPI.getNumOperands(); i < n; i++)
 		if (expr.type().id() == ID_pointer)
-			expr = dereference_exprt(plus_exprt(expr, get_expr(*GEPI.getOperand(i))));
+			expr = dereference_exprt(plus_exprt(expr,
+					get_expr(*GEPI.getOperand(i))));
 		else if (expr.type().id() == ID_array)
 			expr = index_exprt(expr, get_expr(*GEPI.getOperand(i)));
 		else if (expr.type().id() == ID_struct
@@ -1071,14 +1079,19 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 /// to represent an llvm Value.
 exprt translator::get_expr(const Value &V, bool new_state_required) {
 	exprt expr;
+	static map<const Value*, exprt> state_map;
+	if (isa<Instruction>(V) && V.getNumUses() > 1) {
+		new_state_required = true;
+		if (state_map.find(&V) != state_map.end()) return state_map[&V];
+	}
 	if (isa<Instruction>(V)) {
 		const auto &I = cast<Instruction>(V);
 		switch (I.getOpcode()) {
 		case Instruction::Alloca: {
 			auto symbol = symbol_table.lookup(var_name_map[&I]);
 			expr = symbol->symbol_expr();
-			if (!cast<AllocaInst>(&I)->isArrayAllocation())
-				expr = address_of_exprt(expr);
+			if (!cast<AllocaInst>(&I)->isArrayAllocation()) expr =
+					address_of_exprt(expr);
 			break;
 		}
 		case Instruction::Load: {
@@ -1261,7 +1274,8 @@ exprt translator::get_expr(const Value &V, bool new_state_required) {
 			break;
 		}
 		default:
-			error_state = "Unsupported llvm::Instruction in translator::get_expr";
+			error_state =
+					"Unsupported llvm::Instruction in translator::get_expr";
 		}
 	}
 	else if (isa<Constant>(V)) {
@@ -1286,6 +1300,7 @@ exprt translator::get_expr(const Value &V, bool new_state_required) {
 		auto asgn_inst = goto_program.add_instruction();
 		asgn_inst->make_assignment(code_assignt(sym.symbol_expr(), expr));
 		goto_program.update();
+		state_map[&V] = sym.symbol_expr();
 		return sym.symbol_expr();
 	}
 	return expr;
@@ -1387,7 +1402,7 @@ void translator::trans_call(const CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
 	auto location = get_location(CI);
 	if (called_func) {
-		if (called_func->isIntrinsic()) {				///LLVM Intrinsic Functions
+		if (called_func->isIntrinsic()) {			///LLVM Intrinsic Functions
 			const auto &ICI = cast<IntrinsicInst>(CI);
 			trans_call_llvm_intrinsic(ICI);
 		}
@@ -1400,8 +1415,8 @@ void translator::trans_call(const CallInst &CI) {
 			auto func_name =
 					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(3))->getOperand(0)->getOperand(0))->getAsCString();
 			auto line_no = cast<ConstantInt>(CI.getOperand(2))->getZExtValue();
-			auto comment = file_name + ":" + to_string(line_no) + ": " + func_name
-					+ ": " + asrt_comment;
+			auto comment = file_name + ":" + to_string(line_no) + ": "
+					+ func_name + ": " + asrt_comment;
 			assert_instr->make_assertion(false_exprt());
 			assert_instr->source_location = location;
 			assert_instr->source_location.set_comment(comment.str());
@@ -1458,7 +1473,8 @@ void translator::trans_call(const CallInst &CI) {
 			symbolt ret_symbol;
 			code_function_callt call_expr;
 			if (!ll_func_type->getReturnType()->isVoidTy()) {
-				ret_symbol = symbol_util::create_symbol(ll_func_type->getReturnType());
+				ret_symbol =
+						symbol_util::create_symbol(ll_func_type->getReturnType());
 				if (CI.hasName()) {
 					ret_symbol.base_name = CI.getName().str();
 					ret_symbol.name = CI.getFunction()->getName().str() + "::"
@@ -1545,10 +1561,12 @@ void translator::make_func_call(const CallInst &CI) {
 	}
 	if (called_func ?
 			!called_func->getReturnType()->isVoidTy() :
-			get_intrinsic_return_type(called_val->getName().str()).id() != ID_void) { /// We should add a new variable to capture the return value of the func.
+			get_intrinsic_return_type(called_val->getName().str()).id()
+					!= ID_void) { /// We should add a new variable to capture the return value of the func.
 		symbolt ret_symbol;
 		if (called_func)
-			ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+			ret_symbol =
+					symbol_util::create_symbol(called_func->getReturnType());
 		else
 			ret_symbol =
 					symbol_util::create_symbol(get_intrinsic_return_type(called_val->getName().str()));
@@ -1717,7 +1735,8 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	}
 	case Intrinsic::stacksave: {
 		auto called_func = ICI.getCalledFunction();
-		auto ret_symbol = symbol_util::create_symbol(called_func->getReturnType());
+		auto ret_symbol =
+				symbol_util::create_symbol(called_func->getReturnType());
 		if (ICI.hasName()) {
 			ret_symbol.base_name = ICI.getName().str();
 			ret_symbol.name = ICI.getFunction()->getName().str() + "::"
@@ -1769,7 +1788,8 @@ void translator::trans_insertvalue(const InsertValueInst &IVI) {
 			tgt_expr = member_exprt(tgt_expr, component);
 		}
 		else
-			error_state = "Unexpected exprt type in: translator::trans_insertvalue";
+			error_state =
+					"Unexpected exprt type in: translator::trans_insertvalue";
 	}
 	auto asgn_instr = goto_program.add_instruction();
 	asgn_instr->make_assignment();
@@ -2018,7 +2038,8 @@ void translator::add_argc_argv(const symbolt &main_symbol) {
 	{
 		if (op1.type().id() != ID_pointer
 				|| op1.type().subtype().id() != ID_pointer) {
-			error_state = "argv argument expected to be pointer-to-pointer type";
+			error_state =
+					"argv argument expected to be pointer-to-pointer type";
 			return;
 		}
 
@@ -2237,7 +2258,8 @@ void translator::analyse_ir() {
 			for (auto &I : BB)
 				if (isa<DbgDeclareInst>(&I)) {
 					auto *CI = cast<CallInst>(&I);
-					auto *M = cast<MetadataAsValue>(CI->getOperand(0))->getMetadata();
+					auto *M =
+							cast<MetadataAsValue>(CI->getOperand(0))->getMetadata();
 					if (isa<ValueAsMetadata>(M)) {
 						auto *V = cast<ValueAsMetadata>(M)->getValue();
 						if (isa<AllocaInst>(V)) {
@@ -2266,7 +2288,8 @@ void translator::add_function_symbols() {
 		for (auto &arg : F.args()) {
 			symbolt arg_symbol = symbol_util::create_symbol(arg.getType());
 			if (check_state()) return;
-			arg_symbol.name = F.getName().str() + "::" + arg_symbol.name.c_str();
+			arg_symbol.name = F.getName().str() + "::"
+					+ arg_symbol.name.c_str();
 			arg_symbol.is_parameter = true;
 			arg_symbol.is_state_var = true;
 			func_arg_name_map[&arg] = arg_symbol.name.c_str();
@@ -2297,7 +2320,8 @@ void translator::add_global_symbols() {
 			symbol->name = symbol->base_name.c_str();
 			symbol->is_static_lifetime = true;
 			symbol_table.move(*symbol, symbol);
-			if (G.getNumOperands() > 0) symbol->value = get_expr(*G.getOperand(0));
+			if (G.getNumOperands() > 0)
+				symbol->value = get_expr(*G.getOperand(0));
 		}
 		symbol_table.move(*symbol, symbol);
 	}
