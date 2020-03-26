@@ -27,6 +27,7 @@ private:
 			std::pair<goto_programt::targett, goto_programt::targett>> br_instr_target_map; ///<map from BranchInst to their goto targets
 	std::map<const llvm::SwitchInst*, std::vector<goto_programt::targett>> switch_instr_target_map; ///<map from SwitchInst to their goto targets
 	static std::map<llvm::DIScope*, std::string> scope_name_map;
+	std::map<const llvm::Value*, exprt> state_map;
 
 	bool trans_instruction(const llvm::Instruction&);
 	bool trans_block(const llvm::BasicBlock&);
@@ -39,7 +40,9 @@ private:
 	void add_function_symbols();
 	void set_function_symbol_value(goto_functionst::function_mapt&,
 			symbol_tablet&);
-	void add_function_definitions(std::string, goto_functionst&, symbol_tablet&);
+	void add_function_definitions(std::string,
+			goto_functionst&,
+			symbol_tablet&);
 	void set_entry_point(goto_functionst&, symbol_tablet&);
 	void add_global_symbols();
 	void add_initial_symbols();

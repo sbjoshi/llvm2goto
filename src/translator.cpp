@@ -211,7 +211,8 @@ exprt translator::get_expr_const(const Constant &C) {
 //			dclr_instr->code = code_declt(symbol.symbol_expr());
 //			goto_program.update();
 //			expr = symbol.symbol_expr();
-			expr = side_effect_expr_nondett(symbol_util::get_goto_type(C.getType()));
+			expr =
+					side_effect_expr_nondett(symbol_util::get_goto_type(C.getType()));
 		}
 	}
 	else if (isa<ConstantExpr>(C)) {
@@ -1084,8 +1085,7 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 /// to represent an llvm Value.
 exprt translator::get_expr(const Value &V, bool new_state_required) {
 	exprt expr;
-	static map<const Value*, exprt> state_map;
-	if (isa<Instruction>(V) && V.getNumUses() > 1) {
+	if (isa<Instruction>(V) && isa<BinaryOperator>(V) && V.getNumUses() > 1) {
 		new_state_required = true;
 		if (state_map.find(&V) != state_map.end()) return state_map[&V];
 	}
@@ -2120,6 +2120,7 @@ bool translator::trans_function(Function &F) {
 	set_returns(end_func);
 	goto_program.update();
 	remove_skip(goto_program);
+	state_map.clear();
 
 	if (verbose >= 10) {
 		outs().changeColor(outs().BLUE, true);

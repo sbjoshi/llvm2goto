@@ -199,12 +199,13 @@ void translator::add_malloc_support() {
 			symbol_table.lookup("__CPROVER_deallocated")->symbol_expr();
 	auto eq_expr = equal_exprt(symbol_table.lookup("malloc_res")->symbol_expr(),
 			cp_de_alloc_expr);
-	tgt->code = code_assignt(cp_de_alloc_expr,
-			ternary_exprt(ID_if,
-					eq_expr,
-					null_pointer_exprt(to_pointer_type(cp_de_alloc_expr.type())),
-					cp_de_alloc_expr,
-					cp_de_alloc_expr.type()));
+	tgt->code =
+			code_assignt(cp_de_alloc_expr,
+					ternary_exprt(ID_if,
+							eq_expr,
+							null_pointer_exprt(to_pointer_type(cp_de_alloc_expr.type())),
+							cp_de_alloc_expr,
+							cp_de_alloc_expr.type()));
 
 	sym.clear();
 	tgt = temp_gp.add_instruction();
@@ -216,8 +217,9 @@ void translator::add_malloc_support() {
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
-	tgt->code = code_assignt(symbol_table.lookup("record_malloc")->symbol_expr(),
-			side_effect_expr_nondett(bool_typet()));
+	tgt->code =
+			code_assignt(symbol_table.lookup("record_malloc")->symbol_expr(),
+					side_effect_expr_nondett(bool_typet()));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -234,13 +236,14 @@ void translator::add_malloc_support() {
 	tgt->make_assignment();
 	auto cp_malloc_size_expr =
 			symbol_table.lookup("__CPROVER_malloc_size")->symbol_expr();
-	tgt->code = code_assignt(cp_malloc_size_expr,
-			ternary_exprt(ID_if,
-					symbol_table.lookup("record_malloc")->symbol_expr(),
-					typecast_exprt(symbol_table.lookup("malloc_size")->symbol_expr(),
-							cp_malloc_size_expr.type()),
-					cp_malloc_size_expr,
-					cp_malloc_size_expr.type()));
+	tgt->code =
+			code_assignt(cp_malloc_size_expr,
+					ternary_exprt(ID_if,
+							symbol_table.lookup("record_malloc")->symbol_expr(),
+							typecast_exprt(symbol_table.lookup("malloc_size")->symbol_expr(),
+									cp_malloc_size_expr.type()),
+							cp_malloc_size_expr,
+							cp_malloc_size_expr.type()));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -284,12 +287,14 @@ void translator::add_malloc_support() {
 	code_returnt cret;
 	cret.return_value() =
 			typecast_exprt(symbol_table.lookup("malloc_res")->symbol_expr(),
-					pointer_typet(signedbv_typet(8), config.ansi_c.pointer_width));
+					pointer_typet(signedbv_typet(8),
+							config.ansi_c.pointer_width));
 	tgt->code = cret;
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_dead();
-	tgt->code = code_deadt(symbol_table.lookup("record_may_leak")->symbol_expr());
+	tgt->code =
+			code_deadt(symbol_table.lookup("record_may_leak")->symbol_expr());
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_dead();
@@ -405,29 +410,34 @@ void translator::add_fegetround_support() {
 	goto_programt::targett tgt;
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
-	auto expr = ternary_exprt(ID_if,
-			equal_exprt(rounding_mode,
-					from_integer(ieee_floatt::ROUND_TO_MINUS_INF, rounding_mode.type())),
-			from_integer(0x400, rounding_mode.type()),
+	auto expr =
 			ternary_exprt(ID_if,
 					equal_exprt(rounding_mode,
-							from_integer(ieee_floatt::ROUND_TO_EVEN, rounding_mode.type())),
-					from_integer(0, rounding_mode.type()),
+							from_integer(ieee_floatt::ROUND_TO_MINUS_INF,
+									rounding_mode.type())),
+					from_integer(0x400, rounding_mode.type()),
 					ternary_exprt(ID_if,
 							equal_exprt(rounding_mode,
-									from_integer(ieee_floatt::ROUND_TO_ZERO,
+									from_integer(ieee_floatt::ROUND_TO_EVEN,
 											rounding_mode.type())),
-							from_integer(0xc00, rounding_mode.type()),
+							from_integer(0, rounding_mode.type()),
 							ternary_exprt(ID_if,
 									equal_exprt(rounding_mode,
-											from_integer(ieee_floatt::ROUND_TO_PLUS_INF,
+											from_integer(ieee_floatt::ROUND_TO_ZERO,
 													rounding_mode.type())),
-									from_integer(0x800, rounding_mode.type()),
-									from_integer(-1, rounding_mode.type()),
+									from_integer(0xc00, rounding_mode.type()),
+									ternary_exprt(ID_if,
+											equal_exprt(rounding_mode,
+													from_integer(ieee_floatt::ROUND_TO_PLUS_INF,
+															rounding_mode.type())),
+											from_integer(0x800,
+													rounding_mode.type()),
+											from_integer(-1,
+													rounding_mode.type()),
+											rounding_mode.type()),
 									rounding_mode.type()),
 							rounding_mode.type()),
-					rounding_mode.type()),
-			rounding_mode.type());
+					rounding_mode.type());
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_return();
@@ -480,7 +490,8 @@ void translator::add_fesetround_support() {
 							equal_exprt(e, from_integer(0xc00, e.type())),
 							from_integer(3, e.type()),
 							ternary_exprt(ID_if,
-									equal_exprt(e, from_integer(0x800, e.type())),
+									equal_exprt(e,
+											from_integer(0x800, e.type())),
 									from_integer(2, e.type()),
 									from_integer(0, e.type()),
 									e.type()),
@@ -544,7 +555,8 @@ void translator::add_fpclassify_support() {
 							isnormal_exprt(e),
 							from_integer(4, signedbv_typet(32)),
 							ternary_exprt(ID_if,
-									ieee_float_equal_exprt(e, from_integer(0, e.type())),
+									ieee_float_equal_exprt(e,
+											from_integer(0, e.type())),
 									from_integer(2, signedbv_typet(32)),
 									from_integer(3, signedbv_typet(32)),
 									signedbv_typet(32)),
@@ -606,7 +618,8 @@ void translator::add_fpclassifyl_support() {
 							isnormal_exprt(e),
 							from_integer(4, signedbv_typet(32)),
 							ternary_exprt(ID_if,
-									ieee_float_equal_exprt(e, from_integer(0, e.type())),
+									ieee_float_equal_exprt(e,
+											from_integer(0, e.type())),
 									from_integer(2, signedbv_typet(32)),
 									from_integer(3, signedbv_typet(32)),
 									signedbv_typet(32)),
@@ -667,7 +680,8 @@ void translator::add_fpclassifyf_support() {
 							isnormal_exprt(e),
 							from_integer(4, signedbv_typet(32)),
 							ternary_exprt(ID_if,
-									ieee_float_equal_exprt(e, from_integer(0, e.type())),
+									ieee_float_equal_exprt(e,
+											from_integer(0, e.type())),
 									from_integer(2, signedbv_typet(32)),
 									from_integer(3, signedbv_typet(32)),
 									signedbv_typet(32)),
@@ -796,7 +810,9 @@ void translator::add_round_to_integralf_support() {
 					ieee_float_equal_exprt(f, from_integer(0, f.type())),
 					f,
 					ternary_exprt(ID_if,
-							extractbit_exprt(f, to_bitvector_type(f.type()).get_width() - 1),
+							extractbit_exprt(f,
+									to_bitvector_type(f.type()).get_width()
+											- 1),
 							ieee_float_op_exprt(ieee_float_op_exprt(f,
 									ID_floatbv_minus,
 									mgc_cnst_expr,
@@ -880,7 +896,9 @@ void translator::add_round_to_integral_support() {
 					ieee_float_equal_exprt(d, from_integer(0, d.type())),
 					d,
 					ternary_exprt(ID_if,
-							extractbit_exprt(d, to_bitvector_type(d.type()).get_width() - 1),
+							extractbit_exprt(d,
+									to_bitvector_type(d.type()).get_width()
+											- 1),
 							ieee_float_op_exprt(ieee_float_op_exprt(d,
 									ID_floatbv_minus,
 									mgc_cnst_expr,
@@ -993,7 +1011,8 @@ void translator::add_cprover_remainder_support() {
 	tgt->make_function_call(call_expr);
 
 	br_inst->make_goto(tgt,
-			not_exprt(or_exprt(ieee_float_equal_exprt(x, from_integer(0, x.type())),
+			not_exprt(or_exprt(ieee_float_equal_exprt(x,
+					from_integer(0, x.type())),
 					isinf_exprt(y))));
 
 	tgt = temp_gp.add_instruction();
@@ -1004,10 +1023,14 @@ void translator::add_cprover_remainder_support() {
 					rounding_mode,
 					long_double_type()),
 					ID_floatbv_mult,
-					floatbv_typecast_exprt(ret, rounding_mode, long_double_type()),
+					floatbv_typecast_exprt(ret,
+							rounding_mode,
+							long_double_type()),
 					rounding_mode),
 					ID_floatbv_plus,
-					floatbv_typecast_exprt(x, rounding_mode, long_double_type()),
+					floatbv_typecast_exprt(x,
+							rounding_mode,
+							long_double_type()),
 					rounding_mode),
 					rounding_mode,
 					double_type());
@@ -1323,7 +1346,8 @@ void translator::add_trunc_support() {
 	symbol_table.insert(sym1);
 	auto x = sym1.symbol_expr();
 
-	auto sym2 = symbol_util::create_symbol(double_type(), "llvm.trunc.f64::ret");
+	auto sym2 = symbol_util::create_symbol(double_type(),
+			"llvm.trunc.f64::ret");
 	symbol_table.insert(sym2);
 	auto ret = sym2.symbol_expr();
 
@@ -1722,12 +1746,14 @@ void translator::add_copysign_support() {
 	goto_programt temp_gp;
 	goto_programt::targett tgt;
 
-	auto sym1 = symbol_util::create_symbol(double_type(), "llvm.copysign.f64::x");
+	auto sym1 = symbol_util::create_symbol(double_type(),
+			"llvm.copysign.f64::x");
 	sym1.is_parameter = true;
 	symbol_table.insert(sym1);
 	auto x = sym1.symbol_expr();
 
-	auto sym2 = symbol_util::create_symbol(double_type(), "llvm.copysign.f64::y");
+	auto sym2 = symbol_util::create_symbol(double_type(),
+			"llvm.copysign.f64::y");
 	sym2.is_parameter = true;
 	symbol_table.insert(sym2);
 	auto y = sym2.symbol_expr();
@@ -1785,7 +1811,8 @@ void translator::add_floor_support() {
 	symbol_table.insert(sym1);
 	auto e1 = sym1.symbol_expr();
 
-	auto sym2 = symbol_util::create_symbol(double_type(), "llvm.floor.f64::ret");
+	auto sym2 = symbol_util::create_symbol(double_type(),
+			"llvm.floor.f64::ret");
 	symbol_table.insert(sym2);
 	auto rti = sym2.symbol_expr();
 	tgt = temp_gp.add_instruction();
@@ -1925,13 +1952,16 @@ void translator::add_round_support() {
 			ieee_float_op_exprt(e1,
 					ID_floatbv_plus,
 					half_double.to_expr(),
-					from_integer(ieee_floatt::ROUND_TO_ZERO, signed_int_type())));
+					from_integer(ieee_floatt::ROUND_TO_ZERO,
+							signed_int_type())));
 
 	auto goto_inst = temp_gp.add_instruction();
 
 	auto br_inst2 = temp_gp.add_instruction();
 	br_inst->make_goto(br_inst2,
-			not_exprt(binary_relation_exprt(e1, ID_gt, from_integer(0, e1.type()))));
+			not_exprt(binary_relation_exprt(e1,
+					ID_gt,
+					from_integer(0, e1.type()))));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -1939,7 +1969,8 @@ void translator::add_round_support() {
 			ieee_float_op_exprt(e1,
 					ID_floatbv_minus,
 					half_double.to_expr(),
-					from_integer(ieee_floatt::ROUND_TO_ZERO, signed_int_type())));
+					from_integer(ieee_floatt::ROUND_TO_ZERO,
+							signed_int_type())));
 	auto goto_inst2 = temp_gp.add_instruction();
 
 	tgt = temp_gp.add_instruction();
@@ -1947,7 +1978,9 @@ void translator::add_round_support() {
 	tgt->code = code_assignt(xp, e1);
 
 	br_inst2->make_goto(tgt,
-			not_exprt(binary_relation_exprt(e1, ID_lt, from_integer(0, e1.type()))));
+			not_exprt(binary_relation_exprt(e1,
+					ID_lt,
+					from_integer(0, e1.type()))));
 
 	code_function_callt call_expr;
 	add_intrinsic_support("CPROVER__round_to_integral");
@@ -2019,7 +2052,8 @@ void translator::add_sin_support() {
 	tgt->code = code_declt(ret);
 
 	tgt = temp_gp.add_instruction();
-	tgt->make_assignment(code_assignt(ret, side_effect_expr_nondett(ret.type())));
+	tgt->make_assignment(code_assignt(ret,
+			side_effect_expr_nondett(ret.type())));
 
 	auto brnch_instr = temp_gp.add_instruction();
 
@@ -2109,7 +2143,8 @@ void translator::add_cos_support() {
 	tgt->code = code_declt(ret);
 
 	tgt = temp_gp.add_instruction();
-	tgt->make_assignment(code_assignt(ret, side_effect_expr_nondett(ret.type())));
+	tgt->make_assignment(code_assignt(ret,
+			side_effect_expr_nondett(ret.type())));
 
 	auto brnch_instr = temp_gp.add_instruction();
 
@@ -2748,7 +2783,8 @@ void translator::add_abort_support() {
 }
 
 translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name) {
-	if (!intrinsic_name.compare("__fpclassify")) return intrinsics::__fpclassify;
+	if (!intrinsic_name.compare("__fpclassify"))
+		return intrinsics::__fpclassify;
 	if (!intrinsic_name.compare("__fpclassifyf"))
 		return intrinsics::__fpclassifyf;
 	if (!intrinsic_name.compare("__fpclassifyl"))
@@ -2911,6 +2947,7 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::llvm_fabs_f64:
 		add_fabs_support();
+		break;
 	case intrinsics::llvm_fabs_f32:
 		add_fabs32_support();
 		break;
@@ -2945,6 +2982,7 @@ void translator::add_intrinsic_support(const string &func_name,
 		add_cprover_remainder_support();
 		break;
 	default:
-		error_state = "Intrinsic support requested for unkown func - " + func_name;
+		error_state = "Intrinsic support requested for unkown func - "
+				+ func_name;
 	}
 }
