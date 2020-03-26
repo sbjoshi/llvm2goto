@@ -196,21 +196,22 @@ exprt translator::get_expr_const(const Constant &C) {
 		else if (isa<ConstantTokenNone>(C)) {
 		}
 		else if (isa<UndefValue>(C)) {
-			auto symbol = symbol_util::create_symbol(C.getType());
-			if (C.hasName()) {
-				symbol.base_name = C.getName().str();
-				symbol.name = string("ll2gb_undef_") + symbol.base_name.c_str();
-			}
-			else
-				symbol.name = string("ll2gb_undef_") + symbol.name.c_str();
-			if (symbol_table.add(symbol)) {
-				error_state = "duplicate symbol names encountered!";
-			}
-			auto dclr_instr = goto_program.add_instruction();
-			dclr_instr->make_decl();
-			dclr_instr->code = code_declt(symbol.symbol_expr());
-			goto_program.update();
-			expr = symbol.symbol_expr();
+//			auto symbol = symbol_util::create_symbol(C.getType());
+//			if (C.hasName()) {
+//				symbol.base_name = C.getName().str();
+//				symbol.name = string("ll2gb_undef_") + symbol.base_name.c_str();
+//			}
+//			else
+//				symbol.name = string("ll2gb_undef_") + symbol.name.c_str();
+//			if (symbol_table.add(symbol)) {
+//				error_state = "duplicate symbol names encountered!";
+//			}
+//			auto dclr_instr = goto_program.add_instruction();
+//			dclr_instr->make_decl();
+//			dclr_instr->code = code_declt(symbol.symbol_expr());
+//			goto_program.update();
+//			expr = symbol.symbol_expr();
+			expr = side_effect_expr_nondett(symbol_util::get_goto_type(C.getType()));
 		}
 	}
 	else if (isa<ConstantExpr>(C)) {
@@ -814,6 +815,8 @@ exprt translator::get_expr_sitofp(const SIToFPInst &SITFP) {
 	const auto &ll_op1 = SITFP.getOperand(0);
 	const auto &ll_op2 = SITFP.getDestTy();
 	expr = get_expr(*ll_op1);
+	if (expr.type().id() == ID_bool)
+		expr = typecast_exprt(expr, signedbv_typet(32));
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
 	expr = floatbv_typecast_exprt(expr,
@@ -852,6 +855,8 @@ exprt translator::get_expr_uitofp(const UIToFPInst &UITFP) {
 //			rounding_mode,
 //			symbol_util::get_goto_type(ll_op2));
 	expr = get_expr(*ll_op1);
+	if (expr.type().id() == ID_bool)
+		expr = typecast_exprt(expr, unsignedbv_typet(32));
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
 	expr = floatbv_typecast_exprt(expr,
@@ -1702,6 +1707,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	}
 	case Intrinsic::fabs: {
 		add_intrinsic_support("llvm.fabs.f64");
+		add_intrinsic_support("llvm.fabs.f32");
 		make_func_call(ICI);
 		break;
 	}

@@ -117,6 +117,7 @@ private:
 		llvm_memset_p0i8_i64,
 		llvm_trunc_f64,
 		llvm_fabs_f64,
+		llvm_fabs_f32,
 		llvm_floor_f64,
 		llvm_ceil_f64,
 		llvm_rint_f64,
@@ -166,6 +167,7 @@ private:
 	void add_llvm_memset_support();
 	void add_trunc_support();
 	void add_fabs_support();
+	void add_fabs32_support();
 	void add_floor_support();
 	void add_ceil_support();
 	void add_round_support();
