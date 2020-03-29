@@ -67,7 +67,7 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	}
 	case Type::X86_FP80TyID: {
 		type = ieee_float_spect::x86_80().to_type();
-		type.set(ID_C_c_type, ID_long_double);
+//		type.set(ID_x86_extended);
 		break;
 	}
 	case Type::IntegerTyID: {
@@ -81,7 +81,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		string strct_name;
 		if (current_struct_eval.find(ll_type) != current_struct_eval.end()) {
 			if (cast<StructType>(ll_type)->isLiteral())
-				error_state = "Struct name not available for struct ptr component.";
+				error_state =
+						"Struct name not available for struct ptr component.";
 			else
 				type = struct_tag_typet(ll_type->getStructName().str());
 			break;
@@ -90,9 +91,11 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		if (cast<StructType>(ll_type)->isLiteral()) {
 			struct_typet struct_type;
 			auto &components = struct_type.components();
-			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n; i++) {
+			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
+					i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_" + to_string(i)),
+				struct_typet::componentt component(string("ele_"
+						+ to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
@@ -105,9 +108,11 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		if (typedef_tag_set.find(strct_name) == typedef_tag_set.end()) {
 			struct_typet struct_type;
 			auto &components = struct_type.components();
-			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n; i++) {
+			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
+					i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_" + to_string(i)),
+				struct_typet::componentt component(string("ele_"
+						+ to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
@@ -118,7 +123,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			symbol.name = strct_name;
 			symbol.base_name = strct_name;
 			if (symbol.type.id() == ID_struct)
-				symbol.pretty_name = string("struct ") + string(symbol.name.c_str());
+				symbol.pretty_name = string("struct ")
+						+ string(symbol.name.c_str());
 			else
 				symbol.pretty_name = symbol.name;
 			symbol.is_type = true;
@@ -132,8 +138,10 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 		break;
 	}
 	case Type::ArrayTyID: {
-		auto arr_len = from_integer(ll_type->getArrayNumElements(), size_type());
-		type = array_typet(get_goto_type(ll_type->getArrayElementType()), arr_len);
+		auto arr_len = from_integer(ll_type->getArrayNumElements(),
+				size_type());
+		type = array_typet(get_goto_type(ll_type->getArrayElementType()),
+				arr_len);
 		break;
 	}
 	case Type::PointerTyID: {

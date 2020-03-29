@@ -130,32 +130,28 @@ exprt translator::get_expr_const(const Constant &C) {
 			}
 			else if (CF.getType()->isX86_FP80Ty()) {
 				auto val = CF.getValueAPF().bitcastToAPInt();
-				uint64_t fraction { };
-				uint16_t exponent { };
-				for (auto i = 0u; i < 64; i++) {
-					uint64_t s { val[i] };
-					s <<= i;
-					fraction |= s;
+				string exp, frac;
+				if (val[79]) frac += "-";
+				for (auto i = 78; i > 63; i--) {
+					if (val[i])
+						exp += "1";
+					else
+						exp += "0";
 				}
-				for (auto i = 64u; i < 79; i++) {
-					uint16_t s { val[i] };
-					s <<= i;
-					exponent |= s;
+				for (auto i = 63; i >= 0; i--) {
+					if (val[i])
+						frac += "1";
+					else
+						frac += "0";
 				}
-				auto sign = val[79];
+
 				type = ieee_float_spect::x86_80().to_type();
 				ieee_floatt ieee_fl(type);
-				ieee_fl.build(fraction, exponent);
-				ieee_fl.set_sign(sign);
-				if (CF.getValueAPF().isNaN())
-					ieee_fl.make_NaN();
-				else if (CF.getValueAPF().isInfinity()) {
-					if (CF.getValueAPF().isNegative())
-						ieee_fl.make_minus_infinity();
-					else
-						ieee_fl.make_plus_infinity();
-				}
-				else if (CF.getValueAPF().isZero()) ieee_fl.make_zero();
+				auto exp_int = string2integer(exp, 2);
+				auto frac_int = string2integer(frac, 2);
+				exp_int -= 16383;		///CBMC expects unbiased exponent
+				exp_int -= 63;///CBMC adds spec.f later, this is to offset that.
+				ieee_fl.build(frac_int, exp_int);
 
 				expr = ieee_fl.to_expr();
 			}
