@@ -152,6 +152,15 @@ exprt translator::get_expr_const(const Constant &C) {
 				exp_int -= 16383;		///CBMC expects unbiased exponent
 				exp_int -= 63;///CBMC adds spec.f later, this is to offset that.
 				ieee_fl.build(frac_int, exp_int);
+				if (CF.getValueAPF().isNaN())
+					ieee_fl.make_NaN();
+				else if (CF.getValueAPF().isZero())
+					ieee_fl.make_zero();
+				else if (CF.getValueAPF().isInfinity()
+						&& CF.getValueAPF().isNegative())
+					ieee_fl.make_minus_infinity();
+				else if (CF.getValueAPF().isInfinity())
+					ieee_fl.make_plus_infinity();
 
 				expr = ieee_fl.to_expr();
 			}
