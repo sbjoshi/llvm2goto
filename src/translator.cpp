@@ -1731,6 +1731,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	case Intrinsic::fabs: {
 		add_intrinsic_support("llvm.fabs.f64");
 		add_intrinsic_support("llvm.fabs.f32");
+		add_intrinsic_support("llvm.fabs.f80");
 		make_func_call(ICI);
 		break;
 	}

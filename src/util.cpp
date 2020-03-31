@@ -1698,6 +1698,51 @@ void translator::add_fabs_support() {
 	goto_functions.function_map["llvm.fabs.f64"].type = to_code_type(fn->type);
 }
 
+void translator::add_fabs80_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(ieee_float_spect::x86_80().to_type(),
+			"llvm.fabs.f80::d");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto e1 = sym1.symbol_expr();
+
+	auto expr = abs_exprt(e1);
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	code_returnt cret;
+	cret.return_value() = expr;
+	tgt->code = cret;
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "llvm.fabs.f80";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.fabs.f80");
+	goto_functions.function_map["llvm.fabs.f80"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.fabs.f80"].type = to_code_type(fn->type);
+}
+
 void translator::add_fabs32_support() {
 	goto_programt temp_gp;
 	goto_programt::targett tgt;
@@ -2801,6 +2846,8 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 		return intrinsics::llvm_memset_p0i8_i64;
 	if (!intrinsic_name.compare("llvm.trunc.f64"))
 		return intrinsics::llvm_trunc_f64;
+	if (!intrinsic_name.compare("llvm.fabs.f80"))
+		return intrinsics::llvm_fabs_f80;
 	if (!intrinsic_name.compare("llvm.fabs.f64"))
 		return intrinsics::llvm_fabs_f64;
 	if (!intrinsic_name.compare("llvm.fabs.f32"))
@@ -2944,6 +2991,9 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::lround:
 		add_lround_support();
+		break;
+	case intrinsics::llvm_fabs_f80:
+		add_fabs80_support();
 		break;
 	case intrinsics::llvm_fabs_f64:
 		add_fabs_support();
