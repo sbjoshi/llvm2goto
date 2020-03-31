@@ -1740,6 +1740,11 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		make_func_call(ICI);
 		break;
 	}
+	case Intrinsic::maxnum: {
+		add_intrinsic_support("llvm.maxnum.f64");
+		make_func_call(ICI);
+		break;
+	}
 	case Intrinsic::trunc: {
 		add_intrinsic_support("llvm.trunc.f64");
 		make_func_call(ICI);

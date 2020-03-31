@@ -1847,6 +1847,77 @@ void translator::add_copysign_support() {
 			to_code_type(fn->type);
 }
 
+void translator::add_maxnum_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(double_type(), "llvm.maxnum.f64::x");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto x = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(double_type(), "llvm.maxnum.f64::y");
+	sym2.is_parameter = true;
+	symbol_table.insert(sym2);
+	auto y = sym2.symbol_expr();
+
+//	auto expr = ternary_exprt(ID_if,
+//			isnan_exprt(x),
+//			x,
+//			ternary_exprt(ID_if,
+//					isnan_exprt(y),
+//					y,
+//					ternary_exprt(ID_if,
+//							binary_relation_exprt(x, ID_gt, y),
+//							x,
+//							y,
+//							double_type()),
+//					double_type()),
+//			double_type());
+	auto expr = ternary_exprt(ID_if,
+			binary_relation_exprt(x, ID_gt, y),
+			x,
+			y,
+			double_type());
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	code_returnt cret;
+	cret.return_value() = expr;
+	tgt->code = cret;
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	code_typet::parametert para2(sym2.type);
+	para2.set_identifier(sym2.name);
+	para2.set_base_name(sym2.base_name);
+	parameters.push_back(para2);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "llvm.maxnum.f64";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.maxnum.f64");
+	goto_functions.function_map["llvm.maxnum.f64"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.maxnum.f64"].type =
+			to_code_type(fn->type);
+}
+
 void translator::add_floor_support() {
 	goto_programt temp_gp;
 	goto_programt::targett tgt;
@@ -2862,6 +2933,8 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 		return intrinsics::llvm_round_f64;
 	if (!intrinsic_name.compare("llvm.copysign.f64"))
 		return intrinsics::llvm_copysign_f64;
+	if (!intrinsic_name.compare("llvm.maxnum.f64"))
+		return intrinsics::llvm_maxnum_f64;
 	if (!intrinsic_name.compare("sin")) return intrinsics::sin;
 	if (!intrinsic_name.compare("cos")) return intrinsics::cos;
 	if (!intrinsic_name.compare("modff")) return intrinsics::modff;
@@ -3015,6 +3088,9 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::llvm_copysign_f64:
 		add_copysign_support();
+		break;
+	case intrinsics::llvm_maxnum_f64:
+		add_maxnum_support();
 		break;
 	case intrinsics::sin:
 		add_sin_support();

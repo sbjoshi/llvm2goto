@@ -127,6 +127,7 @@ private:
 		llvm_rint_f64,
 		llvm_round_f64,
 		llvm_copysign_f64,
+		llvm_maxnum_f64,
 		sin,
 		cos,
 		modff,
@@ -178,6 +179,7 @@ private:
 	void add_round_support();
 	void add_lround_support();
 	void add_copysign_support();
+	void add_maxnum_support();
 	void add_sin_support();
 	void add_cos_support();
 	void add_isnan_support();
