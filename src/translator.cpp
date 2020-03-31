@@ -1722,7 +1722,11 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		make_func_call(ICI);
 		break;
 	}
-	case Intrinsic::nearbyint:
+	case Intrinsic::nearbyint: {
+		add_intrinsic_support("llvm.nearbyint.f64");
+		make_func_call(ICI);
+		break;
+	}
 	case Intrinsic::rint: {
 		add_intrinsic_support("llvm.rint.f64");
 		make_func_call(ICI);

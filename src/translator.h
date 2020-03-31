@@ -125,6 +125,7 @@ private:
 		llvm_floor_f64,
 		llvm_ceil_f64,
 		llvm_rint_f64,
+		llvm_nearbyint_f64,
 		llvm_round_f64,
 		llvm_copysign_f64,
 		llvm_maxnum_f64,
@@ -168,6 +169,7 @@ private:
 	void add_round_to_integralf_support();
 	void add_lrint_support();
 	void add_llvm_rint_support();
+	void add_llvm_nearbyint_support();
 	void add_fmod_support();
 	void add_fmodf_support();
 	void add_remainder_support();

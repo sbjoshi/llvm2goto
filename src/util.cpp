@@ -1774,6 +1774,72 @@ void translator::add_llvm_rint_support() {
 	goto_functions.function_map["llvm.rint.f64"].type = to_code_type(fn->type);
 }
 
+void translator::add_llvm_nearbyint_support() {
+	goto_programt temp_gp;
+	goto_programt::targett tgt;
+
+	auto sym1 = symbol_util::create_symbol(double_type(),
+			"llvm.nearbyint.f64::x");
+	sym1.is_parameter = true;
+	symbol_table.insert(sym1);
+	auto e1 = sym1.symbol_expr();
+
+	auto sym2 = symbol_util::create_symbol(double_type(),
+			"llvm.nearbyint.f64::rti");
+	symbol_table.insert(sym2);
+	auto rti = sym2.symbol_expr();
+	tgt = temp_gp.add_instruction();
+	tgt->make_decl();
+	tgt->code = code_declt(rti);
+
+	code_function_callt call_expr;
+	add_intrinsic_support("CPROVER__round_to_integral");
+	auto rounding_mode =
+			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
+	call_expr.function() =
+			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
+	call_expr.arguments().push_back(rounding_mode);
+	call_expr.arguments().push_back(e1);
+	call_expr.lhs() = rti;
+	tgt = temp_gp.add_instruction();
+	tgt->make_function_call(call_expr);
+
+	auto expr = rti;
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	code_returnt cret;
+	cret.return_value() = expr;
+	tgt->code = cret;
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	symbolt sym;
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	code_typet::parametert para(sym1.type);
+	para.set_identifier(sym1.name);
+	para.set_base_name(sym1.base_name);
+	parameters.push_back(para);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = cret.return_value().type();
+	sym.name = sym.base_name = sym.pretty_name = "llvm.nearbyint.f64";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("llvm.nearbyint.f64");
+	goto_functions.function_map["llvm.nearbyint.f64"].body.swap(temp_gp);
+	goto_functions.function_map["llvm.nearbyint.f64"].type =
+			to_code_type(fn->type);
+}
+
 void translator::add_fabs_support() {
 	goto_programt temp_gp;
 	goto_programt::targett tgt;
@@ -3139,6 +3205,8 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 		return intrinsics::llvm_ceil_f64;
 	if (!intrinsic_name.compare("llvm.rint.f64"))
 		return intrinsics::llvm_rint_f64;
+	if (!intrinsic_name.compare("llvm.nearbyint.f64"))
+		return intrinsics::llvm_nearbyint_f64;
 	if (!intrinsic_name.compare("llvm.round.f64"))
 		return intrinsics::llvm_round_f64;
 	if (!intrinsic_name.compare("llvm.copysign.f64"))
@@ -3299,6 +3367,9 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::llvm_rint_f64:
 		add_llvm_rint_support();
+		break;
+	case intrinsics::llvm_nearbyint_f64:
+		add_llvm_nearbyint_support();
 		break;
 	case intrinsics::llvm_copysign_f64:
 		add_copysign_support();
