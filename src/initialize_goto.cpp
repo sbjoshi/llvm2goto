@@ -33,7 +33,8 @@ void translator::add_initial_symbols() {
 	cprover_rounding_mode.base_name = "__CPROVER_rounding_mode";
 	cprover_rounding_mode.type = signed_int_type();
 	cprover_rounding_mode.mode = ID_C;
-	cprover_rounding_mode.value = from_integer(0, cprover_rounding_mode.type);
+	cprover_rounding_mode.value = from_integer(ieee_floatt::ROUND_TO_EVEN,
+			signed_int_type());
 	cprover_rounding_mode.is_thread_local = true;
 	cprover_rounding_mode.is_static_lifetime = true;
 	cprover_rounding_mode.is_lvalue = true;

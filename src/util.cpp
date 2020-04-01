@@ -801,7 +801,8 @@ void translator::add_round_to_integralf_support() {
 
 	exprt rounding = rnd_mode;
 	ieee_floatt magic_const(ieee_float_spect::single_precision().to_type());
-	magic_const.from_float(8.388608e+6);
+	int mgc_const_bit = 0b01001011000000000000000000000000;
+	magic_const.from_float(*(float*) &mgc_const_bit);
 	auto mgc_cnst_expr = magic_const.to_expr();
 	auto expr = ternary_exprt(ID_if,
 			binary_relation_exprt(abs_exprt(f), ID_ge, mgc_cnst_expr),
@@ -887,7 +888,8 @@ void translator::add_round_to_integral_support() {
 
 	exprt rounding = rnd_mode;
 	ieee_floatt magic_const(ieee_float_spect::double_precision().to_type());
-	magic_const.from_double(4.503600e+15);
+	long mgc_const_bit = 0x4330000000000000;
+	magic_const.from_double(*(double*) &mgc_const_bit);
 	auto mgc_cnst_expr = magic_const.to_expr();
 	auto expr = ternary_exprt(ID_if,
 			binary_relation_exprt(abs_exprt(d), ID_ge, mgc_cnst_expr),
