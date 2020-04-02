@@ -1,7 +1,7 @@
 int main()
 {	
-	int num1, num2,num3 ;
-	int max ;
+	int num1 = nondet(), num2 = nondet(),num3 = nondet() ;
+	int max = nondet() ;
 	
     if(num1 > num2)
     {

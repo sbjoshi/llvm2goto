@@ -2,7 +2,7 @@
 
 int main()
 {
-  int i,x,y=0,z=0;
+  int i,x = nondet(),y=0,z=0;
   for(i=0;i<lb;++i)
   {
     if(x)

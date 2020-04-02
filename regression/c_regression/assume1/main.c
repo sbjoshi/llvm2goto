@@ -1,6 +1,8 @@
+int nondet();
+
 int main()
 {
-  int x;
+  int x = nondet();
 
   __CPROVER_assume(x>=0);
   assert(x>=0);

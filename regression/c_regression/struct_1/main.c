@@ -6,7 +6,7 @@ struct Simple
 
 int main()
 {
-	int a1,b1,c1 ;
+	int a1 = nondet(),b1 = nondet(),c1 = nondet() ;
 
 	struct Simple obj1;
 	obj1.a = a1 ;

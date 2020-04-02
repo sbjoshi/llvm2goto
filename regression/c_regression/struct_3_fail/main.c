@@ -13,7 +13,7 @@ typedef struct QUEUE QUEUE ;
 int main()
 {
 	QUEUE queue ;
-	int n;
+	int n = nondet();
 
 
 

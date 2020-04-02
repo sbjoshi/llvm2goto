@@ -15,7 +15,7 @@ void pass_through_struct (struct str *s, int q)
 
 int main (void)
 {
-  int q;
+  int q = nondet();
 
   struct str s;
 

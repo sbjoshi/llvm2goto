@@ -1,5 +1,6 @@
 #define LIMIT 10
 
+int nondet();
 void fill_array (int *a, int length)
 {
   for (int i = 0; i < length; ++i) {
@@ -15,8 +16,8 @@ int main ()
 
   fill_array(a,LIMIT);
 
-  int x;
-  int y;
+  int x = nondet();
+  int y = nondet();
 
   __CPROVER_assume(0 <= x || x < LIMIT);
   __CPROVER_assume(0 <= y && y < LIMIT);

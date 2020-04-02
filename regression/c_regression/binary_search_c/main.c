@@ -1,8 +1,9 @@
+int nondet();
 int main()
 {
-   int first, last, middle ;
+   int first = nondet(), last = nondet(), middle = nondet() ;
    int n = 5 ;
-   int search ;
+   int search = nondet();
    int array[5];
 
    int found = 0;

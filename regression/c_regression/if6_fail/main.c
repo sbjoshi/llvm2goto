@@ -1,6 +1,6 @@
 int main()
 { 
-  int x ;
+  int x = nondet() ;
   int x_prev = x ;
 
   if(x>=0)

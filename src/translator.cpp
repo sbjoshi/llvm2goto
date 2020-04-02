@@ -201,23 +201,23 @@ exprt translator::get_expr_const(const Constant &C) {
 		else if (isa<ConstantTokenNone>(C)) {
 		}
 		else if (isa<UndefValue>(C)) {
-//			auto symbol = symbol_util::create_symbol(C.getType());
-//			if (C.hasName()) {
-//				symbol.base_name = C.getName().str();
-//				symbol.name = string("ll2gb_undef_") + symbol.base_name.c_str();
-//			}
-//			else
-//				symbol.name = string("ll2gb_undef_") + symbol.name.c_str();
-//			if (symbol_table.add(symbol)) {
-//				error_state = "duplicate symbol names encountered!";
-//			}
-//			auto dclr_instr = goto_program.add_instruction();
-//			dclr_instr->make_decl();
-//			dclr_instr->code = code_declt(symbol.symbol_expr());
-//			goto_program.update();
-//			expr = symbol.symbol_expr();
-			expr =
-					side_effect_expr_nondett(symbol_util::get_goto_type(C.getType()));
+			auto symbol = symbol_util::create_symbol(C.getType());
+			if (C.hasName()) {
+				symbol.base_name = C.getName().str();
+				symbol.name = string("ll2gb_undef_") + symbol.base_name.c_str();
+			}
+			else
+				symbol.name = string("ll2gb_undef_") + symbol.name.c_str();
+			if (symbol_table.add(symbol)) {
+				error_state = "duplicate symbol names encountered!";
+			}
+			auto dclr_instr = goto_program.add_instruction();
+			dclr_instr->make_decl();
+			dclr_instr->code = code_declt(symbol.symbol_expr());
+			goto_program.update();
+			expr = symbol.symbol_expr();
+//			expr =
+//					side_effect_expr_nondett(symbol_util::get_goto_type(C.getType()));
 		}
 	}
 	else if (isa<ConstantExpr>(C)) {
@@ -1302,8 +1302,8 @@ exprt translator::get_expr(const Value &V, bool new_state_required) {
 ///this allows us to do that by assigning it to a new temp variable.
 	if (new_state_required) {
 		auto sym = symbol_util::create_symbol(expr.type());
-		sym.name = string("ll2gb_state_sym_") + sym.name.c_str();
-		sym.base_name = string("temp_") + sym.base_name.c_str();
+		sym.name = string("ll2gb_state_") + sym.name.c_str();
+		sym.base_name = string("ll2gb_state_") + sym.base_name.c_str();
 		if (symbol_table.add(sym)) {
 			error_state = "duplicate symbol names encountered!";
 		}
@@ -1440,9 +1440,9 @@ void translator::trans_call(const CallInst &CI) {
 	else {	/// These are functions whose semantics are unknown.
 		L1: auto called_val = CI.getCalledValue()->stripPointerCasts();
 		if (is_assert_function(called_val->getName().str())) {
-			auto assert_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
+			auto assert_inst = goto_program.add_instruction();
 			assert_inst->make_assertion(guard_expr);
 			assert_inst->source_location = location;
 			assert_inst->source_location.set_comment("assertion "
@@ -1456,9 +1456,9 @@ void translator::trans_call(const CallInst &CI) {
 			goto_program.update();
 		}
 		else if (is_assume_function(called_val->getName().str())) {
-			auto assume_inst = goto_program.add_instruction();
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
+			auto assume_inst = goto_program.add_instruction();
 			assume_inst->make_assumption(guard_expr);
 			assume_inst->source_location = location;
 			goto_program.update();

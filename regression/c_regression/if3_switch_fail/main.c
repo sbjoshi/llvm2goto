@@ -2,7 +2,7 @@
 
 int main()
 {
-	int i,j ;
+	int i = nondet(),j = nondet() ;
 
 	if(i>0)
 	{
