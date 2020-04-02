@@ -105,6 +105,7 @@ private:
 
 	enum class intrinsics {
 		malloc,
+		calloc,
 		free,
 		__fpclassify,
 		__fpclassifyf,
@@ -155,6 +156,7 @@ private:
 	void add_intrinsic_support(const std::string&, bool reset_status = false);
 	intrinsics get_intrinsic_id(const std::string&);
 	void add_malloc_support();
+	void add_calloc_support();
 	void add_free_support();
 	void add_fesetround_support();
 	void add_fegetround_support();

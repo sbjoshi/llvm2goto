@@ -338,6 +338,241 @@ void translator::add_malloc_support() {
 	goto_functions.function_map["malloc"].type = to_code_type(fn->type);
 }
 
+void translator::add_calloc_support() {
+	symbolt cprover_malloc_is_new_array;
+	cprover_malloc_is_new_array.name = "__CPROVER_malloc_is_new_array";
+	cprover_malloc_is_new_array.base_name = "__CPROVER_malloc_is_new_array";
+	cprover_malloc_is_new_array.type = bool_typet();
+	cprover_malloc_is_new_array.mode = ID_C;
+	cprover_malloc_is_new_array.value = notequal_exprt(from_integer(0,
+			signed_int_type()),
+			from_integer(0, signed_int_type()));
+	cprover_malloc_is_new_array.is_static_lifetime = true;
+	cprover_malloc_is_new_array.is_lvalue = true;
+	symbol_table.add(cprover_malloc_is_new_array);
+
+	symbolt cprover_memory_leak;
+	cprover_memory_leak.name = "__CPROVER_memory_leak";
+	cprover_memory_leak.base_name = "__CPROVER_memory_leak";
+	cprover_memory_leak.type = pointer_typet(void_typet(),
+			config.ansi_c.pointer_width);
+	cprover_memory_leak.value =
+			null_pointer_exprt(to_pointer_type(cprover_memory_leak.type));
+	cprover_memory_leak.mode = ID_C;
+	cprover_memory_leak.is_lvalue = true;
+	cprover_memory_leak.is_static_lifetime = true;
+	symbol_table.add(cprover_memory_leak);
+
+	symbolt cprover_memory;
+	cprover_memory.name = "__CPROVER_memory";
+	cprover_memory.base_name = "__CPROVER_memory";
+	cprover_memory.type = array_typet(unsigned_char_type(),
+			infinity_exprt(unsigned_int_type()));
+	cprover_memory.value = from_integer(0, signed_int_type());
+	cprover_memory.mode = ID_C;
+	cprover_memory.is_lvalue = true;
+	cprover_memory.is_static_lifetime = true;
+	symbol_table.add(cprover_memory);
+
+	goto_programt temp_gp;
+	symbolt sym;
+	goto_programt::targett tgt;
+
+	sym.clear();
+	sym.name = sym.base_name = "calloc_size";
+	sym.type = signed_long_int_type();
+	sym.is_parameter = true;
+	symbol_table.insert(sym);
+
+	sym.clear();
+	sym.name = sym.base_name = "calloc_nmemb";
+	sym.type = signed_long_int_type();
+	sym.is_parameter = true;
+	symbol_table.insert(sym);
+
+	sym.clear();
+	tgt = temp_gp.add_instruction();
+	sym.name = sym.base_name = "calloc_res";
+	sym.type = pointer_typet(void_typet(), config.ansi_c.pointer_width);
+	tgt->make_decl();
+	symbol_table.insert(sym);
+	tgt->code = code_declt(sym.symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	sym.clear();
+	sym.name = sym.base_name = "calloc_value";
+	sym.type = pointer_typet(void_typet(), config.ansi_c.pointer_width);
+	tgt->make_decl();
+	symbol_table.insert(sym);
+	tgt->code = code_declt(sym.symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	source_locationt loc;
+	side_effect_exprt calloc_expr(ID_allocate,
+			symbol_table.lookup("calloc_value")->type,
+			loc);
+	calloc_expr.operands().push_back(mult_exprt(symbol_table.lookup("calloc_nmemb")->symbol_expr(),
+			symbol_table.lookup("calloc_size")->symbol_expr()));
+	calloc_expr.operands().push_back(from_integer(1, signed_int_type()));
+	tgt->code = code_assignt(symbol_table.lookup("calloc_value")->symbol_expr(),
+			calloc_expr);
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	tgt->code = code_assignt(symbol_table.lookup("calloc_res")->symbol_expr(),
+			symbol_table.lookup("calloc_value")->symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	auto cp_de_alloc_expr =
+			symbol_table.lookup("__CPROVER_deallocated")->symbol_expr();
+	auto eq_expr = equal_exprt(symbol_table.lookup("calloc_res")->symbol_expr(),
+			cp_de_alloc_expr);
+	tgt->code =
+			code_assignt(cp_de_alloc_expr,
+					ternary_exprt(ID_if,
+							eq_expr,
+							null_pointer_exprt(to_pointer_type(cp_de_alloc_expr.type())),
+							cp_de_alloc_expr,
+							cp_de_alloc_expr.type()));
+
+	sym.clear();
+	tgt = temp_gp.add_instruction();
+	sym.name = sym.base_name = "record_calloc";
+	sym.type = bool_typet();
+	tgt->make_decl();
+	symbol_table.insert(sym);
+	tgt->code = code_declt(sym.symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	tgt->code =
+			code_assignt(symbol_table.lookup("record_calloc")->symbol_expr(),
+					side_effect_expr_nondett(bool_typet()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	auto cp_malloc_obj_expr =
+			symbol_table.lookup("__CPROVER_malloc_object")->symbol_expr();
+	tgt->code = code_assignt(cp_malloc_obj_expr,
+			ternary_exprt(ID_if,
+					symbol_table.lookup("record_calloc")->symbol_expr(),
+					symbol_table.lookup("calloc_res")->symbol_expr(),
+					cp_malloc_obj_expr,
+					cp_malloc_obj_expr.type()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	auto cp_malloc_size_expr =
+			symbol_table.lookup("__CPROVER_malloc_size")->symbol_expr();
+	tgt->code =
+			code_assignt(cp_malloc_size_expr,
+					ternary_exprt(ID_if,
+							symbol_table.lookup("record_calloc")->symbol_expr(),
+							typecast_exprt(symbol_table.lookup("calloc_size")->symbol_expr(),
+									cp_malloc_size_expr.type()),
+							cp_malloc_size_expr,
+							cp_malloc_size_expr.type()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	auto cp_malloc_is_n_ar_expr =
+			symbol_table.lookup("__CPROVER_malloc_is_new_array")->symbol_expr();
+	tgt->code = code_assignt(cp_malloc_is_n_ar_expr,
+			notequal_exprt(ternary_exprt(ID_if,
+					symbol_table.lookup("record_calloc")->symbol_expr(),
+					from_integer(0, signed_int_type()),
+					typecast_exprt(cp_malloc_is_n_ar_expr, signed_int_type()),
+					signed_int_type()),
+					from_integer(0, signed_int_type())));
+
+	sym.clear();
+	tgt = temp_gp.add_instruction();
+	sym.name = sym.base_name = "record_may_leak";
+	sym.type = bool_typet();
+	tgt->make_decl();
+	symbol_table.insert(sym);
+	tgt->code = code_declt(sym.symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	tgt->code =
+			code_assignt(symbol_table.lookup("record_may_leak")->symbol_expr(),
+					side_effect_expr_nondett(bool_typet()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_assignment();
+	auto cp_mem_leak_expr =
+			symbol_table.lookup("__CPROVER_memory_leak")->symbol_expr();
+	tgt->code = code_assignt(cp_mem_leak_expr,
+			ternary_exprt(ID_if,
+					symbol_table.lookup("record_may_leak")->symbol_expr(),
+					symbol_table.lookup("calloc_res")->symbol_expr(),
+					cp_mem_leak_expr,
+					cp_mem_leak_expr.type()));
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_return();
+	code_returnt cret;
+	cret.return_value() =
+			typecast_exprt(symbol_table.lookup("calloc_res")->symbol_expr(),
+					pointer_typet(signedbv_typet(8),
+							config.ansi_c.pointer_width));
+	tgt->code = cret;
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_dead();
+	tgt->code =
+			code_deadt(symbol_table.lookup("record_may_leak")->symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_dead();
+	tgt->code = code_deadt(symbol_table.lookup("record_calloc")->symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_dead();
+	tgt->code = code_deadt(symbol_table.lookup("calloc_value")->symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_dead();
+	tgt->code = code_deadt(symbol_table.lookup("calloc_res")->symbol_expr());
+
+	tgt = temp_gp.add_instruction();
+	tgt->make_end_function();
+
+	temp_gp.update();
+
+	sym.clear();
+	auto func_code_type = code_typet();
+	code_typet::parameterst parameters;
+	auto arg_symbol = symbol_table.lookup("calloc_size");
+	code_typet::parametert para(arg_symbol->type);
+	para.set_identifier(arg_symbol->name);
+	para.set_base_name(arg_symbol->base_name);
+	parameters.push_back(para);
+	auto arg_symbol2 = symbol_table.lookup("calloc_nmemb");
+	code_typet::parametert para2(arg_symbol2->type);
+	para2.set_identifier(arg_symbol2->name);
+	para2.set_base_name(arg_symbol2->base_name);
+	parameters.push_back(para2);
+	func_code_type.parameters() = parameters;
+	func_code_type.return_type() = pointer_typet(signedbv_typet(8),
+			config.ansi_c.pointer_width);
+	sym.name = sym.base_name = sym.pretty_name = "calloc";
+	sym.is_thread_local = false;
+	sym.mode = ID_C;
+	sym.is_lvalue = true;
+	sym.type = func_code_type;
+	symbol_table.add(sym);
+
+	goto_functions.function_map[sym.name] = goto_functionst::goto_functiont();
+
+	const auto *fn = symbol_table.lookup("calloc");
+	goto_functions.function_map["calloc"].body.swap(temp_gp);
+	goto_functions.function_map["calloc"].type = to_code_type(fn->type);
+}
+
 void translator::add_free_support() {
 	add_intrinsic_support("malloc");
 	goto_programt temp_gp;
@@ -3231,6 +3466,7 @@ translator::intrinsics translator::get_intrinsic_id(const string &intrinsic_name
 	if (!intrinsic_name.compare("__signbitf")) return intrinsics::__signbitf;
 	if (!intrinsic_name.compare("abort")) return intrinsics::abort;
 	if (!intrinsic_name.compare("malloc")) return intrinsics::malloc;
+	if (!intrinsic_name.compare("calloc")) return intrinsics::calloc;
 	if (!intrinsic_name.compare("free")) return intrinsics::free;
 	if (!intrinsic_name.compare("CPROVER__round_to_integral"))
 		return intrinsics::cprover_round_to_integral;
@@ -3324,6 +3560,9 @@ void translator::add_intrinsic_support(const string &func_name,
 		break;
 	case intrinsics::malloc:
 		add_malloc_support();
+		break;
+	case intrinsics::calloc:
+		add_calloc_support();
 		break;
 	case intrinsics::free:
 		add_free_support();
