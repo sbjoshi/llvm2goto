@@ -56,6 +56,7 @@ namespace ll2gb {
 
 extern llvm::cl::opt<unsigned> verbose;
 extern llvm::cl::opt<bool> optimizeEnabled;
+extern llvm::cl::opt<bool> optimizeForced;
 extern llvm::cl::opt<std::string> outputFilename;
 extern llvm::cl::opt<std::string> InputFilename;
 

@@ -154,7 +154,7 @@ private:
 	bool is_intrinsic_function(const std::string&);
 	typet get_intrinsic_return_type(const std::string&);
 	void add_intrinsic_support(const std::string&, bool reset_status = false);
-	intrinsics get_intrinsic_id(const std::string&);
+	static intrinsics get_intrinsic_id(const std::string&);
 	void add_malloc_support();
 	void add_calloc_support();
 	void add_free_support();
@@ -224,6 +224,8 @@ public:
 	static bool check_state() {
 		return !error_state.empty();
 	}
+
+	static void check_optimizations_safe(const llvm::Module&);
 	~translator();
 }
 ;

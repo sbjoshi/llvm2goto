@@ -47,8 +47,36 @@ unique_ptr<Module> ll2gb::get_llvm_ir() {
 	return M;
 }
 
+void translator::check_optimizations_safe(const Module &llvm_module) {
+	if (!optimizeEnabled || (optimizeForced && optimizeEnabled)) return;
+	for (auto &F : llvm_module)
+		for (auto &BB : F)
+			for (auto &I : BB) {
+				if (isa<CallInst>(&I)) {
+					auto &CI = cast<CallInst>(I);
+					switch (get_intrinsic_id(CI.getCalledValue()->stripPointerCasts()->getName().str())) {
+					case intrinsics::fegetround:
+					case intrinsics::fesetround:
+						optimizeEnabled = false;
+						return;
+					default:
+						;
+					}
+				}
+			}
+}
+
 bool ll2gb::run_llvm_passes(Module &llvm_module) {
+	translator::check_optimizations_safe(llvm_module);
 	if (optimizeEnabled) {
+		if (verbose) {
+			outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
+			outs() << "Optimizer ";
+			outs().resetColor();
+			outs().changeColor(raw_ostream::Colors::GREEN, true);
+			outs() << "Enabled\n";
+			outs().resetColor();
+		}
 		PassManagerBuilder PM;
 		PM.OptLevel = 1;
 		PM.SizeLevel = 0;

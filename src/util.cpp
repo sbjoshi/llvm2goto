@@ -37,6 +37,11 @@ cl::opt<bool> ll2gb::optimizeEnabled("opt",
 		cl::init(false),
 		cl::cat(ll2gb_cat));
 
+cl::opt<bool> ll2gb::optimizeForced("f",
+		cl::desc("Force Optimizations"),
+		cl::init(false),
+		cl::cat(ll2gb_cat));
+
 void ll2gb::print_version(raw_ostream &ostream) {
 	ostream << "ll2gb Version: 2.0\n";
 }
@@ -54,14 +59,6 @@ void ll2gb::parse_input(int argc, char **argv) {
 			outputFilename = InputFilename.substr(0, index) + ".gb";
 		else
 			outputFilename = InputFilename + ".gb";
-	}
-	if (optimizeEnabled && verbose) {
-		outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
-		outs() << "Optimizer ";
-		outs().resetColor();
-		outs().changeColor(raw_ostream::Colors::GREEN, true);
-		outs() << "Enabled\n";
-		outs().resetColor();
 	}
 }
 
