@@ -77,13 +77,15 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 			outs() << "Enabled\n";
 			outs().resetColor();
 		}
+		legacy::FunctionPassManager FPM(&llvm_module);
+		legacy::PassManager MPM;
 		PassManagerBuilder PM;
 		PM.OptLevel = 1;
 		PM.SizeLevel = 0;
-		legacy::FunctionPassManager FPM(&llvm_module);
-		legacy::PassManager MPM;
-		PM.Inliner = createAlwaysInlinerLegacyPass();
+		PM.LoopVectorize = false;
+		PM.SLPVectorize = false;
 		PM.DisableUnrollLoops = true;
+		PM.Inliner = createAlwaysInlinerLegacyPass();
 		PM.populateFunctionPassManager(FPM);
 		PM.populateModulePassManager(MPM);
 		FPM.doInitialization();

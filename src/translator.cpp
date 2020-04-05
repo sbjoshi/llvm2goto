@@ -1834,12 +1834,13 @@ void translator::trans_ret(const ReturnInst &RI) {
 		ret_inst->make_return();
 		ret_inst->code = cret;
 		ret_inst->source_location = get_location(RI);
-		auto goto_instr = goto_program.add_instruction();
-		/// Change these to GOTO END FUNCTION later, we don't use
-		/// incomplete_goto instr anywhere else, hence we can convert,
-		/// every incomplete_goto to goto END FUNCTION.
-		goto_instr->make_incomplete_goto(code_gotot());
 	}
+	auto goto_instr = goto_program.add_instruction();
+	/// Change these to GOTO END FUNCTION later, we don't use
+	/// incomplete_goto instr anywhere else, hence we can convert,
+	/// every incomplete_goto to goto END FUNCTION.
+	goto_instr->make_incomplete_goto(code_gotot());
+	goto_program.update();
 }
 
 /// Translate and add an Assignment Instruction.
