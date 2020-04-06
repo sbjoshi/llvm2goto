@@ -1611,6 +1611,15 @@ void translator::make_func_call(const CallInst &CI) {
 void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	auto location = get_location(ICI);
 	switch (ICI.getIntrinsicID()) {
+	case Intrinsic::assume: {
+		const auto &cond = ICI.getArgOperand(0);
+		auto guard_expr = typecast_exprt(get_expr(*cond), bool_typet());
+		auto assume_inst = goto_program.add_instruction();
+		assume_inst->make_assumption(guard_expr);
+		assume_inst->source_location = location;
+		goto_program.update();
+		break;
+	}
 	case Intrinsic::memcpy: {
 //		add_intrinsic_support("llvm.memcpy.p0i8.p0i8.i64");
 //		make_func_call(ICI);
@@ -1657,6 +1666,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		arr_rplc_instr->code.operands().push_back(new_arr);
 		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		arr_rplc_instr->source_location = location;
+		goto_program.update();
 		break;
 	}
 	case Intrinsic::memset: {
@@ -1705,6 +1715,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		arr_rplc_instr->code.operands().push_back(new_arr);
 		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		arr_rplc_instr->source_location = location;
+		goto_program.update();
 		break;
 	}
 	case Intrinsic::ceil: {
