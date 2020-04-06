@@ -2337,20 +2337,24 @@ void translator::add_function_symbols() {
 /// This adds all the global symbols to
 /// the symbol table.
 void translator::add_global_symbols() {
-	symbolt *symbol = nullptr;
 	symbol_util::reset_var_counter();
 	for (auto &G : llvm_module->globals()) {
-		auto tmp = symbol_util::create_symbol(G.getValueType());
-		symbol_table.move(tmp, symbol);
+		auto symbol = symbol_util::create_symbol(G.getValueType());
 		if (check_state()) return;
 		if (G.hasName()) {
-			symbol->base_name = G.getName().str();
-			symbol->name = symbol->base_name.c_str();
-			symbol->is_static_lifetime = true;
-			symbol_table.move(*symbol, symbol);
-			if (G.getNumOperands() > 0)
-				symbol->value = get_expr(*G.getOperand(0));
+			symbol.base_name = G.getName().str();
+			symbol.name = symbol.base_name.c_str();
+			symbol.is_static_lifetime = true;
 		}
+		else {
+			error_state = "Global does not have name";
+			return;
+		}
+		symbol_table.add(symbol);
+	}
+	for (auto &G : llvm_module->globals()) {
+		auto symbol = symbol_table.get_writeable(G.getName().str());
+		if (G.getNumOperands() > 0) symbol->value = get_expr(*G.getOperand(0));
 		symbol_table.move(*symbol, symbol);
 	}
 }
@@ -2366,8 +2370,8 @@ bool translator::generate_goto() {
 		outs().resetColor();
 	}
 	initialize_goto();
-	add_global_symbols();
 	add_function_symbols();
+	add_global_symbols();
 	analyse_ir();
 	trans_module();
 	if (verbose && verbose < 10) {
