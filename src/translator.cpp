@@ -1090,7 +1090,8 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 /// to represent an llvm Value.
 exprt translator::get_expr(const Value &V, bool new_state_required) {
 	exprt expr;
-	if (isa<Instruction>(V) && isa<BinaryOperator>(V) && V.getNumUses() > 1) {
+	if (isa<Instruction>(V) && (isa<BinaryOperator>(V) || isa<LoadInst>(V))
+			&& V.getNumUses() > 1) {
 		new_state_required = true;
 		if (state_map.find(&V) != state_map.end()) return state_map[&V];
 	}
