@@ -150,14 +150,13 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 	}
 	case Type::FunctionTyID: {
 		auto ll_func_type = cast<FunctionType>(ll_type);
-		auto func_type = code_typet();
 		code_typet::parameterst parameters;
 		for (auto param_type : ll_func_type->params()) {
 			code_typet::parametert para(get_goto_type(param_type));
 			parameters.push_back(para);
 		}
-		func_type.parameters() = parameters;
-		func_type.return_type() = get_goto_type(ll_func_type->getReturnType());
+		auto func_type = code_typet(parameters,
+				get_goto_type(ll_func_type->getReturnType()));
 		type = func_type;
 		break;
 	}
@@ -210,7 +209,6 @@ symbolt translator::symbol_util::create_symbol(const typet &gb_type,
 symbolt translator::symbol_util::create_goto_func_symbol(const Function &F) {
 	symbolt symbol;
 	symbol.clear();
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	for (const auto &arg_iter : F.args()) {
 		auto arg_symbol = symbol_table.lookup(func_arg_name_map[&arg_iter]);
@@ -219,8 +217,8 @@ symbolt translator::symbol_util::create_goto_func_symbol(const Function &F) {
 		para.set_base_name(arg_symbol->base_name);
 		parameters.push_back(para);
 	}
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = get_goto_type(F.getReturnType());
+	auto func_code_type = code_typet(parameters,
+			get_goto_type(F.getReturnType()));
 
 	symbol.name = F.getName().str();
 	symbol.base_name = symbol.name;

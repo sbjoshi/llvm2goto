@@ -86,22 +86,21 @@ exprt translator::get_expr_const(const Constant &C) {
 	else if (isa<ConstantData>(C)) {
 		if (isa<ConstantAggregateZero>(C)) {
 			const auto &CAZ = cast<ConstantAggregateZero>(C);
-			exprt list_expr;
-			if (C.getType()->isArrayTy())
-				list_expr =
-						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
-			else {
-				auto type = symbol_util::get_goto_type(C.getType());
-				if (type.id() == ID_struct_tag)
-					type =
-							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
-				list_expr = struct_exprt(to_struct_type(type));
-			}
+			exprt::operandst list_operands;
 			for (unsigned i = 0; i < CAZ.getNumElements(); i++) {
 				const auto &V = CAZ.getAggregateElement(i);
-				list_expr.add_to_operands(get_expr(*V));
+				list_operands.push_back(get_expr(*V));
 			}
-			expr = list_expr;
+			if (C.getType()->isArrayTy())
+				expr = array_exprt(list_operands,
+						to_array_type(symbol_util::get_goto_type(C.getType())));
+			else {
+				auto type = symbol_util::get_goto_type(C.getType());
+				expr = struct_exprt(list_operands, type);
+//				if (type.id() == ID_struct_tag)
+//					type =
+//							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
+			}
 		}
 		else if (isa<ConstantDataSequential>(C)) {
 			const auto &CDS = cast<ConstantDataSequential>(C);
@@ -1090,8 +1089,7 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 /// to represent an llvm Value.
 exprt translator::get_expr(const Value &V, bool new_state_required) {
 	exprt expr;
-	if (isa<Instruction>(V) && (isa<BinaryOperator>(V) || isa<LoadInst>(V))
-			&& V.getNumUses() > 1) {
+	if (isa<Instruction>(V) && (!isa<AllocaInst>(V)) && V.getNumUses() > 1) {
 		new_state_required = true;
 		if (state_map.find(&V) != state_map.end()) return state_map[&V];
 	}
@@ -1413,7 +1411,7 @@ void translator::trans_call(const CallInst &CI) {
 	auto called_func = CI.getCalledFunction();
 	auto location = get_location(CI);
 	if (called_func) {
-		if (called_func->isIntrinsic()) {			///LLVM Intrinsic Functions
+		if (called_func->isIntrinsic()) {		///LLVM Intrinsic Functions
 			const auto &ICI = cast<IntrinsicInst>(CI);
 			trans_call_llvm_intrinsic(ICI);
 		}
@@ -1480,9 +1478,10 @@ void translator::trans_call(const CallInst &CI) {
 							&& std::string("main").compare(a.second.name.c_str())) {
 						actual_symbols.insert(symbol_table.lookup(a.second.name));
 					}
-			code_typet func__code_type;
 			symbolt ret_symbol;
-			code_function_callt call_expr;
+			exprt lhs_expr;
+			exprt call_func_expr;
+			code_function_callt::argumentst call_arguments;
 			if (!ll_func_type->getReturnType()->isVoidTy()) {
 				ret_symbol =
 						symbol_util::create_symbol(ll_func_type->getReturnType());
@@ -1498,7 +1497,7 @@ void translator::trans_call(const CallInst &CI) {
 				if (symbol_table.add(ret_symbol)) {
 					error_state = "duplicate symbol names encountered!";
 				}
-				call_expr.lhs() = ret_symbol.symbol_expr();
+				lhs_expr = ret_symbol.symbol_expr();
 				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
 				auto dclr_instr = goto_program.add_instruction();
 				dclr_instr->make_decl();
@@ -1507,13 +1506,14 @@ void translator::trans_call(const CallInst &CI) {
 				goto_program.update();
 			}
 			for (auto func_sym : actual_symbols) {
-				call_expr.function() = func_sym->symbol_expr();
+				call_func_expr = func_sym->symbol_expr();
 				for (const auto &arg : CI.args()) {
 					const auto &arg_val = arg.get();
-					call_expr.arguments().push_back(get_expr(*arg_val));
+					call_arguments.push_back(get_expr(*arg_val));
 				}
-				func_calls.insert(call_expr);
-				call_expr.arguments().clear();
+				func_calls.insert(code_function_callt(lhs_expr,
+						call_func_expr,
+						call_arguments));
 			}
 			std::vector<goto_programt::targett> cond_targets;
 			std::vector<goto_programt::targett> func_targets;
@@ -1559,7 +1559,8 @@ void translator::make_func_call(const CallInst &CI) {
 	auto location = get_location(CI);
 	auto called_func = CI.getCalledFunction();
 	auto called_val = CI.getCalledValue()->stripPointerCasts();
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	if (called_func)
 		call_expr.function() =
 				symbol_table.lookup(called_func->getName().str())->symbol_expr();
@@ -1651,21 +1652,21 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 
 		auto dclr_instr = goto_program.add_instruction();
 		dclr_instr->source_location = location;
-		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		dclr_instr->make_decl(code_declt(symbol.symbol_expr()));
 
 		auto arr_cpy_instr = goto_program.add_instruction();
 		arr_cpy_instr->make_other(codet(ID_array_copy));
 		arr_cpy_instr->code.operands().push_back(new_arr);
 		arr_cpy_instr->code.operands().push_back(source_expr);
-		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		arr_cpy_instr->source_location = location;
 
 		auto arr_rplc_instr = goto_program.add_instruction();
 		arr_rplc_instr->make_other(codet(ID_array_replace));
 		arr_rplc_instr->code.operands().push_back(target_expr);
 		arr_rplc_instr->code.operands().push_back(new_arr);
-		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		arr_rplc_instr->source_location = location;
 		goto_program.update();
 		break;
@@ -1700,21 +1701,21 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 
 		auto dclr_instr = goto_program.add_instruction();
 		dclr_instr->source_location = location;
-		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		dclr_instr->make_decl(code_declt(symbol.symbol_expr()));
 
 		auto arr_cpy_instr = goto_program.add_instruction();
 		arr_cpy_instr->make_other(codet(ID_array_set));
 		arr_cpy_instr->code.operands().push_back(new_arr);
 		arr_cpy_instr->code.operands().push_back(val_expr);
-		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		arr_cpy_instr->source_location = location;
 
 		auto arr_rplc_instr = goto_program.add_instruction();
 		arr_rplc_instr->make_other(codet(ID_array_replace));
 		arr_rplc_instr->code.operands().push_back(target_expr);
 		arr_rplc_instr->code.operands().push_back(new_arr);
-		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
+//		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
 		arr_rplc_instr->source_location = location;
 		goto_program.update();
 		break;
@@ -1788,7 +1789,8 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		}
 		auto instr = goto_program.add_instruction();
 		instr->make_assignment(code_assignt(ret_symbol.symbol_expr(),
-				side_effect_expr_nondett(ret_symbol.type)));
+				side_effect_expr_nondett(ret_symbol.type,
+						instr->source_location)));
 		goto_program.update();
 		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
 		break;
@@ -1851,7 +1853,7 @@ void translator::trans_ret(const ReturnInst &RI) {
 	/// Change these to GOTO END FUNCTION later, we don't use
 	/// incomplete_goto instr anywhere else, hence we can convert,
 	/// every incomplete_goto to goto END FUNCTION.
-	goto_instr->make_incomplete_goto(code_gotot());
+	goto_instr->make_incomplete_goto(code_gotot(irep_idt()));
 	goto_program.update();
 }
 
@@ -2037,100 +2039,6 @@ void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
 	}
 }
 
-/// Taken from cbmc code base to transform
-/// the argc and argv symbols of main function.
-void translator::add_argc_argv(const symbolt &main_symbol) {
-	const code_typet::parameterst &parameters =
-			to_code_type(main_symbol.type).parameters();
-
-	if (parameters.empty()) return;
-
-	if (parameters.size() != 2 && parameters.size() != 3) {
-		error_state =
-				"Expected main function to have no or two or three parameters";
-		return;
-	}
-
-	symbolt *argc_new_symbol;
-
-	const exprt &op0 = static_cast<const exprt&>(parameters[0]);
-	const exprt &op1 = static_cast<const exprt&>(parameters[1]);
-
-	{
-		symbolt argc_symbol;
-
-		argc_symbol.base_name = "argc";
-		argc_symbol.name = "argc'";
-		argc_symbol.type = op0.type();
-		argc_symbol.is_static_lifetime = true;
-		argc_symbol.is_lvalue = true;
-
-		if (argc_symbol.type.id() != ID_signedbv
-				&& argc_symbol.type.id() != ID_unsignedbv) {
-			error_state = "argc argument expected to be integer type";
-			return;
-		}
-
-		move_symbol(argc_symbol, argc_new_symbol);
-	}
-
-	{
-		if (op1.type().id() != ID_pointer
-				|| op1.type().subtype().id() != ID_pointer) {
-			error_state =
-					"argv argument expected to be pointer-to-pointer type";
-			return;
-		}
-
-		/// we make the type of this thing an array of pointers
-		/// need to add one to the size -- the array is terminated
-		/// with NULL
-		exprt one_expr = from_integer(1, argc_new_symbol->type);
-
-		const plus_exprt size_expr(argc_new_symbol->symbol_expr(), one_expr);
-		const array_typet argv_type(op1.type().subtype(), size_expr);
-
-		symbolt argv_symbol;
-
-		argv_symbol.base_name = "argv'";
-		argv_symbol.name = "argv'";
-		argv_symbol.type = argv_type;
-		argv_symbol.is_static_lifetime = true;
-		argv_symbol.is_lvalue = true;
-
-		symbolt *argv_new_symbol;
-		move_symbol(argv_symbol, argv_new_symbol);
-	}
-
-	if (parameters.size() == 3) {
-		symbolt envp_symbol;
-		envp_symbol.base_name = "envp'";
-		envp_symbol.name = "envp'";
-		envp_symbol.type = (static_cast<const exprt&>(parameters[2])).type();
-		envp_symbol.is_static_lifetime = true;
-
-		symbolt envp_size_symbol, *envp_new_size_symbol;
-		envp_size_symbol.base_name = "envp_size";
-		envp_size_symbol.name = "envp_size'";
-		envp_size_symbol.type = op0.type();  // same type as argc!
-		envp_size_symbol.is_static_lifetime = true;
-		move_symbol(envp_size_symbol, envp_new_size_symbol);
-
-		if (envp_symbol.type.id() != ID_pointer) {
-			error_state = "envp argument expected to be pointer type";
-			return;
-		}
-
-		exprt size_expr = envp_new_size_symbol->symbol_expr();
-
-		envp_symbol.type.id(ID_array);
-		envp_symbol.type.add(ID_size).swap(size_expr);
-
-		symbolt *envp_new_symbol;
-		move_symbol(envp_symbol, envp_new_symbol);
-	}
-}
-
 /// Translates and entire function and writes it
 ///to the 'goto_program'.
 bool translator::trans_function(Function &F) {
@@ -2196,67 +2104,11 @@ void translator::set_entry_point(goto_functionst &goto_functions,
 	optionst options;
 	parse_options.set_default_options(options);
 	object_factory_params.set(options);
-	parse_options.get_message_handler();
-	ansi_c_entry_point(symbol_table,
-			parse_options.get_message_handler(),
-			object_factory_params);
-	goto_functions.function_map.insert(pair<const dstringt,
-			goto_functionst::goto_functiont>("__CPROVER__start",
-			goto_functionst::goto_functiont()));
-	add_function_definitions("__CPROVER__start", goto_functions, symbol_table);
-	goto_functions.function_map.insert(pair<const dstringt,
-			goto_functionst::goto_functiont>(
-	INITIALIZE_FUNCTION, goto_functionst::goto_functiont()));
-	add_function_definitions(INITIALIZE_FUNCTION, goto_functions, symbol_table);
-}
-
-void translator::add_function_definitions(string name,
-		goto_functionst &goto_functions,
-		symbol_tablet &symbol_table) {
-	goto_programt gp;
-	code_blockt cb = to_code_block(to_code(symbol_table.lookup(name)->value));
-	for (unsigned int b = 0; b < cb.operands().size(); b++) {
-		goto_programt::targett ins = gp.add_instruction();
-		codet c = to_code(cb.operands()[b]);
-		if (ID_assign == c.get_statement()) {
-			ins->make_assignment();
-			ins->code = code_assignt(c.operands()[0], c.operands()[1]);
-		}
-		else if (ID_output == c.get_statement()) {
-			c.operands().resize(2);
-
-			const symbolt &return_symbol = *symbol_table.lookup("return'");
-
-			c.op0() =
-					address_of_exprt(index_exprt(string_constantt(return_symbol.base_name),
-							from_integer(0, index_type())));
-
-			c.op1() = return_symbol.symbol_expr();
-			ins->make_other(c);
-		}
-		else if (ID_label == c.get_statement()) {
-			ins->make_skip();
-		}
-		else if (ID_function_call == c.get_statement()) {
-			ins->make_function_call(c);
-		}
-		else if (ID_input == c.get_statement()) {
-			c.operands().resize(2);
-			c.op0() = address_of_exprt(index_exprt(string_constantt("argc"),
-					from_integer(0, index_type())));
-			c.op1() = symbol_table.lookup("argc'")->symbol_expr();
-			ins->make_other(c);
-		}
-		else if (ID_assume == c.get_statement()) {
-			ins->make_assumption(c.op0());
-		}
-		else {
-			ins->code = c;
-		}
-	}
-	gp.add_instruction(END_FUNCTION);
-	gp.update();
-	(*goto_functions.function_map.find(name)).second.body.swap(gp);
+	ansi_c_languaget ansi_c;
+	ansi_c.set_language_options(options);
+	null_message_handlert msg_handler;
+	ansi_c.set_message_handler(msg_handler);
+	ansi_c.generate_support_functions(symbol_table);
 }
 
 /// Translates and entire module and writes it
@@ -2277,14 +2129,12 @@ bool translator::trans_module() {
 		goto_program.clear();
 	}
 	if (check_state()) return true;
-	const auto &main_func = symbol_table.lookup("main");
-	if (main_func) add_argc_argv(*main_func); ///Takes care of the argc and argv arguments for main.
-
 	remove_skip(goto_functions); ///Remove and unncecessary skip instructions that we might have added.
 	goto_functions.update();
-	set_entry_point(goto_functions, symbol_table);
+
 	config.set_from_symbol_table(symbol_table);
-	namespacet ns(symbol_table);
+	config.main.emplace(string("main"));
+	set_entry_point(goto_functions, symbol_table);
 	return check_state();
 }
 

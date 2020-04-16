@@ -22,8 +22,8 @@ void translator::add_initial_symbols() {
 	initialize_function.mode = ID_C;
 	initialize_function.name = initialize_function_name;
 	initialize_function.base_name = initialize_function_bname;
-	code_typet ct = code_typet();
-	ct.return_type() = unsignedbv_typet(config.ansi_c.int_width);
+	code_typet ct = code_typet(code_typet::parameterst(),
+			unsignedbv_typet(config.ansi_c.int_width));
 	initialize_function.value = exprt();
 	initialize_function.type = ct;
 	symbol_table.add(initialize_function);
@@ -43,7 +43,7 @@ void translator::add_initial_symbols() {
 	symbolt cprover_deallocated;
 	cprover_deallocated.name = "__CPROVER_deallocated";
 	cprover_deallocated.base_name = "__CPROVER_deallocated";
-	cprover_deallocated.type = pointer_typet(void_typet(),
+	cprover_deallocated.type = pointer_typet(void_type(),
 			config.ansi_c.pointer_width);
 	cprover_deallocated.value =
 			null_pointer_exprt(to_pointer_type(cprover_deallocated.type));
@@ -55,7 +55,7 @@ void translator::add_initial_symbols() {
 	symbolt cprover_dead_object;
 	cprover_dead_object.name = "__CPROVER_dead_object";
 	cprover_dead_object.base_name = "__CPROVER_dead_object";
-	cprover_dead_object.type = pointer_typet(void_typet(),
+	cprover_dead_object.type = pointer_typet(void_type(),
 			config.ansi_c.pointer_width);
 	cprover_dead_object.value =
 			null_pointer_exprt(to_pointer_type(cprover_dead_object.type));
@@ -67,7 +67,7 @@ void translator::add_initial_symbols() {
 	symbolt cprover_malloc_object;
 	cprover_malloc_object.name = "__CPROVER_malloc_object";
 	cprover_malloc_object.base_name = "__CPROVER_malloc_object";
-	cprover_malloc_object.type = pointer_typet(void_typet(),
+	cprover_malloc_object.type = pointer_typet(void_type(),
 			config.ansi_c.pointer_width);
 	cprover_malloc_object.value =
 			null_pointer_exprt(to_pointer_type(cprover_malloc_object.type));
@@ -93,4 +93,5 @@ void translator::set_config() {
 	config.ansi_c.set_arch_spec_x86_64();
 	config.ansi_c.set_c11();
 	config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_EVEN;
+	config.main = string("main");
 }

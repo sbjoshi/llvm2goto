@@ -39,11 +39,13 @@
 #include <goto-programs/goto_model.h>
 #include <goto-programs/write_goto_binary.h>
 #include <goto-programs/remove_skip.h>
+#include <util/arith_tools.h>
 #include <util/config.h>
 #include <util/c_types.h>
-#include <util/arith_tools.h>
-#include <util/namespace.h>
+#include <util/expr.h>
 #include <util/string_constant.h>
+#include <util/namespace.h>
+#include <util/message.h>
 #include <langapi/mode.h>
 #include <langapi/language_util.h>
 #include <ansi-c/ansi_c_language.h>

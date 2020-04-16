@@ -40,9 +40,6 @@ private:
 	void add_function_symbols();
 	void set_function_symbol_value(goto_functionst::function_mapt&,
 			symbol_tablet&);
-	void add_function_definitions(std::string,
-			goto_functionst&,
-			symbol_tablet&);
 	void set_entry_point(goto_functionst&, symbol_tablet&);
 	void add_global_symbols();
 	void add_initial_symbols();
@@ -203,7 +200,6 @@ private:
 
 	void make_func_call(const llvm::CallInst&);
 	void move_symbol(symbolt&, symbolt*&);
-	void add_argc_argv(const symbolt&);
 
 	source_locationt get_location(const llvm::Instruction&);
 

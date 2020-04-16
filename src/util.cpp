@@ -128,7 +128,7 @@ void translator::add_malloc_support() {
 	symbolt cprover_memory_leak;
 	cprover_memory_leak.name = "__CPROVER_memory_leak";
 	cprover_memory_leak.base_name = "__CPROVER_memory_leak";
-	cprover_memory_leak.type = pointer_typet(void_typet(),
+	cprover_memory_leak.type = pointer_typet(void_type(),
 			config.ansi_c.pointer_width);
 	cprover_memory_leak.value =
 			null_pointer_exprt(to_pointer_type(cprover_memory_leak.type));
@@ -161,7 +161,7 @@ void translator::add_malloc_support() {
 	sym.clear();
 	tgt = temp_gp.add_instruction();
 	sym.name = sym.base_name = "malloc_res";
-	sym.type = pointer_typet(void_typet(), config.ansi_c.pointer_width);
+	sym.type = pointer_typet(void_type(), config.ansi_c.pointer_width);
 	tgt->make_decl();
 	symbol_table.insert(sym);
 	tgt->code = code_declt(sym.symbol_expr());
@@ -169,7 +169,7 @@ void translator::add_malloc_support() {
 	tgt = temp_gp.add_instruction();
 	sym.clear();
 	sym.name = sym.base_name = "malloc_value";
-	sym.type = pointer_typet(void_typet(), config.ansi_c.pointer_width);
+	sym.type = pointer_typet(void_type(), config.ansi_c.pointer_width);
 	tgt->make_decl();
 	symbol_table.insert(sym);
 	tgt->code = code_declt(sym.symbol_expr());
@@ -216,7 +216,8 @@ void translator::add_malloc_support() {
 	tgt->make_assignment();
 	tgt->code =
 			code_assignt(symbol_table.lookup("record_malloc")->symbol_expr(),
-					side_effect_expr_nondett(bool_typet()));
+					side_effect_expr_nondett(bool_typet(),
+							tgt->source_location));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -266,7 +267,8 @@ void translator::add_malloc_support() {
 	tgt->make_assignment();
 	tgt->code =
 			code_assignt(symbol_table.lookup("record_may_leak")->symbol_expr(),
-					side_effect_expr_nondett(bool_typet()));
+					side_effect_expr_nondett(bool_typet(),
+							tgt->source_location));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -311,16 +313,14 @@ void translator::add_malloc_support() {
 	temp_gp.update();
 
 	sym.clear();
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	auto arg_symbol = symbol_table.lookup("malloc_size");
 	code_typet::parametert para(arg_symbol->type);
 	para.set_identifier(arg_symbol->name);
 	para.set_base_name(arg_symbol->base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = pointer_typet(signedbv_typet(8),
-			config.ansi_c.pointer_width);
+	auto func_code_type = code_typet(parameters,
+			pointer_typet(signedbv_typet(8), config.ansi_c.pointer_width));
 	sym.name = sym.base_name = sym.pretty_name = "malloc";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -351,7 +351,7 @@ void translator::add_calloc_support() {
 	symbolt cprover_memory_leak;
 	cprover_memory_leak.name = "__CPROVER_memory_leak";
 	cprover_memory_leak.base_name = "__CPROVER_memory_leak";
-	cprover_memory_leak.type = pointer_typet(void_typet(),
+	cprover_memory_leak.type = pointer_typet(void_type(),
 			config.ansi_c.pointer_width);
 	cprover_memory_leak.value =
 			null_pointer_exprt(to_pointer_type(cprover_memory_leak.type));
@@ -390,7 +390,7 @@ void translator::add_calloc_support() {
 	sym.clear();
 	tgt = temp_gp.add_instruction();
 	sym.name = sym.base_name = "calloc_res";
-	sym.type = pointer_typet(void_typet(), config.ansi_c.pointer_width);
+	sym.type = pointer_typet(void_type(), config.ansi_c.pointer_width);
 	tgt->make_decl();
 	symbol_table.insert(sym);
 	tgt->code = code_declt(sym.symbol_expr());
@@ -398,7 +398,7 @@ void translator::add_calloc_support() {
 	tgt = temp_gp.add_instruction();
 	sym.clear();
 	sym.name = sym.base_name = "calloc_value";
-	sym.type = pointer_typet(void_typet(), config.ansi_c.pointer_width);
+	sym.type = pointer_typet(void_type(), config.ansi_c.pointer_width);
 	tgt->make_decl();
 	symbol_table.insert(sym);
 	tgt->code = code_declt(sym.symbol_expr());
@@ -446,7 +446,8 @@ void translator::add_calloc_support() {
 	tgt->make_assignment();
 	tgt->code =
 			code_assignt(symbol_table.lookup("record_calloc")->symbol_expr(),
-					side_effect_expr_nondett(bool_typet()));
+					side_effect_expr_nondett(bool_typet(),
+							tgt->source_location));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -496,7 +497,8 @@ void translator::add_calloc_support() {
 	tgt->make_assignment();
 	tgt->code =
 			code_assignt(symbol_table.lookup("record_may_leak")->symbol_expr(),
-					side_effect_expr_nondett(bool_typet()));
+					side_effect_expr_nondett(bool_typet(),
+							tgt->source_location));
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment();
@@ -541,7 +543,6 @@ void translator::add_calloc_support() {
 	temp_gp.update();
 
 	sym.clear();
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	auto arg_symbol = symbol_table.lookup("calloc_size");
 	code_typet::parametert para(arg_symbol->type);
@@ -553,9 +554,8 @@ void translator::add_calloc_support() {
 	para2.set_identifier(arg_symbol2->name);
 	para2.set_base_name(arg_symbol2->base_name);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = pointer_typet(signedbv_typet(8),
-			config.ansi_c.pointer_width);
+	auto func_code_type = code_typet(parameters,
+			pointer_typet(signedbv_typet(8), config.ansi_c.pointer_width));
 	sym.name = sym.base_name = sym.pretty_name = "calloc";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -593,7 +593,8 @@ void translator::add_free_support() {
 
 	auto br_inst3 = temp_gp.add_instruction();
 	br_inst2->make_goto(br_inst3,
-			not_exprt(side_effect_expr_nondett(bool_typet())));
+			not_exprt(side_effect_expr_nondett(bool_typet(),
+					br_inst2->source_location)));
 
 	tgt = temp_gp.add_instruction();
 	auto cp_mem_leak_expr =
@@ -614,14 +615,12 @@ void translator::add_free_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = void_type();
+	auto func_code_type = code_typet(parameters, void_type());
 	sym.name = sym.base_name = sym.pretty_name = "free";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -683,10 +682,8 @@ void translator::add_fegetround_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "fegetround";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -746,14 +743,12 @@ void translator::add_fesetround_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "fesetround";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -808,14 +803,12 @@ void translator::add_fpclassify_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__fpclassify";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -871,14 +864,12 @@ void translator::add_fpclassifyl_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__fpclassifyl";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -933,14 +924,12 @@ void translator::add_fpclassifyf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__fpclassifyf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -989,7 +978,6 @@ void translator::add_fdim_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -999,8 +987,7 @@ void translator::add_fdim_support() {
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "fdim";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1075,7 +1062,6 @@ void translator::add_round_to_integralf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1085,8 +1071,7 @@ void translator::add_round_to_integralf_support() {
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "CPROVER__round_to_integralf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1162,7 +1147,6 @@ void translator::add_round_to_integral_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1172,8 +1156,7 @@ void translator::add_round_to_integral_support() {
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "CPROVER__round_to_integral";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1227,7 +1210,8 @@ void translator::add_cprover_remainder_support() {
 
 	auto goto_inst = temp_gp.add_instruction();
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
@@ -1278,7 +1262,6 @@ void translator::add_cprover_remainder_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1292,8 +1275,7 @@ void translator::add_cprover_remainder_support() {
 	para3.set_identifier(sym3.name);
 	para3.set_base_name(sym3.base_name);
 	parameters.push_back(para3);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "CPROVER__remainder";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1347,7 +1329,8 @@ void translator::add_cprover_remainderf_support() {
 
 	auto goto_inst = temp_gp.add_instruction();
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
@@ -1398,7 +1381,6 @@ void translator::add_cprover_remainderf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1412,8 +1394,7 @@ void translator::add_cprover_remainderf_support() {
 	para3.set_identifier(sym3.name);
 	para3.set_base_name(sym3.base_name);
 	parameters.push_back(para3);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "CPROVER__remainderf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1447,7 +1428,8 @@ void translator::add_remainder_support() {
 	symbol_table.insert(sym3);
 	auto ret = sym3.symbol_expr();
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__remainder");
 	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_EVEN,
 			signed_int_type());
@@ -1473,7 +1455,6 @@ void translator::add_remainder_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1483,8 +1464,7 @@ void translator::add_remainder_support() {
 	para2.set_identifier(sym2.name);
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "remainder";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1560,7 +1540,6 @@ void translator::add_llvm_memcpy_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1578,8 +1557,7 @@ void translator::add_llvm_memcpy_support() {
 	para4.set_identifier(sym4.name);
 	para4.set_base_name(sym4.base_name);
 	parameters.push_back(para4);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = void_type();
+	auto func_code_type = code_typet(parameters, void_type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.memcpy.p0i8.p0i8.i64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1656,7 +1634,6 @@ void translator::add_llvm_memset_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1674,8 +1651,7 @@ void translator::add_llvm_memset_support() {
 	para4.set_identifier(sym4.name);
 	para4.set_base_name(sym4.base_name);
 	parameters.push_back(para4);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = void_type();
+	auto func_code_type = code_typet(parameters, void_type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.memset.p0i8.i64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1705,7 +1681,8 @@ void translator::add_trunc_support() {
 	symbol_table.insert(sym2);
 	auto ret = sym2.symbol_expr();
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_ZERO,
 			signed_int_type());
@@ -1730,14 +1707,12 @@ void translator::add_trunc_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.trunc.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1767,7 +1742,8 @@ void translator::add_modff_support() {
 	symbol_table.insert(sym2);
 	auto e2 = sym2.symbol_expr();
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integralf");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__round_to_integralf")->symbol_expr();
@@ -1796,7 +1772,6 @@ void translator::add_modff_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -1806,8 +1781,7 @@ void translator::add_modff_support() {
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "modff";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1835,7 +1809,8 @@ void translator::add_lround_support() {
 	symbol_table.insert(sym2);
 	auto ret = sym2.symbol_expr();
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("llvm.round.f64");
 	call_expr.function() = symbol_table.lookup("llvm.round.f64")->symbol_expr();
 	call_expr.arguments().push_back(e1);
@@ -1858,14 +1833,12 @@ void translator::add_lround_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "lround";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1896,7 +1869,8 @@ void translator::add_lrint_support() {
 	tgt->make_decl();
 	tgt->code = code_declt(rti);
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
@@ -1923,14 +1897,12 @@ void translator::add_lrint_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "lrint";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -1961,7 +1933,8 @@ void translator::add_llvm_rint_support() {
 	tgt->make_decl();
 	tgt->code = code_declt(rti);
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
@@ -1986,14 +1959,12 @@ void translator::add_llvm_rint_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.rint.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2026,7 +1997,8 @@ void translator::add_llvm_nearbyint_support() {
 	tgt->make_decl();
 	tgt->code = code_declt(rti);
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	auto rounding_mode =
 			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
@@ -2051,14 +2023,12 @@ void translator::add_llvm_nearbyint_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.nearbyint.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2096,14 +2066,12 @@ void translator::add_fabs_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.fabs.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2141,14 +2109,12 @@ void translator::add_fabs80_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.fabs.f80";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2185,14 +2151,12 @@ void translator::add_fabs32_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.fabs.f32";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2240,7 +2204,6 @@ void translator::add_copysign_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -2250,8 +2213,7 @@ void translator::add_copysign_support() {
 	para2.set_identifier(sym2.name);
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.copysign.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2311,7 +2273,6 @@ void translator::add_maxnum_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -2321,8 +2282,7 @@ void translator::add_maxnum_support() {
 	para2.set_identifier(sym2.name);
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.maxnum.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2382,7 +2342,6 @@ void translator::add_minnum_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -2392,8 +2351,7 @@ void translator::add_minnum_support() {
 	para2.set_identifier(sym2.name);
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.minnum.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2426,7 +2384,8 @@ void translator::add_floor_support() {
 	tgt->make_decl();
 	tgt->code = code_declt(rti);
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
@@ -2450,14 +2409,12 @@ void translator::add_floor_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.floor.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2488,7 +2445,8 @@ void translator::add_ceil_support() {
 	tgt->make_decl();
 	tgt->code = code_declt(ret);
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
@@ -2512,14 +2470,12 @@ void translator::add_ceil_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.ceil.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2589,7 +2545,8 @@ void translator::add_round_support() {
 					ID_lt,
 					from_integer(0, e1.type()))));
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__round_to_integral");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__round_to_integral")->symbol_expr();
@@ -2616,14 +2573,12 @@ void translator::add_round_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "llvm.round.f64";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2660,7 +2615,7 @@ void translator::add_sin_support() {
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment(code_assignt(ret,
-			side_effect_expr_nondett(ret.type())));
+			side_effect_expr_nondett(ret.type(), tgt->source_location)));
 
 	auto brnch_instr = temp_gp.add_instruction();
 
@@ -2707,14 +2662,12 @@ void translator::add_sin_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "sin";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2751,7 +2704,7 @@ void translator::add_cos_support() {
 
 	tgt = temp_gp.add_instruction();
 	tgt->make_assignment(code_assignt(ret,
-			side_effect_expr_nondett(ret.type())));
+			side_effect_expr_nondett(ret.type(), tgt->source_location)));
 
 	auto brnch_instr = temp_gp.add_instruction();
 
@@ -2798,14 +2751,12 @@ void translator::add_cos_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "cos";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2841,7 +2792,8 @@ void translator::add_fmod_support() {
 	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_ZERO,
 			signed_int_type());
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__remainder");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__remainder")->symbol_expr();
@@ -2864,7 +2816,6 @@ void translator::add_fmod_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -2874,8 +2825,7 @@ void translator::add_fmod_support() {
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "fmod";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2911,7 +2861,8 @@ void translator::add_fmodf_support() {
 	auto rounding_mode = from_integer(ieee_floatt::ROUND_TO_ZERO,
 			signed_int_type());
 
-	code_function_callt call_expr;
+	exprt temp_expr;
+	code_function_callt call_expr(temp_expr);
 	add_intrinsic_support("CPROVER__remainderf");
 	call_expr.function() =
 			symbol_table.lookup("CPROVER__remainderf")->symbol_expr();
@@ -2934,7 +2885,6 @@ void translator::add_fmodf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
@@ -2944,8 +2894,7 @@ void translator::add_fmodf_support() {
 	para2.set_base_name(sym2.base_name);
 	parameters.push_back(para);
 	parameters.push_back(para2);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "fmodf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -2983,14 +2932,12 @@ void translator::add_isnan_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__isnan";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3028,14 +2975,12 @@ void translator::add_isnanf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__isnanf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3074,14 +3019,12 @@ void translator::add_isnanl_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__isnanl";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3124,14 +3067,12 @@ void translator::add_nan_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "nan";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3169,14 +3110,12 @@ void translator::add_isinf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__isinf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3214,14 +3153,12 @@ void translator::add_isinff_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__isinff";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3260,14 +3197,12 @@ void translator::add_isinfl_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__isinfl";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3307,14 +3242,12 @@ void translator::add_signbit_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__signbit";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3354,14 +3287,12 @@ void translator::add_signbitf_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
 	code_typet::parametert para(sym1.type);
 	para.set_identifier(sym1.name);
 	para.set_base_name(sym1.base_name);
 	parameters.push_back(para);
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = cret.return_value().type();
+	auto func_code_type = code_typet(parameters, cret.return_value().type());
 	sym.name = sym.base_name = sym.pretty_name = "__signbitf";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
@@ -3389,10 +3320,8 @@ void translator::add_abort_support() {
 	temp_gp.update();
 
 	symbolt sym;
-	auto func_code_type = code_typet();
 	code_typet::parameterst parameters;
-	func_code_type.parameters() = parameters;
-	func_code_type.return_type() = void_type();
+	auto func_code_type = code_typet(parameters, void_type());
 	sym.name = sym.base_name = sym.pretty_name = "abort";
 	sym.is_thread_local = false;
 	sym.mode = ID_C;
