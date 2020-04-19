@@ -112,7 +112,7 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 		outs().changeColor(outs().YELLOW, true);
 		outs() << "------------------------------------------------------\n";
 		outs().resetColor();
-		llvm_module.dump();
+		outs() << llvm_module << '\n';
 		outs().changeColor(outs().YELLOW, true);
 		outs() << "------------------------------------------------------\n";
 		outs().resetColor();
