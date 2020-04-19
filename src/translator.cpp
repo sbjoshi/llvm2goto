@@ -1089,7 +1089,7 @@ exprt translator::get_expr_phi(const PHINode &PI) {
 /// to represent an llvm Value.
 exprt translator::get_expr(const Value &V, bool new_state_required) {
 	exprt expr;
-	if (isa<Instruction>(V) && (!isa<AllocaInst>(V)) && V.getNumUses() > 1) {
+	if (save_state_values.find(&V) != save_state_values.end()) {
 		new_state_required = true;
 		if (state_map.find(&V) != state_map.end()) return state_map[&V];
 	}
@@ -2031,14 +2031,6 @@ void translator::set_returns(goto_programt::targett &end_func) {
 		if (inst.is_incomplete_goto()) inst.make_goto(end_func, true_exprt());
 }
 
-/// Moves new symbol to symbol.
-void translator::move_symbol(symbolt &symbol, symbolt *&new_symbol) {
-	symbol.mode = ID_C;
-	if (symbol_table.move(symbol, new_symbol)) {
-		error_state = "Move symbol failed in translator::move_symbol";
-	}
-}
-
 /// Translates and entire function and writes it
 ///to the 'goto_program'.
 bool translator::trans_function(Function &F) {
@@ -2138,6 +2130,20 @@ bool translator::trans_module() {
 	return check_state();
 }
 
+void translator::collect_operands(const Instruction &I,
+		set<const Value*> &operands) {
+	if (isa<AllocaInst>(I))
+		operands.insert(cast<Value>(&I));
+	else {
+		for (const auto &U : I.operands()) {
+			if (isa<GlobalVariable>(U))
+				operands.insert(cast<Value>(&U));
+			else if (isa<Instruction>(U))
+				collect_operands(*cast<Instruction>(U), operands);
+		}
+	}
+}
+
 /// Does some preliminary analysis. Things like
 ///	mapping alloca instructions to their DbgDeclare
 ///	happen here.
@@ -2145,7 +2151,7 @@ void translator::analyse_ir() {
 	if (check_state()) return;
 	for (auto &F : *llvm_module)
 		for (auto &BB : F)
-			for (auto &I : BB)
+			for (auto &I : BB) {
 				if (isa<DbgDeclareInst>(&I)) {
 					auto *CI = cast<CallInst>(&I);
 					auto *M =
@@ -2158,6 +2164,28 @@ void translator::analyse_ir() {
 						}
 					}
 				}
+				if (isa<AllocaInst>(&I) || cast<Value>(&I)->getNumUses() < 2)
+					continue;
+				set<const Value*> operands;
+				collect_operands(I, operands);
+				set<const StoreInst*> in_btwn_instrs;
+				for (const auto &U : I.uses()) {
+					auto UI = dyn_cast<Instruction>(U.getUser());
+					if (UI->getParent() == I.getParent()) {
+						for (auto it = I.getIterator(); it != UI->getIterator();
+								it++) {
+							if (isa<StoreInst>(it))
+								in_btwn_instrs.insert(cast<StoreInst>(&*it));
+						}
+					}
+					else {
+//						TODO: Add support for inter BasicBlock
+					}
+				}
+				for (const auto &SI : in_btwn_instrs)
+					if (operands.find(SI->getOperand(1)) != operands.end())
+						save_state_values.insert(&I);
+			}
 }
 
 /// This inserts all the function symbols to the

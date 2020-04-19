@@ -28,6 +28,7 @@ private:
 	std::map<const llvm::SwitchInst*, std::vector<goto_programt::targett>> switch_instr_target_map; ///<map from SwitchInst to their goto targets
 	static std::map<llvm::DIScope*, std::string> scope_name_map;
 	std::map<const llvm::Value*, exprt> state_map;
+	std::set<const llvm::Value*> save_state_values;
 
 	bool trans_instruction(const llvm::Instruction&);
 	bool trans_block(const llvm::BasicBlock&);
@@ -37,6 +38,8 @@ private:
 	bool trans_function(llvm::Function&);
 	bool trans_module();
 	void analyse_ir();
+	void collect_operands(const llvm::Instruction&,
+			std::set<const llvm::Value*>&);
 	void add_function_symbols();
 	void set_function_symbol_value(goto_functionst::function_mapt&,
 			symbol_tablet&);
@@ -199,7 +202,6 @@ private:
 	void add_abort_support();
 
 	void make_func_call(const llvm::CallInst&);
-	void move_symbol(symbolt&, symbolt*&);
 
 	source_locationt get_location(const llvm::Instruction&);
 
@@ -222,6 +224,7 @@ public:
 	}
 
 	static void check_optimizations_safe(const llvm::Module&);
+	static void identify_state_saves(const llvm::Module&);
 	~translator();
 }
 ;
