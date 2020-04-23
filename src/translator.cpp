@@ -2172,12 +2172,15 @@ void translator::analyse_ir() {
 						|| isa<BranchInst>(&I) || isa<ReturnInst>(&I)
 						|| isa<CallInst>(&I) || isa<SwitchInst>(&I)
 						|| isa<InsertValueInst>(&I)) continue;
+//				if (!isa<MemoryAccess>(&I)) continue;
 				set<const Value*> operands;
 				collect_operands(I, operands);
 				bool already_inserted = false;
 				for (const auto a : operands) {
 					if (a->getType()->isAggregateType()
-							|| a->getType()->isPointerTy()) {
+							|| (a->getType()->isPointerTy() ?
+									a->getType()->getPointerElementType()->isPointerTy() :
+									false)) {
 						save_state_values.insert(&I);
 						already_inserted = true;
 						break;
