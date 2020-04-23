@@ -1967,6 +1967,8 @@ bool translator::trans_instruction(const Instruction &I) {
 	default:
 		error_state = "Unknown llvmInstruction";
 	}
+	if (save_state_values.find(cast<Value>(&I)) != save_state_values.end())
+		get_expr(cast<Value>(I));
 	return check_state();
 }
 
@@ -2164,10 +2166,25 @@ void translator::analyse_ir() {
 						}
 					}
 				}
-				if (isa<AllocaInst>(&I) || cast<Value>(&I)->getNumUses() < 2)
-					continue;
+				///We always record a state for the following types
+				///so no need to mark them explicitly.
+				if (isa<StoreInst>(&I) || isa<AllocaInst>(&I)
+						|| isa<BranchInst>(&I) || isa<ReturnInst>(&I)
+						|| isa<CallInst>(&I) || isa<SwitchInst>(&I)
+						|| isa<InsertValueInst>(&I)) continue;
 				set<const Value*> operands;
 				collect_operands(I, operands);
+				bool already_inserted = false;
+				for (const auto a : operands) {
+					if (a->getType()->isAggregateType()
+							|| a->getType()->isPointerTy()) {
+						save_state_values.insert(&I);
+						already_inserted = true;
+						break;
+					}
+				}
+				if (cast<Value>(&I)->getNumUses() < 2 || already_inserted)
+					continue;
 				set<const StoreInst*> in_btwn_instrs;
 				for (const auto &U : I.uses()) {
 					auto UI = dyn_cast<Instruction>(U.getUser());
