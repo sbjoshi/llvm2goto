@@ -946,7 +946,18 @@ exprt translator::get_expr_sext(const SExtInst &SI) {
 	const auto &ll_op1 = SI.getOperand(0);
 	const auto &ll_op2 = SI.getDestTy();
 	expr = get_expr(*ll_op1);
-	expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
+	///If it's a i1 llvm value, then because of 2's complement
+	///representation true and false are -1 & 0 instead of 1 & 0.
+	///The following if block takes care of this scenario.
+	if (SI.getOperand(0)->getType()->getIntegerBitWidth() ==  1) {
+		expr = ternary_exprt(ID_if,
+				equal_exprt(expr, from_integer(0, expr.type())),
+				from_integer(0, symbol_util::get_goto_type(ll_op2)),
+				from_integer(-1, symbol_util::get_goto_type(ll_op2)),
+				symbol_util::get_goto_type(ll_op2));
+	}
+	else
+		expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
 	return expr;
 }
 
