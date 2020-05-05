@@ -94,7 +94,6 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 		FPM.doFinalization();
 		MPM.run(llvm_module);
 	}
-
 	legacy::FunctionPassManager FPM(&llvm_module);
 	FPM.add(createDemoteRegisterToMemoryPass());
 

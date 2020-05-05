@@ -62,22 +62,18 @@ exprt translator::get_expr_const(const Constant &C) {
 		}
 		else if (isa<ConstantStruct>(C)) {
 			const auto &CS = cast<ConstantStruct>(C);
-			exprt list_expr;
-			if (C.getType()->isArrayTy())
-				list_expr =
-						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
-			else {
-				auto type = symbol_util::get_goto_type(C.getType());
-				if (type.id() == ID_struct_tag)
-					type =
-							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
-				list_expr = struct_exprt(to_struct_type(type));
-			}
+			exprt::operandst expr_opnds;
 			for (unsigned i = 0; i < CS.getNumOperands(); i++) {
 				const auto &V = CS.getAggregateElement(i);
-				list_expr.add_to_operands(get_expr(*V));
+				expr_opnds.push_back(get_expr(*V));
 			}
-			expr = list_expr;
+			if (C.getType()->isArrayTy())
+				expr = array_exprt(expr_opnds,
+						to_array_type(symbol_util::get_goto_type(C.getType())));
+			else {
+				auto type = symbol_util::get_goto_type(C.getType());
+				expr = struct_exprt(expr_opnds, type);
+			}
 		}
 		else if (isa<ConstantVector>(C)) {
 
@@ -2172,20 +2168,20 @@ void translator::analyse_ir() {
 						|| isa<BranchInst>(&I) || isa<ReturnInst>(&I)
 						|| isa<CallInst>(&I) || isa<SwitchInst>(&I)
 						|| isa<InsertValueInst>(&I)) continue;
-//				if (!isa<MemoryAccess>(&I)) continue;
 				set<const Value*> operands;
 				collect_operands(I, operands);
 				bool already_inserted = false;
-				for (const auto a : operands) {
-					if (a->getType()->isAggregateType()
-							|| (a->getType()->isPointerTy() ?
-									a->getType()->getPointerElementType()->isPointerTy() :
-									false)) {
-						save_state_values.insert(&I);
-						already_inserted = true;
-						break;
+				if (isa<LoadInst>(&I))
+					for (const auto a : operands) {
+						if (a->getType()->isAggregateType()
+								|| (a->getType()->isPointerTy() ?
+										a->getType()->getPointerElementType()->isPointerTy() :
+										false)) {
+							save_state_values.insert(&I);
+							already_inserted = true;
+							break;
+						}
 					}
-				}
 				if (cast<Value>(&I)->getNumUses() < 2 || already_inserted)
 					continue;
 				set<const StoreInst*> in_btwn_instrs;
