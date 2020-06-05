@@ -770,7 +770,7 @@ exprt translator::get_expr_bitcast(const BitCastInst &BI) {
 	const auto &ll_op1 = BI.getOperand(0);
 	const auto &ll_op2 = BI.getDestTy();
 	expr = get_expr(*ll_op1);
-	if (expr.type().id() == ID_pointer)
+	if (expr.type().id() == ID_pointer || expr.type().id() == ID_array)
 		expr = typecast_exprt(expr, symbol_util::get_goto_type(ll_op2));
 	else {
 		expr = get_expr(*ll_op1, true);
@@ -949,7 +949,7 @@ exprt translator::get_expr_sext(const SExtInst &SI) {
 	///If it's a i1 llvm value, then because of 2's complement
 	///representation true and false are -1 & 0 instead of 1 & 0.
 	///The following if block takes care of this scenario.
-	if (SI.getOperand(0)->getType()->getIntegerBitWidth() ==  1) {
+	if (SI.getOperand(0)->getType()->getIntegerBitWidth() == 1) {
 		expr = ternary_exprt(ID_if,
 				equal_exprt(expr, from_integer(0, expr.type())),
 				from_integer(0, symbol_util::get_goto_type(ll_op2)),
@@ -1373,8 +1373,10 @@ void translator::trans_alloca(const AllocaInst &AI) {
 		}
 		auto instr = goto_program.add_instruction();
 		instr->make_assignment(code_assignt(aux_symbol.symbol_expr(),
-				typecast_exprt(address_of_exprt(symbol.symbol_expr()),
+				typecast_exprt::conditional_cast(address_of_exprt(index_exprt(symbol.symbol_expr(),
+						from_integer(0, index_type()))),
 						aux_symbol.type)));
+		aux_name_map[aux_symbol.name.c_str()] = var_name_map[&I];
 		var_name_map[&I] = aux_symbol.name.c_str();
 	}
 	goto_program.update();
@@ -1686,9 +1688,9 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		const auto &ll_target = MSI.getOperand(0);
 		const auto &ll_val = MSI.getOperand(1);
 		const auto &ll_len = MSI.getOperand(2);
-		auto target_expr = (get_expr(*ll_target));
-		auto val_expr = (get_expr(*ll_val));
-		auto len_expr = (get_expr(*ll_len));
+		auto target_expr = get_expr(*ll_target);
+		auto val_expr = get_expr(*ll_val);
+		auto len_expr = get_expr(*ll_len);
 
 		auto symbol = symbol_util::create_symbol(array_typet(signedbv_typet(8),
 				len_expr));

@@ -18,6 +18,7 @@ private:
 	static symbol_tablet symbol_table;
 
 	std::map<const llvm::Instruction*, std::string> var_name_map; ///<map from instructions to their symbol names
+	std::map<std::string, std::string> aux_name_map; ///Map to go back from auxiliary names to original var names
 	std::map<const llvm::InsertValueInst*, exprt> ins_value_name_map; ///<map from instructions to their symbol names
 	static std::map<const llvm::Argument*, std::string> func_arg_name_map; ///<map from func args to their symbol names
 	std::map<const llvm::AllocaInst*, llvm::DbgDeclareInst*> alloca_dbg_map; ///<map from Allocas to their DbgDeclare if exists
