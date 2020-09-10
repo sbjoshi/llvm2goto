@@ -27,7 +27,7 @@ cl::opt<string> ll2gb::outputFilename("o",
 		cl::cat(ll2gb_cat));
 
 cl::opt<unsigned> ll2gb::verbose("v",
-		cl::desc("Specify Verbosity"),
+		cl::desc("Specify Verbosity [0, 1, ≥10]"),
 		cl::value_desc("unum"),
 		cl::init(0),
 		cl::cat(ll2gb_cat));

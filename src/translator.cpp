@@ -1446,7 +1446,7 @@ void translator::trans_call(const CallInst &CI) {
 			make_func_call(CI);
 	}
 	else {	/// These are functions whose semantics are unknown.
-		L1: auto called_val = CI.getCalledValue()->stripPointerCasts();
+		L1: auto called_val = CI.getCalledOperand()->stripPointerCasts();
 		if (is_assert_function(called_val->getName().str())) {
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
@@ -1567,7 +1567,7 @@ void translator::trans_call(const CallInst &CI) {
 void translator::make_func_call(const CallInst &CI) {
 	auto location = get_location(CI);
 	auto called_func = CI.getCalledFunction();
-	auto called_val = CI.getCalledValue()->stripPointerCasts();
+	auto called_val = CI.getCalledOperand()->stripPointerCasts();
 	exprt temp_expr;
 	code_function_callt call_expr(temp_expr);
 	if (called_func)

@@ -54,7 +54,7 @@ void translator::check_optimizations_safe(const Module &llvm_module) {
 			for (auto &I : BB) {
 				if (isa<CallInst>(&I)) {
 					auto &CI = cast<CallInst>(I);
-					switch (get_intrinsic_id(CI.getCalledValue()->stripPointerCasts()->getName().str())) {
+					switch (get_intrinsic_id(CI.getCalledOperand()->stripPointerCasts()->getName().str())) {
 					case intrinsics::fegetround:
 					case intrinsics::fesetround:
 						optimizeEnabled = false;

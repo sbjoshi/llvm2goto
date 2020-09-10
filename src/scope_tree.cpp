@@ -73,7 +73,7 @@ void translator::scope_tree::add_node(DIScope *new_scope) {
 		if (scope_scope_node_map.empty()) {
 			root.scope = new_scope;
 			if (new_scope->getName() != "") {
-				root.name = new_scope->getName();
+				root.name = new_scope->getName().str();
 			}
 			else {
 				root.name = "0";
@@ -107,7 +107,7 @@ void translator::scope_tree::add_node(DIScope *new_scope) {
 			parent->first_child = node;
 			parent->last_child = node;
 			if (new_scope->getName() != "") {
-				node->name = new_scope->getName();
+				node->name = new_scope->getName().str();
 			}
 			else {
 				node->name = "0";
@@ -115,7 +115,7 @@ void translator::scope_tree::add_node(DIScope *new_scope) {
 		}
 		else {
 			if (new_scope->getName() != "") {
-				node->name = new_scope->getName();
+				node->name = new_scope->getName().str();
 			}
 			else {
 				node->name = to_string(stoi(left_sibling->name) + 1);
