@@ -43,20 +43,21 @@ exprt translator::get_expr_const(const Constant &C) {
 		if (isa<ConstantArray>(C)) {
 			const auto &CA = cast<ConstantArray>(C);
 			exprt list_expr;
+			exprt::operandst operands;
+			for (unsigned i = 0; i < CA.getNumOperands(); i++) {
+				const auto &V = CA.getAggregateElement(i);
+				operands.emplace_back(get_expr(*V));
+			}
 			if (C.getType()->isArrayTy())
-				list_expr =
-						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
+				list_expr = array_exprt(operands,
+						to_array_type(symbol_util::get_goto_type(C.getType())));
 			else {
 				auto type = symbol_util::get_goto_type(C.getType());
 				if (type.id() == ID_struct_tag)
 					type =
 							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
 
-				list_expr = struct_exprt(to_struct_type(type));
-			}
-			for (unsigned i = 0; i < CA.getNumOperands(); i++) {
-				const auto &V = CA.getAggregateElement(i);
-				list_expr.add_to_operands(get_expr(*V));
+				list_expr = struct_exprt(operands, to_struct_type(type));
 			}
 			expr = list_expr;
 		}
@@ -101,16 +102,18 @@ exprt translator::get_expr_const(const Constant &C) {
 		else if (isa<ConstantDataSequential>(C)) {
 			const auto &CDS = cast<ConstantDataSequential>(C);
 			exprt list_expr;
-			if (C.getType()->isArrayTy())
-				list_expr =
-						array_exprt(to_array_type(symbol_util::get_goto_type(C.getType())));
-			else
-				list_expr =
-						struct_exprt(to_struct_type(symbol_util::get_goto_type(C.getType())));
+			exprt::operandst operands;
 			for (unsigned i = 0; i < CDS.getNumElements(); i++) {
 				const auto &V = CDS.getAggregateElement(i);
-				list_expr.add_to_operands(get_expr(*V));
+				operands.emplace_back(get_expr(*V));
 			}
+			if (C.getType()->isArrayTy())
+				list_expr = array_exprt(operands,
+						to_array_type(symbol_util::get_goto_type(C.getType())));
+			else
+				list_expr =
+						struct_exprt(operands,
+								to_struct_type(symbol_util::get_goto_type(C.getType())));
 			expr = list_expr;
 		}
 		else if (isa<ConstantFP>(C)) {
