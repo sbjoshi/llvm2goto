@@ -1428,7 +1428,7 @@ void translator::trans_call(const CallInst &CI) {
 			trans_call_llvm_intrinsic(ICI);
 		}
 		else if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is instrinsic assert of llvm which is equivalent to assert(fail && "Message").
-			auto assert_instr = goto_program.add_instruction();
+			auto assert_inst = goto_program.add_instruction();
 			auto asrt_comment =
 					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(0))->getOperand(0)->getOperand(0))->getAsCString();
 			auto file_name =
@@ -1438,9 +1438,15 @@ void translator::trans_call(const CallInst &CI) {
 			auto line_no = cast<ConstantInt>(CI.getOperand(2))->getZExtValue();
 			auto comment = file_name + ":" + to_string(line_no) + ": "
 					+ func_name + ": " + asrt_comment;
-			assert_instr->make_assertion(false_exprt());
-			assert_instr->source_location = location;
-			assert_instr->source_location.set_comment(comment.str());
+			assert_inst->make_assertion(false_exprt());
+			assert_inst->source_location = location;
+			assert_inst->source_location.set_comment(comment.str());
+			goto_program.update();
+		}
+		else if (!called_func->getName().str().compare("reach_error")) { ///reach_error is the error definition for SV-COMP 20
+			auto assert_inst = goto_program.add_instruction();
+			assert_inst->make_assertion(false_exprt());
+			assert_inst->source_location = location;
 			goto_program.update();
 		}
 		else if (called_func->isDeclaration())

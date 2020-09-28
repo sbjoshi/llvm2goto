@@ -27,7 +27,7 @@ cl::opt<string> ll2gb::outputFilename("o",
 		cl::cat(ll2gb_cat));
 
 cl::opt<unsigned> ll2gb::verbose("v",
-		cl::desc("Specify Verbosity [0, 1, ≥10]"),
+		cl::desc("Specify Verbosity Level [0, 1, ≥10]"),
 		cl::value_desc("unum"),
 		cl::init(0),
 		cl::cat(ll2gb_cat));
@@ -73,6 +73,7 @@ bool ll2gb::is_assert_function(const string &func_name) {
 bool ll2gb::is_assert_fail_function(const string &func_name) {
 	if (!func_name.compare("__ll2gb_assert_fail_")) return true;
 	if (!func_name.compare("__VERIFIER_error")) return true;
+	if (!func_name.compare("reach_error")) return true;
 	return false;
 }
 
