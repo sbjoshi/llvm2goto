@@ -1449,6 +1449,12 @@ void translator::trans_call(const CallInst &CI) {
 			assert_inst->source_location = location;
 			goto_program.update();
 		}
+		else if (!called_func->getName().str().compare("abort")) { ///abort in SV-COMP 20 should stop Verification at that point
+			auto assume_inst = goto_program.add_instruction();
+			assume_inst->make_assumption(false_exprt());
+			assume_inst->source_location = location;
+			goto_program.update();
+		}
 		else if (called_func->isDeclaration())
 			goto L1;
 		else
