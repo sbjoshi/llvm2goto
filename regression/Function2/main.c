@@ -1,10 +1,9 @@
-void f(int x)
-{
+void f(){
 }
 
 int main()
 {
-  f(1);
-  f(2);
+  f();
   assert(0);
+  return 0;
 }

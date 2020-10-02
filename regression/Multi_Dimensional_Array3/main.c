@@ -31,7 +31,8 @@ int main()
   a = nondet_uint();
   b = nondet_uint();
   
-  assume (a < 3 && b < 3);
+  assume (a < 3);
+  assume(b<3);
 
   array[a][b] = &z;
 
@@ -41,5 +42,6 @@ int main()
   *p=1;
 
   assert(z==1);
+  return 0;
 }
 /* end of case 2 */

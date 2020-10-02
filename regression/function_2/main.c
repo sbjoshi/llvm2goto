@@ -5,10 +5,10 @@ int f(int i)
 
 int f(int);
 
-int a[1];
 
+int a[1];
 int main() {
-	int x, y;
+	int y = 10;
 
 	a[0] = y;
 	a[0] = f(a[0]);

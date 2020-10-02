@@ -5,8 +5,8 @@ int main()
   char *p=(char *)&data;
   i=ii;
 
-  assume(i>=0 && i<4);
-
+  __CPROVER_assume(i>=0);
+  __CPROVER_assume(i<4);
   p[i]++;
 
   if(i==0)

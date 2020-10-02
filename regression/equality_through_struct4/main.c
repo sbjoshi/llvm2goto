@@ -11,7 +11,6 @@ void pass_through_struct (struct str *s, int q)
   s->y = s->x;
   s->z = s->y;
 
-  return s;
 }
 
 int main (void)

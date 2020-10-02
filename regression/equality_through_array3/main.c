@@ -5,11 +5,9 @@ void fill_array (int *a, int length)
   for (int i = 0; i < length; ++i) {
     a[i] = i;
   }
-
-  return;
 }
 
-void main ()
+int main ()
 {
   int a[LIMIT];
 
@@ -18,9 +16,9 @@ void main ()
   int x;
   int y;
 
-  assume(0 <= x && x < LIMIT);
-  assume(0 <= y && y < LIMIT);
-  assume(x + y < LIMIT);
+  __CPROVER_assume(0 <= x && x < LIMIT);
+  __CPROVER_assume(0 <= y && y < LIMIT);
+  __CPROVER_assume(x + y < LIMIT);
 
   assert(a[x] + a[y] == x + y);
 

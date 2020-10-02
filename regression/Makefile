@@ -1,10 +1,10 @@
 default: test
 
 test:
-	@ ./test.pl -c /home/rasika/Downloads/cbmc-cbmc-5.8/src/cbmc/cbmc
+	@ ./test.pl -c /home/<your_path_here>/cbmc/src/cbmc/cbmc
 
 tests.log: ./test.pl
-	@ ./test.pl -c /home/rasika/Downloads/cbmc-cbmc-5.8/src/cbmc/cbmc
+	@ ./test.pl -c /home/<your_path_here>/cbmc/src/cbmc/cbmc
 
 show:
 	@for dir in *; do \
