@@ -36,7 +36,7 @@ endif
 
 -include ../makefile.defs
 
-# Add inputs and outputs from these tool invocations to the build variables 
+# Add inputs and outputs from these tool invocations to the build variables
 
 # All Target
 all: ll2gb
@@ -44,7 +44,7 @@ all: ll2gb
 # Tool invocations
 ll2gb: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@$(CXX) -L"`llvm-config --libdir`" -L$(CBMC_DIR) -pthread -o "ll2gb" $(OBJS) $(USER_OBJS) $(LIBS) `llvm-config --libs --system-libs irreader passes`
+	@$(CXX) -L"`$(LLVM_CONFIG) --libdir`" -L$(CBMC_DIR) -pthread -o "ll2gb" $(OBJS) $(USER_OBJS) $(LIBS) `$(LLVM_CONFIG) --libs --system-libs irreader passes`
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -1,6 +1,7 @@
 default: test
 
 test:
+	@ ./run_llvm.sh
 	@ ./test.pl -c cbmc
 
 tests.log: ./test.pl
