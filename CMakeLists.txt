@@ -3,15 +3,25 @@ cmake_minimum_required(VERSION 3.10)
 
 project(LLVM2GOTO)
 
-file(GLOB ll2gb_SRC "src/*.cpp")
+file(GLOB LL2GB_SRC "src/*.cpp")
 
-set(CBMC_DIR $ENV{HOME}/work/cbmc)
+if(NOT DEFINED CBMC_DIR)
+	message(FATAL_ERROR "Speicify CBMC directory using -DCBMC_DIR=<your_path>/cbmc")
+endif(NOT DEFINED CBMC_DIR)
+
 set(CBMC_SRC ${CBMC_DIR}/src)
 
+if(NOT DEFINED LLVM_CONFIG)
+	set(LLVM_CONFIG llvm-config)
+endif(NOT DEFINED LLVM_CONFIG)
 
-execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE LLVM_INCLUDES OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND  llvm-config --libs --system-libs irreader passes   OUTPUT_VARIABLE LLVM_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND  llvm-config --libdir OUTPUT_VARIABLE LLVM_LIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+message("Using CBMC_DIR = '${CBMC_DIR}'")
+message("Using LLVM_CONFIG = '${LLVM_CONFIG}'")
+
+execute_process(COMMAND ${LLVM_CONFIG} --includedir OUTPUT_VARIABLE LLVM_INCLUDES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${LLVM_CONFIG} --libs --system-libs irreader passes OUTPUT_VARIABLE LLVM_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${LLVM_CONFIG} --libdir OUTPUT_VARIABLE LLVM_LIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${LLVM_CONFIG} --cxxflags OUTPUT_VARIABLE LLVM_CXXFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 #include(ProcessorCount)
 #ProcessorCount(CORES)
@@ -38,16 +48,20 @@ execute_process(COMMAND  llvm-config --libdir OUTPUT_VARIABLE LLVM_LIBDIR OUTPUT
 include_directories(${CMAKE_SOURCE_DIR} ${CBMC_SRC} ${LLVM_INCLUDES})
 link_directories(${LLVM_LIBDIR} ${CBMC_SRC})
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	set(CXXFLAGS "${CXXFLAGS} -std=c++11 -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Werror -Wno-deprecated-declarations -Wno-unused-parameter -Wno-deprecated-copy -fexceptions -pthread")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
-#if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-#	set(CXXFLAGS "${CXXFLAGS} -Wno-deprecated-declarations")
-#endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
+endif()
+
+#message("CXXFLAGS: ${CMAKE_CXX_FLAGS}")
 
 
-set(CBMC_STATIC_LIBS
+list(APPEND CBMC_STATIC_LIBS
 ${CBMC_SRC}/util/util.a
 ${CBMC_SRC}/solvers/solvers.a 
 ${CBMC_SRC}/langapi/langapi.a
@@ -124,7 +138,7 @@ ${CBMC_SRC}/pointer-analysis/value_set_dereference.o
 
 
 
-add_executable(ll2gb ${ll2gb_SRC} ${CBMC_OBJS})
+add_executable(ll2gb ${LL2GB_SRC} ${CBMC_OBJS})
 #add_dependencies(ll2gb cbmc)
 target_link_libraries(ll2gb ${LLVM_LIBS} ${CBMC_STATIC_LIBS} ${CBMC_STATIC_LIBS})
 
