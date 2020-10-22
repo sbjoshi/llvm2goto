@@ -7,13 +7,13 @@ file(GLOB LL2GB_SRC "src/*.cpp")
 
 if(NOT DEFINED CBMC_DIR)
 	message(FATAL_ERROR "Speicify CBMC directory using -DCBMC_DIR=<your_path>/cbmc")
-endif(NOT DEFINED CBMC_DIR)
+endif()
 
 set(CBMC_SRC ${CBMC_DIR}/src)
 
 if(NOT DEFINED LLVM_CONFIG)
 	set(LLVM_CONFIG "llvm-config")
-endif(NOT DEFINED LLVM_CONFIG)
+endif()
 
 message("-- Using CBMC_DIR = '${CBMC_DIR}'")
 message("-- Using LLVM_CONFIG = '${LLVM_CONFIG}'")
@@ -26,6 +26,9 @@ execute_process(COMMAND ${LLVM_CONFIG} --cxxflags OUTPUT_VARIABLE LLVM_CXXFLAGS 
 execute_process(COMMAND ${LLVM_CONFIG} --version OUTPUT_VARIABLE LLVM_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 message("-- LLVM Version: ${LLVM_VERSION}")
+if(${LLVM_VERSION} VERSION_LESS "10.0")
+	message(FATAL_ERROR "LLVM Version 10.x or above required")
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR} ${CBMC_SRC} ${LLVM_INCLUDES})
 link_directories(${LLVM_LIBDIR} ${CBMC_SRC})
