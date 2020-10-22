@@ -23,18 +23,21 @@ execute_process(COMMAND ${LLVM_CONFIG} --libs irreader passes OUTPUT_VARIABLE LL
 execute_process(COMMAND ${LLVM_CONFIG} --system-libs OUTPUT_VARIABLE LLVM_SYS_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LLVM_CONFIG} --libdir OUTPUT_VARIABLE LLVM_LIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LLVM_CONFIG} --cxxflags OUTPUT_VARIABLE LLVM_CXXFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${LLVM_CONFIG} --version OUTPUT_VARIABLE LLVM_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+message("-- LLVM Version: ${LLVM_VERSION}")
 
 include_directories(${CMAKE_SOURCE_DIR} ${CBMC_SRC} ${LLVM_INCLUDES})
 link_directories(${LLVM_LIBDIR} ${CBMC_SRC})
 
-set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Werror -Wno-init-list-lifetime -Wno-deprecated-declarations -Wno-unused-parameter -Wno-deprecated-copy -fexceptions")
+set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Wall -Wextra -Wno-deprecated-declarations -Wno-unused-parameter -fexceptions")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 endif()
 
 list(APPEND CBMC_STATIC_LIBS
