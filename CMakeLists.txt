@@ -27,7 +27,7 @@ execute_process(COMMAND ${LLVM_CONFIG} --cxxflags OUTPUT_VARIABLE LLVM_CXXFLAGS 
 include_directories(${CMAKE_SOURCE_DIR} ${CBMC_SRC} ${LLVM_INCLUDES})
 link_directories(${LLVM_LIBDIR} ${CBMC_SRC})
 
-set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Werror -Wno-deprecated-declarations -Wno-unused-parameter -Wno-deprecated-copy -fexceptions")
+set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Werror -Wno-init-list-lifetime -Wno-deprecated-declarations -Wno-unused-parameter -Wno-deprecated-copy -fexceptions")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
@@ -36,9 +36,6 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
 endif()
-
-message("CXXFLAGS: ${LLVM_LIBS}")
-
 
 list(APPEND CBMC_STATIC_LIBS
 ${CBMC_SRC}/goto-checker/goto-checker.a
