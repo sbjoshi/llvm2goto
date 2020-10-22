@@ -1,5 +1,5 @@
 # LL2GB
-LL2GB is a translator from LLVM IR to CPover's GOTO IR.
+LL2GB is a translator from LLVM IR to CProver's GOTO IR.
 
 ## Build Steps:
 
