@@ -8,7 +8,7 @@ LL2GB is a translator from LLVM IR to CPover's GOTO IR.
     $ cd build
     $ cmake -DCBMC_DIR=<cbmc_path> -DLLVM_CONFIG=<llvm-config> ../
     $ make
-    & ./ll2gb --help
+    $ ./ll2gb --help
 ```
 ## Dependencies:
     LLVM 10.x (or above)
