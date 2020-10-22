@@ -1,6 +1,6 @@
 # Project files
 doxygen
-build/ll2gb
+build
 .cproject
 .project
 .settings
