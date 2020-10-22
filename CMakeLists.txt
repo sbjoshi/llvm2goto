@@ -30,7 +30,7 @@ message("-- LLVM Version: ${LLVM_VERSION}")
 include_directories(${CMAKE_SOURCE_DIR} ${CBMC_SRC} ${LLVM_INCLUDES})
 link_directories(${LLVM_LIBDIR} ${CBMC_SRC})
 
-set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Wall -Wextra -Wno-deprecated-declarations -Wno-unused-parameter -fexceptions")
+set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Werror -Wall -Wextra -Wno-deprecated-declarations -Wno-unused-parameter -fexceptions")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
