@@ -8,7 +8,7 @@
 #ifndef LL2GB_H
 #define LL2GB_H
 
-#include<stdarg.h>
+#include <stdarg.h>
 
 #include <llvm-c/Core.h>
 #include <llvm/Support/raw_ostream.h>

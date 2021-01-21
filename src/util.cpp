@@ -43,11 +43,12 @@ cl::opt<bool> ll2gb::optimizeForced("f",
 		cl::cat(ll2gb_cat));
 
 void ll2gb::print_version(raw_ostream &ostream) {
-	ostream << "ll2gb Version: 2.0\n";
+	ostream << "LL2GB Version: 2.0\n\n";
+	cl::PrintVersionMessage();
 }
 
 void ll2gb::parse_input(int argc, char **argv) {
-	cl::AddExtraVersionPrinter(print_version);
+	cl::SetVersionPrinter(print_version);
 	cl::HideUnrelatedOptions(ll2gb_cat);
 	cl::ParseCommandLineOptions(argc, argv);
 
