@@ -80,11 +80,11 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 		legacy::FunctionPassManager FPM(&llvm_module);
 		legacy::PassManager MPM;
 		PassManagerBuilder PM;
-		PM.OptLevel = 1;
+		PM.OptLevel = 2;
 		PM.SizeLevel = 0;
 		PM.LoopVectorize = false;
 		PM.SLPVectorize = false;
-		PM.DisableUnrollLoops = true;
+		PM.DisableUnrollLoops = false;
 		PM.Inliner = createAlwaysInlinerLegacyPass();
 		PM.populateFunctionPassManager(FPM);
 		PM.populateModulePassManager(MPM);
@@ -102,7 +102,7 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 		FPM.run(F);
 	FPM.doFinalization();
 
-	if (verbose >= 10 && optimizeEnabled) {
+	if (verbose_very && optimizeEnabled) {
 		outs().changeColor(outs().BLUE, true);
 		outs() << "LLVM IR: ";
 		outs().resetColor();

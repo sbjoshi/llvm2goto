@@ -14,7 +14,6 @@ using namespace llvm;
 using namespace ll2gb;
 
 int main(int argc, char **argv) {
-	secret();
 
 	parse_input(argc, argv);
 

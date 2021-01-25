@@ -1796,6 +1796,13 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		make_func_call(ICI);
 		break;
 	}
+	case Intrinsic::trap: {
+		auto assume_inst = goto_program.add_instruction();
+		assume_inst->make_assumption(false_exprt());
+		assume_inst->source_location = location;
+		goto_program.update();
+		break;
+	}
 	case Intrinsic::stacksave: {
 		auto called_func = ICI.getCalledFunction();
 		auto ret_symbol =
@@ -2081,7 +2088,7 @@ bool translator::trans_function(Function &F) {
 	remove_skip(goto_program);
 	state_map.clear();
 
-	if (verbose >= 10) {
+	if (verbose_very) {
 		outs().changeColor(outs().BLUE, true);
 		outs() << "Function: ";
 		outs().resetColor();
@@ -2298,7 +2305,7 @@ void translator::add_global_symbols() {
 /// Read 'error_state' for insights
 /// on what caused the error.
 bool translator::generate_goto() {
-	if (verbose && verbose < 10) {
+	if (verbose && !verbose_very) {
 		outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
 		outs() << "Generating GOTO Binary";
 		outs().resetColor();
@@ -2308,7 +2315,7 @@ bool translator::generate_goto() {
 	add_global_symbols();
 	analyse_ir();
 	trans_module();
-	if (verbose && verbose < 10) {
+	if (verbose && !verbose_very) {
 		outs() << "  [";
 		if (check_state()) {
 			outs().changeColor(raw_ostream::Colors::RED, true);
