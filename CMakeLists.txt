@@ -15,6 +15,11 @@ if(NOT DEFINED LLVM_CONFIG)
 	set(LLVM_CONFIG "llvm-config")
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "")
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
+message("-- Build Type: ${CMAKE_BUILD_TYPE}")
 message("-- Using CBMC_DIR = '${CBMC_DIR}'")
 message("-- Using LLVM_CONFIG = '${LLVM_CONFIG}'")
 
@@ -34,6 +39,12 @@ include_directories(${CMAKE_SOURCE_DIR} ${CBMC_SRC} ${LLVM_INCLUDES})
 link_directories(${LLVM_LIBDIR} ${CBMC_SRC})
 
 set(CMAKE_CXX_FLAGS "${LLVM_CXXFLAGS} -Werror -Wall -Wextra -Wno-deprecated-declarations -Wno-unused-parameter -fexceptions")
+
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
