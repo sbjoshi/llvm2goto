@@ -1463,8 +1463,14 @@ void translator::trans_call(const CallInst &CI) {
 	else {	/// These are functions whose semantics are unknown.
 		L1: auto called_val = CI.getCalledOperand()->stripPointerCasts();
 		if (is_assert_function(called_val->getName().str())) {
-			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
-					bool_typet());
+			exprt guard_expr;
+			if (called_val->getName().str() == "assert_")//assert_ for Fortran is always pass by address, hence the implicit dereference.
+				guard_expr =
+						typecast_exprt(dereference_exprt(get_expr(*CI.getOperand(0))),
+								bool_typet());
+			else
+				guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
+						bool_typet());
 			auto assert_inst = goto_program.add_instruction();
 			assert_inst->make_assertion(guard_expr);
 			assert_inst->source_location = location;
