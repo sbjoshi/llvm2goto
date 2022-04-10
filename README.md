@@ -11,8 +11,8 @@ LL2GB is a translator from LLVM IR to CProver's GOTO IR.
     $ ./ll2gb --help
 ```
 ## Dependencies:
-    LLVM 10.x (or above)
-    CBMC 5.15 (or above)
+    LLVM 14.x (or above)
+    CBMC 5.54 (or above)
 
 ## Check
 
