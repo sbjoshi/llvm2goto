@@ -54,24 +54,45 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 endif()
 
+list(APPEND CBMC_STATIC_LIB_DIRS
+${CBMC_SRC}/goto-checker
+${CBMC_SRC}/solvers
+${CBMC_SRC}/statement-list
+${CBMC_SRC}/cpp
+${CBMC_SRC}/ansi-c
+${CBMC_SRC}/linking
+${CBMC_SRC}/json
+${CBMC_SRC}/goto-symex
+${CBMC_SRC}/goto-programs
+${CBMC_SRC}/langapi
+${CBMC_SRC}/xmllang
+${CBMC_SRC}/assembler
+${CBMC_SRC}/analyses
+${CBMC_SRC}/util
+${CBMC_DIR}/jbmc/src/java_bytecode
+${CBMC_SRC}/big-int
+${CBMC_SRC}/jsil
+)
+link_directories(${CBMC_STATIC_LIB_DIRS})
+
 list(APPEND CBMC_STATIC_LIBS
-${CBMC_SRC}/goto-checker/goto-checker.a
-${CBMC_SRC}/solvers/solvers.a
-${CBMC_SRC}/statement-list/statement-list.a
-${CBMC_SRC}/cpp/cpp.a
-${CBMC_SRC}/ansi-c/ansi-c.a
-${CBMC_SRC}/linking/linking.a
-${CBMC_SRC}/json/json.a
-${CBMC_SRC}/goto-symex/goto-symex.a
-${CBMC_SRC}/goto-programs/goto-programs.a
-${CBMC_SRC}/langapi/langapi.a
-${CBMC_SRC}/xmllang/xmllang.a
-${CBMC_SRC}/assembler/assembler.a
-${CBMC_SRC}/analyses/analyses.a
-${CBMC_SRC}/util/util.a
-${CBMC_DIR}/jbmc/src/java_bytecode/java_bytecode.a
-${CBMC_SRC}/big-int/big-int.a
-${CBMC_SRC}/jsil/jsil.a
+:goto-checker.a
+:solvers.a
+:statement-list.a
+:cpp.a
+:ansi-c.a
+:linking.a
+:json.a
+:goto-symex.a
+:goto-programs.a
+:langapi.a
+:xmllang.a
+:assembler.a
+:analyses.a
+:util.a
+:java_bytecode.a
+:big-int.a
+:jsil.a
 )
 
 
@@ -93,6 +114,7 @@ ${CBMC_SRC}/goto-instrument/full_slicer.o
 ${CBMC_SRC}/goto-instrument/reachability_slicer.o
 ${CBMC_SRC}/goto-instrument/cover_filter.o
 ${CBMC_SRC}/goto-instrument/cover_util.o
+${CBMC_SRC}/goto-instrument/cover_instrument_assume.o
 ${CBMC_SRC}/goto-instrument/cover_instrument_condition.o
 ${CBMC_SRC}/goto-instrument/cover_instrument_decision.o
 ${CBMC_SRC}/goto-instrument/cover_instrument_location.o
@@ -106,6 +128,7 @@ ${CBMC_SRC}/pointer-analysis/value_set_domain_fi.o
 ${CBMC_SRC}/pointer-analysis/value_set_fi.o
 ${CBMC_SRC}/pointer-analysis/goto_program_dereference.o
 ${CBMC_SRC}/pointer-analysis/value_set_dereference.o
+${CBMC_SRC}/ansi-c/goto_check_c.o
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

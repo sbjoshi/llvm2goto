@@ -48,7 +48,7 @@ unique_ptr<Module> ll2gb::get_llvm_ir() {
 }
 
 void translator::check_optimizations_safe(const Module &llvm_module) {
-	if (!optimizeEnabled || (optimizeForced && optimizeEnabled)) return;
+	if (!optEnabled || (optimizeForced && optEnabled)) return;
 	for (auto &F : llvm_module)
 		for (auto &BB : F)
 			for (auto &I : BB) {
@@ -57,7 +57,7 @@ void translator::check_optimizations_safe(const Module &llvm_module) {
 					switch (get_intrinsic_id(CI.getCalledOperand()->stripPointerCasts()->getName().str())) {
 					case intrinsics::fegetround:
 					case intrinsics::fesetround:
-						optimizeEnabled = false;
+						optEnabled = false;
 						return;
 					default:
 						;
@@ -68,15 +68,22 @@ void translator::check_optimizations_safe(const Module &llvm_module) {
 
 bool ll2gb::run_llvm_passes(Module &llvm_module) {
 	translator::check_optimizations_safe(llvm_module);
-	if (optimizeEnabled) {
-		if (verbose) {
-			outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
-			outs() << "Optimizer ";
-			outs().resetColor();
+	if (verbose) {
+		outs().changeColor(raw_ostream::Colors::SAVEDCOLOR, true);
+		outs() << "Optimiser ";
+		outs().resetColor();
+		if(optEnabled){
 			outs().changeColor(raw_ostream::Colors::GREEN, true);
 			outs() << "Enabled\n";
 			outs().resetColor();
 		}
+		else{
+			outs().changeColor(raw_ostream::Colors::YELLOW, true);
+			outs() << "Disabled\n";
+			outs().resetColor();
+		}
+	}
+	if (optEnabled) {
 		legacy::FunctionPassManager FPM(&llvm_module);
 		legacy::PassManager MPM;
 		PassManagerBuilder PM;
@@ -102,7 +109,7 @@ bool ll2gb::run_llvm_passes(Module &llvm_module) {
 		FPM.run(F);
 	FPM.doFinalization();
 
-	if (verbose_very && optimizeEnabled) {
+	if (verbose_very && optEnabled) {
 		outs().changeColor(outs().BLUE, true);
 		outs() << "LLVM IR: ";
 		outs().resetColor();

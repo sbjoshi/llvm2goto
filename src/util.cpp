@@ -14,7 +14,7 @@ using namespace std;
 using namespace llvm;
 using namespace ll2gb;
 
-cl::OptionCategory ll2gb_cat("ll2gb Options");
+cl::OptionCategory ll2gb_cat("Options");
 
 cl::opt<string> ll2gb::InputFilename(cl::Positional,
 		cl::desc("<input file>"),
@@ -36,7 +36,7 @@ cl::opt<bool> ll2gb::verbose_very("vv",
 		cl::init(false),
 		cl::cat(ll2gb_cat));
 
-cl::opt<bool> ll2gb::optimizeEnabled("opt",
+cl::opt<bool> ll2gb::optEnabled("opt",
 		cl::desc("Enable Optimization of IR"),
 		cl::init(false),
 		cl::cat(ll2gb_cat));
@@ -56,7 +56,8 @@ void ll2gb::parse_input(int argc, char **argv) {
 	cl::HideUnrelatedOptions(ll2gb_cat);
 	cl::ParseCommandLineOptions(argc, argv);
 
-	///If output file name is not specified then inputfile.gb is the
+
+	///If output file name is not specified then <inputfilename>.gb is the
 	/// default name.
 	if (outputFilename.empty()) {
 		auto index = InputFilename.find(".ll");
