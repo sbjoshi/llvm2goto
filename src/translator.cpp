@@ -1594,7 +1594,7 @@ void translator::make_func_call(const CallInst &CI) {
 		goto_program.add(goto_programt::make_decl(ret_symbol.symbol_expr(), location));
 		goto_program.update();
 	}
-	goto_program.add(goto_programt::make_other(call_expr, location));
+	goto_program.add(goto_programt::make_function_call(call_expr, location));
 }
 
 /// Translates all the intrinsics of llvm.
