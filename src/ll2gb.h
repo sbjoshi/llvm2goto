@@ -37,13 +37,17 @@
 #include <llvm/Transforms/IPO/AlwaysInliner.h>
 
 #include <goto-programs/goto_model.h>
+#include <goto-programs/goto_program.h>
 #include <goto-programs/write_goto_binary.h>
 #include <goto-programs/remove_skip.h>
 #include <util/arith_tools.h>
+#include <util/bitvector_expr.h>
 #include <util/config.h>
 #include <util/c_types.h>
 #include <util/expr.h>
+#include <util/floatbv_expr.h>
 #include <util/string_constant.h>
+#include <util/std_code.h>
 #include <util/namespace.h>
 #include <util/message.h>
 #include <langapi/mode.h>
@@ -58,7 +62,7 @@ namespace ll2gb {
 
 extern llvm::cl::opt<bool> verbose;
 extern llvm::cl::opt<bool> verbose_very;
-extern llvm::cl::opt<bool> optimizeEnabled;
+extern llvm::cl::opt<bool> optEnabled;
 extern llvm::cl::opt<bool> optimizeForced;
 extern llvm::cl::opt<std::string> outputFilename;
 extern llvm::cl::opt<std::string> InputFilename;

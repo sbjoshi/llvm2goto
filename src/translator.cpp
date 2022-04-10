@@ -94,9 +94,6 @@ exprt translator::get_expr_const(const Constant &C) {
 			else {
 				auto type = symbol_util::get_goto_type(C.getType());
 				expr = struct_exprt(list_operands, type);
-//				if (type.id() == ID_struct_tag)
-//					type =
-//							symbol_table.lookup(to_struct_tag_type(type).get_identifier().c_str())->type;
 			}
 		}
 		else if (isa<ConstantDataSequential>(C)) {
@@ -209,13 +206,9 @@ exprt translator::get_expr_const(const Constant &C) {
 			if (symbol_table.add(symbol)) {
 				error_state = "duplicate symbol names encountered!";
 			}
-			auto dclr_instr = goto_program.add_instruction();
-			dclr_instr->make_decl();
-			dclr_instr->code = code_declt(symbol.symbol_expr());
+			goto_program.add(goto_programt::make_decl(symbol.symbol_expr()));
 			goto_program.update();
 			expr = symbol.symbol_expr();
-//			expr =
-//					side_effect_expr_nondett(symbol_util::get_goto_type(C.getType()));
 		}
 	}
 	else if (isa<ConstantExpr>(C)) {
@@ -856,13 +849,6 @@ exprt translator::get_expr_uitofp(const UIToFPInst &UITFP) {
 	exprt expr;
 	const auto &ll_op1 = UITFP.getOperand(0);
 	const auto &ll_op2 = UITFP.getDestTy();
-//	expr = dereference_exprt(typecast_exprt(address_of_exprt(get_expr(*ll_op1)),
-//			pointer_type(unsignedbv_typet(ll_op1->getType()->getIntegerBitWidth()))));
-//	auto rounding_mode =
-//			symbol_table.lookup("__CPROVER_rounding_mode")->symbol_expr();
-//	expr = floatbv_typecast_exprt(expr,
-//			rounding_mode,
-//			symbol_util::get_goto_type(ll_op2));
 	expr = get_expr(*ll_op1);
 	if (expr.type().id() == ID_bool)
 		expr = typecast_exprt(expr, unsignedbv_typet(32));
@@ -1316,8 +1302,7 @@ exprt translator::get_expr(const Value &V, bool new_state_required) {
 		if (symbol_table.add(sym)) {
 			error_state = "duplicate symbol names encountered!";
 		}
-		auto asgn_inst = goto_program.add_instruction();
-		asgn_inst->make_assignment(code_assignt(sym.symbol_expr(), expr));
+		goto_program.add(goto_programt::make_assignment(sym.symbol_expr(), expr));
 		goto_program.update();
 		state_map[&V] = sym.symbol_expr();
 		return sym.symbol_expr();
@@ -1363,10 +1348,7 @@ void translator::trans_alloca(const AllocaInst &AI) {
 	if (symbol_table.add(symbol)) {
 		error_state = "duplicate symbol names encountered!";
 	}
-	auto dclr_instr = goto_program.add_instruction();
-	dclr_instr->make_decl();
-	dclr_instr->code = code_declt(symbol.symbol_expr());
-	dclr_instr->source_location = location;
+	goto_program.add(goto_programt::make_decl(symbol.symbol_expr(), location));
 	if (AI.isArrayAllocation()) {
 		auto aux_symbol = symbol_util::create_symbol(AI.getType());
 		aux_symbol.name = aux_symbol.base_name = aux_symbol.pretty_name =
@@ -1374,11 +1356,10 @@ void translator::trans_alloca(const AllocaInst &AI) {
 		if (symbol_table.add(aux_symbol)) {
 			error_state = "duplicate symbol names encountered!";
 		}
-		auto instr = goto_program.add_instruction();
-		instr->make_assignment(code_assignt(aux_symbol.symbol_expr(),
+		goto_program.add(goto_programt::make_assignment(code_assignt(aux_symbol.symbol_expr(),
 				typecast_exprt::conditional_cast(address_of_exprt(index_exprt(symbol.symbol_expr(),
 						from_integer(0, index_type()))),
-						aux_symbol.type)));
+						aux_symbol.type)), location));
 		aux_name_map[aux_symbol.name.c_str()] = var_name_map[&I];
 		var_name_map[&I] = aux_symbol.name.c_str();
 	}
@@ -1393,21 +1374,21 @@ void translator::trans_br(const BranchInst &BI) {
 	auto location = get_location(BI);
 	if (BI.isConditional()) {
 		auto guard_expr = not_exprt(get_expr(*BI.getCondition()));
-		auto cond_true = goto_program.add_instruction();
-		auto cond_false = goto_program.add_instruction();
+		auto cond_true = goto_program.add_instruction(GOTO);
+		auto cond_false = goto_program.add_instruction(GOTO);
 		br_instr_target_map[&BI] = pair<goto_programt::targett,
 				goto_programt::targett>(cond_true, cond_false);
-		cond_true->make_goto(cond_false, guard_expr);
-		cond_false->make_goto(cond_true, true_exprt());
-		cond_true->source_location = location;
-		cond_false->source_location = location;
+		cond_true->set_condition(guard_expr);
+		cond_true->set_target(cond_false);
+		cond_false->set_condition(true_exprt());
+		cond_false->set_target(cond_true);
 	}
 	else {
-		auto br_ins = goto_program.add_instruction();
+		auto br_ins = goto_program.add_instruction(GOTO);
 		br_instr_target_map[&BI] = pair<goto_programt::targett,
 				goto_programt::targett>(br_ins, br_ins);
-		br_ins->source_location = location;
-		br_ins->make_goto(br_ins, true_exprt());
+		br_ins->set_target(br_ins);
+		br_ins->set_condition(true_exprt());
 	}
 	goto_program.update();
 }
@@ -1428,7 +1409,7 @@ void translator::trans_call(const CallInst &CI) {
 			trans_call_llvm_intrinsic(ICI);
 		}
 		else if (!called_func->getName().str().compare("__assert_fail")) { ///__assert_fail is instrinsic assert of llvm which is equivalent to assert(fail && "Message").
-			auto assert_inst = goto_program.add_instruction();
+			auto assert_inst = goto_program.add(goto_programt::make_assertion(false_exprt(), location));
 			auto asrt_comment =
 					cast<ConstantDataArray>(cast<ConstantExpr>(CI.getOperand(0))->getOperand(0)->getOperand(0))->getAsCString();
 			auto file_name =
@@ -1438,21 +1419,15 @@ void translator::trans_call(const CallInst &CI) {
 			auto line_no = cast<ConstantInt>(CI.getOperand(2))->getZExtValue();
 			auto comment = file_name + ":" + to_string(line_no) + ": "
 					+ func_name + ": " + asrt_comment;
-			assert_inst->make_assertion(false_exprt());
-			assert_inst->source_location = location;
-			assert_inst->source_location.set_comment(comment.str());
+			assert_inst->source_location_nonconst().set_comment(comment.str());
 			goto_program.update();
 		}
 		else if (!called_func->getName().str().compare("reach_error")) { ///reach_error is the error definition for SV-COMP 20
-			auto assert_inst = goto_program.add_instruction();
-			assert_inst->make_assertion(false_exprt());
-			assert_inst->source_location = location;
+			goto_program.add(goto_programt::make_assertion(false_exprt(), location));
 			goto_program.update();
 		}
 		else if (!called_func->getName().str().compare("abort")) { ///abort in SV-COMP 20 should stop Verification at that point
-			auto assume_inst = goto_program.add_instruction();
-			assume_inst->make_assumption(false_exprt());
-			assume_inst->source_location = location;
+			goto_program.add(goto_programt::make_assumption(false_exprt(), location));
 			goto_program.update();
 		}
 		else if (called_func->isDeclaration())
@@ -1471,25 +1446,19 @@ void translator::trans_call(const CallInst &CI) {
 			else
 				guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 						bool_typet());
-			auto assert_inst = goto_program.add_instruction();
-			assert_inst->make_assertion(guard_expr);
-			assert_inst->source_location = location;
-			assert_inst->source_location.set_comment("assertion "
+			auto assert_inst = goto_program.add(goto_programt::make_assertion(guard_expr, location));
+			assert_inst->source_location_nonconst().set_comment("assertion "
 					+ from_expr(namespacet(symbol_table), "", guard_expr));
 			goto_program.update();
 		}
 		else if (is_assert_fail_function(called_val->getName().str())) {
-			auto assert_inst = goto_program.add_instruction();
-			assert_inst->make_assertion(false_exprt());
-			assert_inst->source_location = location;
+			goto_program.add(goto_programt::make_assertion(false_exprt(), location));
 			goto_program.update();
 		}
 		else if (is_assume_function(called_val->getName().str())) {
 			auto guard_expr = typecast_exprt(get_expr(*CI.getOperand(0)),
 					bool_typet());
-			auto assume_inst = goto_program.add_instruction();
-			assume_inst->make_assumption(guard_expr);
-			assume_inst->source_location = location;
+			goto_program.add(goto_programt::make_assumption(guard_expr, location));
 			goto_program.update();
 		}
 		else if (is_intrinsic_function(called_val->getName().str())) {
@@ -1529,10 +1498,7 @@ void translator::trans_call(const CallInst &CI) {
 				}
 				lhs_expr = ret_symbol.symbol_expr();
 				call_ret_sym_map[&CI] = ret_symbol.name.c_str();
-				auto dclr_instr = goto_program.add_instruction();
-				dclr_instr->make_decl();
-				dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-				dclr_instr->source_location = location;
+				goto_program.add(goto_programt::make_decl(code_declt(ret_symbol.symbol_expr()), location));
 				goto_program.update();
 			}
 			for (auto func_sym : actual_symbols) {
@@ -1549,36 +1515,35 @@ void translator::trans_call(const CallInst &CI) {
 			std::vector<goto_programt::targett> func_targets;
 			std::vector<goto_programt::targett> goto_end_targets;
 			for (auto actual_func_call : func_calls) {
-				goto_programt::targett temp = goto_program.add_instruction();
+				goto_programt::targett temp = goto_program.add_instruction(GOTO);
 				cond_targets.push_back(temp);
 			}
-			auto default_target = goto_program.add_instruction();
+			auto default_target = goto_program.add_instruction(GOTO);
+			default_target->set_condition(true_exprt());
 			for (auto actual_func_call : func_calls) {
-				goto_programt::targett temp = goto_program.add_instruction();
+				goto_programt::targett temp = goto_program.add_instruction(FUNCTION_CALL);
 				func_targets.push_back(temp);
-				goto_programt::targett temp2 = goto_program.add_instruction();
+				goto_programt::targett temp2 = goto_program.add_instruction(GOTO);
 				goto_end_targets.push_back(temp2);
 			}
 			if (!ll_func_type->getReturnType()->isVoidTy()) { ///We should add a new variable to capture the return value of the func.
-				auto asgn_instr = goto_program.add_instruction();
-				asgn_instr->make_assignment();
-				asgn_instr->code = code_assignt(ret_symbol.symbol_expr(),
-						side_effect_expr_nondett(ret_symbol.type, location));
-				asgn_instr->source_location = location;
-				default_target->make_goto(asgn_instr);
+				auto asgn_instr = goto_program.add(goto_programt::make_assignment(code_assignt(ret_symbol.symbol_expr(),
+						side_effect_expr_nondett(ret_symbol.type, location)), location));
+				default_target->set_target(asgn_instr);
 			}
-			goto_programt::targett end = goto_program.add_instruction();
-			end->make_skip();
+			goto_programt::targett end = goto_program.add(goto_programt::make_skip(location));
 			if (ll_func_type->getReturnType()->isVoidTy())
-				default_target->make_goto(end);
+				default_target->set_target(end);
 			int i = 0;
 			for (auto actual_func_call : func_calls) {
 				auto func_expr = get_expr(*called_val);
-				func_targets[i]->make_function_call(actual_func_call);
-				cond_targets[i]->make_goto(func_targets[i],
-						equal_exprt(func_expr,
+				auto temp = goto_programt::make_function_call(actual_func_call);
+				func_targets[i]->swap(temp);
+				cond_targets[i]->set_target(func_targets[i]);
+				cond_targets[i]->set_condition(equal_exprt(func_expr,
 								address_of_exprt(actual_func_call.function())));
-				goto_end_targets[i]->make_goto(end);
+				goto_end_targets[i]->set_target(end);
+				goto_end_targets[i]->set_condition(true_exprt());
 				i++;
 			}
 		}
@@ -1626,15 +1591,10 @@ void translator::make_func_call(const CallInst &CI) {
 		}
 		call_expr.lhs() = ret_symbol.symbol_expr();
 		call_ret_sym_map[&CI] = ret_symbol.name.c_str();
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->make_decl();
-		dclr_instr->code = code_declt(ret_symbol.symbol_expr());
-		dclr_instr->source_location = location;
+		goto_program.add(goto_programt::make_decl(ret_symbol.symbol_expr(), location));
 		goto_program.update();
 	}
-	auto call_instr = goto_program.add_instruction();
-	call_instr->make_function_call(call_expr);
-	call_instr->source_location = location;
+	goto_program.add(goto_programt::make_other(call_expr, location));
 }
 
 /// Translates all the intrinsics of llvm.
@@ -1646,9 +1606,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 	case Intrinsic::assume: {
 		const auto &cond = ICI.getArgOperand(0);
 		auto guard_expr = typecast_exprt(get_expr(*cond), bool_typet());
-		auto assume_inst = goto_program.add_instruction();
-		assume_inst->make_assumption(guard_expr);
-		assume_inst->source_location = location;
+		goto_program.add(goto_programt::make_assumption(guard_expr, location));
 		goto_program.update();
 		break;
 	}
@@ -1680,24 +1638,17 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		auto new_arr = typecast_exprt(address_of_exprt(symbol.symbol_expr()),
 				pointer_type(signedbv_typet(8)));
 
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->source_location = location;
-//		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		dclr_instr->make_decl(code_declt(symbol.symbol_expr()));
+		goto_program.add(goto_programt::make_decl(code_declt(symbol.symbol_expr()), location));
 
-		auto arr_cpy_instr = goto_program.add_instruction();
-		arr_cpy_instr->make_other(codet(ID_array_copy));
-		arr_cpy_instr->code.operands().push_back(new_arr);
-		arr_cpy_instr->code.operands().push_back(source_expr);
-//		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		arr_cpy_instr->source_location = location;
+		auto array_copy_code = codet(ID_array_copy);
+		array_copy_code.operands().push_back(new_arr);
+		array_copy_code.operands().push_back(source_expr);
+		goto_program.add(goto_programt::make_other(array_copy_code, location));
 
-		auto arr_rplc_instr = goto_program.add_instruction();
-		arr_rplc_instr->make_other(codet(ID_array_replace));
-		arr_rplc_instr->code.operands().push_back(target_expr);
-		arr_rplc_instr->code.operands().push_back(new_arr);
-//		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		arr_rplc_instr->source_location = location;
+		auto array_replace_code = codet(ID_array_copy);
+		array_replace_code.operands().push_back(target_expr);
+		array_replace_code.operands().push_back(new_arr);
+		goto_program.add(goto_programt::make_other(array_replace_code, location));
 		goto_program.update();
 		break;
 	}
@@ -1729,24 +1680,17 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		auto new_arr = typecast_exprt(address_of_exprt(symbol.symbol_expr()),
 				pointer_type(signedbv_typet(8)));
 
-		auto dclr_instr = goto_program.add_instruction();
-		dclr_instr->source_location = location;
-//		dclr_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		dclr_instr->make_decl(code_declt(symbol.symbol_expr()));
+		goto_program.add(goto_programt::make_decl(code_declt(symbol.symbol_expr()), location));
 
-		auto arr_cpy_instr = goto_program.add_instruction();
-		arr_cpy_instr->make_other(codet(ID_array_set));
-		arr_cpy_instr->code.operands().push_back(new_arr);
-		arr_cpy_instr->code.operands().push_back(val_expr);
-//		arr_cpy_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		arr_cpy_instr->source_location = location;
+		auto array_set_code = codet(ID_array_set);
+		array_set_code.operands().push_back(new_arr);
+		array_set_code.operands().push_back(val_expr);
+		goto_program.add(goto_programt::make_other(array_set_code, location));
 
-		auto arr_rplc_instr = goto_program.add_instruction();
-		arr_rplc_instr->make_other(codet(ID_array_replace));
-		arr_rplc_instr->code.operands().push_back(target_expr);
-		arr_rplc_instr->code.operands().push_back(new_arr);
-//		arr_rplc_instr->function = irep_idt(ICI.getFunction()->getName().str());
-		arr_rplc_instr->source_location = location;
+		auto array_replace_code = codet(ID_array_replace);
+		array_replace_code.operands().push_back(target_expr);
+		array_replace_code.operands().push_back(new_arr);
+		goto_program.add(goto_programt::make_other(array_replace_code, location));
 		goto_program.update();
 		break;
 	}
@@ -1803,9 +1747,7 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		break;
 	}
 	case Intrinsic::trap: {
-		auto assume_inst = goto_program.add_instruction();
-		assume_inst->make_assumption(false_exprt());
-		assume_inst->source_location = location;
+		goto_program.add(goto_programt::make_assumption(false_exprt(), location));
 		goto_program.update();
 		break;
 	}
@@ -1824,10 +1766,8 @@ void translator::trans_call_llvm_intrinsic(const IntrinsicInst &ICI) {
 		if (symbol_table.add(ret_symbol)) {
 			error_state = "duplicate symbol names encountered!";
 		}
-		auto instr = goto_program.add_instruction();
-		instr->make_assignment(code_assignt(ret_symbol.symbol_expr(),
-				side_effect_expr_nondett(ret_symbol.type,
-						instr->source_location)));
+		goto_program.add(goto_programt::make_assignment(ret_symbol.symbol_expr(),
+				side_effect_expr_nondett(ret_symbol.type, source_locationt::nil())));
 		goto_program.update();
 		call_ret_sym_map[&ICI] = ret_symbol.name.c_str();
 		break;
@@ -1868,10 +1808,7 @@ void translator::trans_insertvalue(const InsertValueInst &IVI) {
 			error_state =
 					"Unexpected exprt type in: translator::trans_insertvalue";
 	}
-	auto asgn_instr = goto_program.add_instruction();
-	asgn_instr->make_assignment();
-	asgn_instr->code = code_assignt(tgt_expr, src_expr);
-	asgn_instr->source_location = get_location(IVI);
+	goto_program.add(goto_programt::make_assignment(code_assignt(tgt_expr, src_expr), get_location(IVI)));
 	goto_program.update();
 }
 
@@ -1879,19 +1816,13 @@ void translator::trans_insertvalue(const InsertValueInst &IVI) {
 void translator::trans_ret(const ReturnInst &RI) {
 	if (const auto &ll_op1 = RI.getReturnValue()) {
 		auto ret_expr = get_expr(*ll_op1);
-		goto_programt::targett ret_inst = goto_program.add_instruction();
-		code_returnt cret;
-		cret.return_value() = ret_expr;
-		ret_inst->make_return();
-		ret_inst->code = cret;
-		ret_inst->source_location = get_location(RI);
+		goto_program.add(goto_programt::make_set_return_value(ret_expr, get_location(RI)));
 	}
-	auto goto_instr = goto_program.add_instruction();
+
 	/// Change these to GOTO END FUNCTION later, we don't use
 	/// incomplete_goto instr anywhere else, hence we can convert,
 	/// every incomplete_goto to goto END FUNCTION.
-	goto_instr->make_incomplete_goto(code_gotot(irep_idt()));
-	goto_program.update();
+	goto_program.add(goto_programt::make_incomplete_goto());	goto_program.update();
 }
 
 /// Translate and add an Assignment Instruction.
@@ -1900,10 +1831,7 @@ void translator::trans_store(const StoreInst &SI) {
 	const auto &ll_op2 = SI.getOperand(1);
 	auto src_expr = get_expr(*ll_op1);
 	auto tgt_expr = dereference_exprt(get_expr(*ll_op2));
-	auto asgn_instr = goto_program.add_instruction();
-	asgn_instr->make_assignment();
-	asgn_instr->code = code_assignt(tgt_expr, src_expr);
-	asgn_instr->source_location = get_location(SI);
+	goto_program.add(goto_programt::make_assignment(tgt_expr, src_expr, get_location(SI)));
 	goto_program.update();
 }
 
@@ -1913,12 +1841,10 @@ void translator::trans_switch(const SwitchInst &SI) {
 	auto location = get_location(SI);
 	auto i = SI.getNumCases();
 	while (i--) {
-		auto skip_instr = goto_program.add_instruction();
-		skip_instr->make_skip();
+		auto skip_instr = goto_program.add_instruction(GOTO);
 		switch_instr_target_map[&SI].push_back(skip_instr);
 	}
-	auto skip_instr = goto_program.add_instruction();
-	skip_instr->make_skip();
+	auto skip_instr = goto_program.add_instruction(GOTO);
 	switch_instr_target_map[&SI].push_back(skip_instr);
 	goto_program.update();
 }
@@ -2054,11 +1980,13 @@ void translator::set_switches() {
 			auto guard_expr = equal_exprt(select_expr,
 					get_expr(*SI->getOperand(i * 2)));
 			auto target = block_target_map[SI->getSuccessor(i)];
-			target_vector[i - 1]->make_goto(target, guard_expr);
+			target_vector[i - 1]->set_target(target);
+			target_vector[i - 1]->set_condition(guard_expr);
 		}
 		auto default_inst = target_vector.back();
 		auto default_target = block_target_map[SI->getDefaultDest()];
-		default_inst->make_goto(default_target, true_exprt());
+		default_inst->set_target(default_target);
+		default_inst->set_condition(true_exprt());
 	}
 	switch_instr_target_map.clear();
 }
@@ -2067,7 +1995,10 @@ void translator::set_switches() {
 /// add GOTO END FUNCTION after each return.
 void translator::set_returns(goto_programt::targett &end_func) {
 	for (auto &inst : goto_program.instructions)
-		if (inst.is_incomplete_goto()) inst.make_goto(end_func, true_exprt());
+		if (inst.is_incomplete_goto()){
+			auto temp = goto_programt::make_goto(end_func, true_exprt());
+			inst.swap(temp);
+		}
 }
 
 /// Translates and entire function and writes it
@@ -2079,8 +2010,7 @@ bool translator::trans_function(Function &F) {
 	st.get_scope_name_map(F, &scope_name_map);
 	scope_name_map[nullptr] = "";
 	for (const auto &BB : F) {
-		auto target = goto_program.add_instruction();
-		target->make_skip();
+		auto target = goto_program.add(goto_programt::make_skip());
 		block_target_map[&BB] = target;
 		trans_block(BB);
 		if (check_state()) return true;
@@ -2119,7 +2049,7 @@ void translator::set_function_symbol_value(goto_functionst::function_mapt &funct
 	for (auto &func : function_map) {
 		code_blockt cb;
 		for (auto ins : func.second.body.instructions)
-			cb.add(ins.code);
+			cb.add(ins.get_code());
 		auto &symbol = symbol_table.get_writeable_ref(func.first);
 		symbol.value.swap(cb);
 	}
@@ -2155,8 +2085,7 @@ bool translator::trans_module() {
 		if (check_state()) return true;
 		const auto *fn = symbol_table.lookup(F->getName().str());
 		goto_functions.function_map.find(F->getName().str())->second.body.swap(goto_program);
-		(*goto_functions.function_map.find(F->getName().str())).second.type =
-				to_code_type(fn->type);
+		goto_functions.function_map.find(F->getName().str())->second.set_parameter_identifiers(to_code_type(fn->type));
 		goto_program.clear();
 	}
 	if (check_state()) return true;
@@ -2356,14 +2285,14 @@ void translator::write_goto(const string &filename) {
 		outs().changeColor(outs().RED, true);
 		outs() << "FAILED";
 		outs().resetColor();
-		outs() << "]\n\n";
+		outs() << "]\n";
 	}
 	else if (verbose) {
 		outs() << "  [";
 		outs().changeColor(outs().GREEN, true);
 		outs() << "OK";
 		outs().resetColor();
-		outs() << "]\n\n";
+		outs() << "]\n";
 	}
 }
 
