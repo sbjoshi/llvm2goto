@@ -2,7 +2,7 @@
  * scope_tree.cpp
  *
  *  Created on: 29-Aug-2019
- *      Author: Akash Banerjee
+ *      Author: Rasika Sapte, Akash Banerjee
  */
 
 #include "ll2gb.h"
