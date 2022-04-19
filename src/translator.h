@@ -16,6 +16,8 @@ private:
 	goto_programt goto_program;
 	goto_functionst goto_functions;
 	static symbol_tablet symbol_table;
+	null_message_handlert msg_handler;
+	c_object_factory_parameterst object_factory_params;
 
 	std::map<const llvm::Instruction*, std::string> var_name_map; ///<map from instructions to their symbol names
 	std::map<std::string, std::string> aux_name_map; ///Map to go back from auxiliary names to original var names
@@ -118,20 +120,6 @@ private:
 		fmodf,
 		remainder,
 		lround,
-		llvm_memcpy_p0i8_p0i8_i64,
-		llvm_memset_p0i8_i64,
-		llvm_trunc_f64,
-		llvm_fabs_f80,
-		llvm_fabs_f64,
-		llvm_fabs_f32,
-		llvm_floor_f64,
-		llvm_ceil_f64,
-		llvm_rint_f64,
-		llvm_nearbyint_f64,
-		llvm_round_f64,
-		llvm_copysign_f64,
-		llvm_maxnum_f64,
-		llvm_minnum_f64,
 		sin,
 		cos,
 		modff,
@@ -150,57 +138,43 @@ private:
 		cprover_round_to_integral,
 		cprover_remainder,
 		cprover_remainderf,
+		llvm_memcpy_p0i8_p0i8_i64,
+		llvm_memset_p0i8_i64,
+		llvm_trunc_f64,
+		llvm_fabs_f80,
+		llvm_fabs_f64,
+		llvm_fabs_f32,
+		llvm_floor_f64,
+		llvm_ceil_f64,
+		llvm_rint_f64,
+		llvm_nearbyint_f64,
+		llvm_round_f64,
+		llvm_copysign_f64,
+		llvm_maxnum_f64,
+		llvm_minnum_f64,
 		ll2gb_default
 	};
+	static std::map<intrinsics, bool> intrinsic_support_added;
 	bool is_intrinsic_function(const std::string&);
 	typet get_intrinsic_return_type(const std::string&);
-	void add_intrinsic_support(const std::string&, bool reset_status = false);
+	void add_intrinsic_support(const llvm::Function&);
+	void add_llvm_intrinsic_support(const llvm::Function&);
+	void add_llvm_intrinsic_support(const std::string&);
 	static intrinsics get_intrinsic_id(const std::string&);
-	void add_malloc_support();
-	void add_calloc_support();
-	void add_free_support();
-	void add_fesetround_support();
-	void add_fegetround_support();
-	void add_fpclassify_support();
-	void add_fpclassifyf_support();
-	void add_fpclassifyl_support();
-	void add_fdim_support();
-	void add_modff_support();
-	void add_cprover_remainder_support();
-	void add_cprover_remainderf_support();
-	void add_round_to_integral_support();
-	void add_round_to_integralf_support();
-	void add_lrint_support();
 	void add_llvm_rint_support();
 	void add_llvm_nearbyint_support();
-	void add_fmod_support();
-	void add_fmodf_support();
-	void add_remainder_support();
 	void add_llvm_memcpy_support();
 	void add_llvm_memset_support();
-	void add_trunc_support();
-	void add_fabs_support();
-	void add_fabs80_support();
-	void add_fabs32_support();
-	void add_floor_support();
-	void add_ceil_support();
-	void add_round_support();
-	void add_lround_support();
-	void add_copysign_support();
-	void add_maxnum_support();
-	void add_minnum_support();
-	void add_sin_support();
-	void add_cos_support();
-	void add_isnan_support();
-	void add_isnanf_support();
-	void add_isnanl_support();
-	void add_nan_support();
-	void add_isinf_support();
-	void add_isinff_support();
-	void add_isinfl_support();
-	void add_signbit_support();
-	void add_signbitf_support();
-	void add_abort_support();
+	void add_llvm_trunc_support();
+	void add_llvm_fabs_support();
+	void add_llvm_fabs80_support();
+	void add_llvm_fabs32_support();
+	void add_llvm_floor_support();
+	void add_llvm_ceil_support();
+	void add_llvm_round_support();
+	void add_llvm_copysign_support();
+	void add_llvm_maxnum_support();
+	void add_llvm_minnum_support();
 
 	void make_func_call(const llvm::CallInst&);
 

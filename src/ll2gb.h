@@ -36,6 +36,7 @@
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/Transforms/IPO/AlwaysInliner.h>
 
+#include <goto-instrument/function.h>
 #include <goto-programs/goto_model.h>
 #include <goto-programs/goto_program.h>
 #include <goto-programs/write_goto_binary.h>
@@ -54,6 +55,7 @@
 #include <langapi/language_util.h>
 #include <ansi-c/ansi_c_language.h>
 #include <ansi-c/ansi_c_entry_point.h>
+#include <ansi-c/cprover_library.h>
 #include <linking/static_lifetime_init.h>
 #include <cbmc/cbmc_parse_options.h>
 #include <solvers/floatbv/float_bv.h>
