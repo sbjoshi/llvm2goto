@@ -2,7 +2,7 @@
  * scope_tree.h
  *
  *  Created on: 29-Aug-2019
- *      Author: Akash Banerjee
+ *      Authors: Rasika Sapte, Akash Banerjee
  */
 
 #ifndef SCOPE_TREE_H
