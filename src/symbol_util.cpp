@@ -23,7 +23,8 @@ string translator::symbol_util::lookup_namespace(string str) {
 		while (*i != ':' && i >= str.begin()) {
 			i--;
 		}
-		if (i < str.begin()) return str;
+		if (i < str.begin())
+			return str;
 		str.erase(i);
 		i--;
 		str.erase(i);
@@ -94,16 +95,15 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
 					i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_"
-						+ to_string(i)),
+				struct_typet::componentt component(
+						string("ele_" + to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
 			type = struct_type;
 			current_struct_eval.erase(ll_type);
 			break;
-		}
-		else
+		} else
 			strct_name = ll_type->getStructName().str();
 		if (typedef_tag_set.find(strct_name) == typedef_tag_set.end()) {
 			struct_typet struct_type;
@@ -111,8 +111,8 @@ typet translator::symbol_util::get_goto_type(const Type *ll_type) {
 			for (unsigned i = 0, n = ll_type->getStructNumElements(); i < n;
 					i++) {
 				auto struct_element = ll_type->getStructElementType(i);
-				struct_typet::componentt component(string("ele_"
-						+ to_string(i)),
+				struct_typet::componentt component(
+						string("ele_" + to_string(i)),
 						get_goto_type(struct_element));
 				components.push_back(component);
 			}
@@ -212,10 +212,16 @@ symbolt translator::symbol_util::create_goto_func_symbol(const Function &F) {
 	code_typet::parameterst parameters;
 	for (const auto &arg_iter : F.args()) {
 		auto arg_symbol = symbol_table.lookup(func_arg_name_map[&arg_iter]);
-		code_typet::parametert para(arg_symbol->type);
-		para.set_identifier(arg_symbol->name);
-		para.set_base_name(arg_symbol->base_name);
-		parameters.push_back(para);
+		if (arg_symbol) {
+			code_typet::parametert para(arg_symbol->type);
+			para.set_identifier(arg_symbol->name);
+			para.set_base_name(arg_symbol->base_name);
+			parameters.push_back(para);
+		}
+		else{
+			code_typet::parametert para(get_goto_type(arg_iter.getType()));
+			parameters.push_back(para);
+		}
 	}
 	auto func_code_type = code_typet(parameters,
 			get_goto_type(F.getReturnType()));

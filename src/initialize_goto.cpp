@@ -23,7 +23,7 @@ void translator::add_initial_symbols() {
 	initialize_function.name = initialize_function_name;
 	initialize_function.base_name = initialize_function_bname;
 	code_typet ct = code_typet(code_typet::parameterst(),
-			unsignedbv_typet(config.ansi_c.int_width));
+			void_type());
 	initialize_function.value = exprt();
 	initialize_function.type = ct;
 	symbol_table.add(initialize_function);
@@ -63,28 +63,28 @@ void translator::add_initial_symbols() {
 	cprover_dead_object.is_lvalue = true;
 	cprover_dead_object.is_static_lifetime = true;
 	symbol_table.add(cprover_dead_object);
-
-	symbolt cprover_malloc_object;
-	cprover_malloc_object.name = "__CPROVER_malloc_object";
-	cprover_malloc_object.base_name = "__CPROVER_malloc_object";
-	cprover_malloc_object.type = pointer_typet(void_type(),
-			config.ansi_c.pointer_width);
-	cprover_malloc_object.value =
-			null_pointer_exprt(to_pointer_type(cprover_malloc_object.type));
-	cprover_malloc_object.mode = ID_C;
-	cprover_malloc_object.is_lvalue = true;
-	cprover_malloc_object.is_static_lifetime = true;
-	symbol_table.add(cprover_malloc_object);
-
-	symbolt cprover_malloc_size;
-	cprover_malloc_size.name = "__CPROVER_malloc_size";
-	cprover_malloc_size.base_name = "__CPROVER_malloc_size";
-	cprover_malloc_size.type = unsignedbv_typet(config.ansi_c.int_width);
-	cprover_malloc_size.value = from_integer(0, cprover_malloc_size.type);
-	cprover_malloc_size.mode = ID_C;
-	cprover_malloc_size.is_lvalue = true;
-	cprover_malloc_size.is_static_lifetime = true;
-	symbol_table.add(cprover_malloc_size);
+//
+//	symbolt cprover_malloc_object;
+//	cprover_malloc_object.name = "__CPROVER_malloc_object";
+//	cprover_malloc_object.base_name = "__CPROVER_malloc_object";
+//	cprover_malloc_object.type = pointer_typet(void_type(),
+//			config.ansi_c.pointer_width);
+//	cprover_malloc_object.value =
+//			null_pointer_exprt(to_pointer_type(cprover_malloc_object.type));
+//	cprover_malloc_object.mode = ID_C;
+//	cprover_malloc_object.is_lvalue = true;
+//	cprover_malloc_object.is_static_lifetime = true;
+//	symbol_table.add(cprover_malloc_object);
+//
+//	symbolt cprover_malloc_size;
+//	cprover_malloc_size.name = "__CPROVER_malloc_size";
+//	cprover_malloc_size.base_name = "__CPROVER_malloc_size";
+//	cprover_malloc_size.type = unsignedbv_typet(config.ansi_c.int_width);
+//	cprover_malloc_size.value = from_integer(0, cprover_malloc_size.type);
+//	cprover_malloc_size.mode = ID_C;
+//	cprover_malloc_size.is_lvalue = true;
+//	cprover_malloc_size.is_static_lifetime = true;
+//	symbol_table.add(cprover_malloc_size);
 }
 
 void translator::set_config() {
@@ -94,4 +94,6 @@ void translator::set_config() {
 	config.ansi_c.set_c11();
 	config.ansi_c.rounding_mode = ieee_floatt::ROUND_TO_EVEN;
 	config.main = string("main");
+	config.ansi_c.arch = "x86_64";
+	config.ansi_c.os = configt::ansi_ct::ost::OS_LINUX;
 }
