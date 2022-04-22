@@ -20,3 +20,5 @@ LL2GB is a translator from LLVM IR to CProver's GOTO IR.
     $ cd regression/c_regression
     $ make test
 ```
+## License
+4-clause BSD license, see `LICENSE` file.
