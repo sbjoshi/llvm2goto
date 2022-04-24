@@ -20,5 +20,9 @@ LL2GB is a translator from LLVM IR to CProver's GOTO IR.
     $ cd regression/c_regression
     $ make test
 ```
+## Acknowledgement
+An earlier version of the tool can be found in the `old` branch. We thank Rasika Sapte for her contributions in developing this earlier version.
+We also thank Dr Saurabh Joshi for their valuable insignts and guidance in developing this tool.
+
 ## License
-4-clause BSD license, see `LICENSE` file.
+MIT License, see `LICENSE` file.
