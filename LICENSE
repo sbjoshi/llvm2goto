@@ -1,11 +1,21 @@
-MIT License
-Copyright (c) 2022 Akash Banerjee, Saurabh Joshi
-Indian Institute of Technology Hyderabad
-
 This project links to LLVM and CBMC. Please refer to the following links for their respective licensing information:
     
+
     LLVM: https://releases.llvm.org/14.0.0/LICENSE.TXT
     CBMC: https://github.com/diffblue/cbmc/blob/cbmc-5.54.0/LICENSE
+
+
+The source code of this project and any resultant binary is published under the following license:
+
+==================================
+
+
+MIT License
+Copyright (c) 2018-2022 Akash Banerjee, Saurabh Joshi
+Copyright (c) 2017-2018 Rasika Sapate, Saurabh Joshi
+Indian Institute of Technology Hyderabad
+
+
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
