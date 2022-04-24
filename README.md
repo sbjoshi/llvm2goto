@@ -1,5 +1,5 @@
 # LL2GB
-LL2GB is a translator from LLVM IR to CProver's GOTO IR.
+LL2GB is a translator from [LLVM](https://github.com/llvm/llvm-project) IR to [CProver/CBMC](https://github.com/diffblue/cbmc/)'s GOTO IR.
 
 ## Build Steps:
 
@@ -21,7 +21,7 @@ LL2GB is a translator from LLVM IR to CProver's GOTO IR.
     $ make test
 ```
 ## Acknowledgement
-An earlier version of the tool can be found in the `old` branch. We thank Rasika Sapte for her contributions in developing this earlier version.
+An earlier version of the tool can be found in the `old` branch. We thank Rasika Sapate for her contributions in developing this earlier version.
 We also thank Dr Saurabh Joshi for their valuable insignts and guidance in developing this tool.
 
 ## License
